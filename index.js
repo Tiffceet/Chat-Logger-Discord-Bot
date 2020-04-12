@@ -5,7 +5,7 @@ const Discord = require("discord.js");
 const fs = require("fs");
 const connect_four = require("./games/connect_four");
 const bot = new Discord.Client();
-const token = "Njk3NjgyMTU5MzU1NDI4ODc1.Xo7gGA.fWG3aUwUMgQDrX04ckHcaQ2o0xk";
+const token = JSON.parse(fs.readFileSync('auth.json')).token;
 
 // ====================================================================================
 // Global variables
