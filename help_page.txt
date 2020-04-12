@@ -1,0 +1,13 @@
+Commands:
+`.help` - show this
+`.ualive?` - Check if I'm still working
+`.imaboi` - Set your role to 'King'
+`.imagurl`- Set your role to 'Queen'
+`.roll` - Roll a number
+`.tellajoke` - Tell a joke
+`.submitjoke` - Tell me a joke
+`.pick [online|bot]` - Pick a random person in server (will not ping) 
+`.doubt` - D O U B T
+`.smh` - shaking my head
+`.play [mention a friend]` - play Connect Four
+`.scareme` - you dont want to sleep ?
