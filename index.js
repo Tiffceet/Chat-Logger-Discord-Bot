@@ -2,6 +2,7 @@ require("http")
 	.createServer((req, res) => res.end("hello world"))
 	.listen(3000);
 const Discord = require("discord.js");
+const fetch = require("node-fetch");
 const fs = require("fs");
 const connect_four = require("./games/connect_four");
 const bot = new Discord.Client();
@@ -282,14 +283,31 @@ const play = (message) => {
 };
 
 const scareme = (message) => {
-	let rawdata = fs.readFileSync("two_sentence_horror.json");
-	let horror = JSON.parse(rawdata);
-	let idx = Math.floor(Math.random() * (horror.data.children.length - 1));
-	message.channel.send(
-		horror.data.children[idx].data.title +
-			"\n" +
-			horror.data.children[idx].data.selftext
-	);
+	fetch(
+		"https://www.reddit.com/r/TwoSentenceHorror/.json?sort=top&t=week&limit=300"
+	)
+		.then((res) => res.json())
+		.then((json) => {
+			try {
+				let len = Math.floor(
+					Math.random() * (json.data.children.length - 1)
+				);
+				// console.log(
+				// 	json.data.children[len].data.title +
+				// 		"\n\n" +
+				// 		json.data.children[len].data.selftext
+				// );
+				message.channel.send(
+					new Discord.MessageEmbed()
+						.setTitle(json.data.children[len].data.title)
+						.setDescription(json.data.children[len].data.selftext)
+				);
+			} catch (err) {
+				console.log(
+					"Error getting post from r/TwoSentenceHorror, contact Looz !"
+				);
+			}
+		});
 };
 // ====================================================================================
 // ====================================================================================
@@ -476,8 +494,6 @@ bot.on("message", (message) => {
 			play(message);
 		} else if (this_msg.startsWith(".scareme")) {
 			scareme(message);
-		} else {
-			message.channel.send(help_page);
 		}
 	}
 });
