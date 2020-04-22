@@ -2,9 +2,8 @@ const Discord = require("discord.js");
 module.exports = new Discord.MessageEmbed()
 	.setColor("#e9e9e9")
 	.setTitle("Commands")
-	.setURL("https://discord.js.org/")
 	.addFields(
-		{ name: ":desktop: Misc.", value: "`.help` `.ualive?`" },
+		{ name: ":desktop: Misc.", value: "`.help` `.ualive?` `.gamblestat` `.eval`"},
 		{ name: ":female_sign: Gender switch", value: "`.imaboi` `.imagurl`" },
 		{
 			name: ":pick: Function",

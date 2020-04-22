@@ -38,5 +38,13 @@
 	},
 	"smh": { "desr": "Shaking my head", "usage": "`.smh`" },
 	"doubt": { "desr": "d o u b t", "usage": "`.doubt`" },
-	"lvling": { "desr": "Ask coryn for bosses to farm in toram.", "usage": "`.lvling [your current level]`" }
+	"lvling": {
+		"desr": "Ask coryn for bosses to farm in toram.",
+		"usage": "`.lvling [your current level]`"
+	},
+	"gamblestat": {
+		"desr": "Want to know the correct way to gamble ? ",
+		"usage": "`.gamblestat [base_bet_amount]`"
+	},
+	"eval": { "desr": "Sorry but only Looz can use this. As for why, you could ask Looz to explain himself", "usage": "`.eval [expr]`" }
 }

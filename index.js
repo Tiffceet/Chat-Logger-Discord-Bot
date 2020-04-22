@@ -208,8 +208,10 @@ const tellajoke = (message) => {
 				message.channel.send(
 					new Discord.MessageEmbed()
 						.setTitle(json.data.children[len].data.title)
-                        .setDescription(json.data.children[len].data.selftext)
-                        .setColor("#" + ((Math.random() * 0xffffff) << 0).toString(16))
+						.setDescription(json.data.children[len].data.selftext)
+						.setColor(
+							"#" + ((Math.random() * 0xffffff) << 0).toString(16)
+						)
 				);
 			} catch (err) {
 				console.log(
@@ -363,6 +365,56 @@ const lvling = (message) => {
 				)
 		);
 	}, 6000);
+};
+
+const gamblestat = (message) => {
+	let args = message.content.split(" ");
+	if (!args[1] || isNaN(args[1])) {
+		message.reply("You need to give me a base bet amount.");
+		return;
+	}
+
+	let bet_amt = [parseInt(args[1])];
+	for (let i = 1; i < 9; i++) {
+		let sum = bet_amt.reduce((a, b) => a + b, 0);
+		bet_amt[i] = sum * 4;
+	}
+
+	message.channel.send(
+		new Discord.MessageEmbed()
+			.setColor("#75ddff")
+			.setTitle("Dank Memer gambling stategies")
+			.setDescription(
+				"This game is rigged, please dont spend too much time on it\n\nBut the idea is, if you lose, then you just have to bet bigger, as for how much you need to bet, just follow the table below"
+			)
+			.addFields(
+				{ name: "Base bet amount", value: `${args[1]}` },
+				{
+					name: "% of losing",
+					value:
+						"53.47\n28.59\n15.28\n8.17\n4.37\n2.33\n1.24\n0.66\n0.35",
+					inline: true,
+				},
+				{
+					name: "Bet amount",
+					value: `${bet_amt[0]}\n${bet_amt[1]}\n${bet_amt[2]}\n${bet_amt[3]}\n${bet_amt[4]}\n${bet_amt[5]}\n${bet_amt[6]}\n${bet_amt[7]}\n${bet_amt[8]}`,
+					inline: true,
+				}
+			)
+	);
+};
+
+const eval_cmd = (message) => {
+	if (message.author.id !== "246239361195048960") {
+		message.channel.send("Sorry, only Looz can do that");
+		return;
+	}
+	try {
+		let cmd = message.content.substring(6, message.content.length);
+		message.channel.send(eval(cmd));
+	} catch (err) {
+        message.channel.send("Shame on you Looz, even a programmer make such silly syntax mistake.");
+    }
 };
 // ====================================================================================
 // ====================================================================================
@@ -551,6 +603,10 @@ bot.on("message", (message) => {
 			scareme(message);
 		} else if (this_msg.startsWith(".lvling")) {
 			lvling(message);
+		} else if (this_msg.startsWith(".gamblestat")) {
+			gamblestat(message);
+		} else if (this_msg.startsWith(".eval")) {
+			eval_cmd(message);
 		}
 	}
 });
