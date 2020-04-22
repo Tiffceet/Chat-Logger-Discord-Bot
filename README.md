@@ -2,11 +2,10 @@
 This bot is written for Lymerist discord server
 
 ## How to use
-1. Init npm and install discord.js and fs.js
+1. Init npm and install all dependencies
 ```
 npm init
-npm install discord.js
-npm install fs.js
+npm install
 ```
 2. Create auth.json for discord bot token
 ```
