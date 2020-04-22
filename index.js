@@ -196,9 +196,16 @@ const roll = (message) => {
 };
 
 const tellajoke = (message) => {
-	fetch(
-		"https://www.reddit.com/r/ShortCleanFunny/.json?sort=hot&t=week&limit=300"
-	)
+	let args = message.content.split(" ");
+	let url = "";
+	if (args[1] && args[1] == "dirty") {
+		url =
+			"https://www.reddit.com/r/DirtyJokes/.json?sort=hot&t=week&limit=300";
+	} else {
+		url =
+			"https://www.reddit.com/r/ShortCleanFunny/.json?sort=hot&t=week&limit=300";
+	}
+	fetch(url)
 		.then((res) => res.json())
 		.then((json) => {
 			try {
@@ -413,8 +420,10 @@ const eval_cmd = (message) => {
 		let cmd = message.content.substring(6, message.content.length);
 		message.channel.send(eval(cmd));
 	} catch (err) {
-        message.channel.send("Shame on you Looz, even a programmer make such silly syntax mistake.");
-    }
+		message.channel.send(
+			"Shame on you Looz, even a programmer make such silly syntax mistake."
+		);
+	}
 };
 // ====================================================================================
 // ====================================================================================
