@@ -9,7 +9,7 @@ module.exports = new Discord.MessageEmbed()
 		{
 			name: ":pick: Function",
 			value:
-				"`.roll` `.tellajoke` `.submitjoke` `.pick [online|bot]` `.scareme`",
+				"`.roll` `.tellajoke` `.submitjoke` `.pick [online|bot]` `.scareme` `.lvling`",
 		},
 		{ name: ":game_die: Games", value: "`.play [mention a friend]`" },
 		{ name: ":open_mouth: Emotes", value: "`.smh` `.doubt`" }

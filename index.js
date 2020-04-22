@@ -4,7 +4,9 @@ require("http")
 const Discord = require("discord.js");
 const fetch = require("node-fetch");
 const fs = require("fs");
+const cheerio = require("cheerio");
 const connect_four = require("./games/connect_four");
+const coryn = require("./games/coryn");
 const bot = new Discord.Client();
 const token = JSON.parse(fs.readFileSync("auth.json")).token;
 
@@ -48,14 +50,14 @@ const getDateFast = () => {
 	return dateTime;
 };
 
-const loose_str_cmp = (str, target) => {
-	let idx = 0;
-	for (i = 0; i < str.length; i++) {
-		if (str.charAt(i) == target.charAt(idx)) {
-			idx++;
-		}
-	}
-	return idx == target.length;
+// Adding replace all function to strings
+String.prototype.replaceAll = function (searchStr, replaceStr) {
+	var str = this;
+
+	// escape regexp special characters in search string
+	searchStr = searchStr.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+
+	return str.replace(new RegExp(searchStr, "gi"), replaceStr);
 };
 
 const updateOnlineCount = (guild) => {
@@ -72,26 +74,6 @@ const updateOnlineCount = (guild) => {
 	// make sure channel is found before editing
 	if (ch) {
 		ch.edit({ name: `Available: ${onlineCount}` });
-		// console.log("updateOnlineCount: Channel found and updated");
-	} else {
-		// console.log("updateOnlineCount: Channel cant be found");
-	}
-};
-
-const updateBotOnlineCount = (guild) => {
-	let onlineCount = 0;
-	guild.members.cache.array().forEach((mem) => {
-		if (mem.user.bot && mem.user.presence.status == "online") {
-			onlineCount++;
-		}
-	});
-	let ch = guild.channels.cache.find((channel) => {
-		return channel.id === "698130150193233969";
-	});
-
-	// make sure channel is found before editing
-	if (ch) {
-		ch.edit({ name: `Bots Online: ${onlineCount}` });
 		// console.log("updateOnlineCount: Channel found and updated");
 	} else {
 		// console.log("updateOnlineCount: Channel cant be found");
@@ -145,16 +127,17 @@ const ualive = (message) => {
 
 const help = (message) => {
 	let args = message.content.split(" ");
-    let help_desr = JSON.parse(fs.readFileSync("./data/help_desr.json"));
+	let help_desr = JSON.parse(fs.readFileSync("./data/help_desr.json"));
 	if (args.length >= 2) {
 		if (help_desr[args[1]]) {
 			message.channel.send(
-				new Discord.MessageEmbed()
-					.setTitle("." + args[1])
-					.addFields(
-						{ name: "Description", value: `${help_desr[args[1]].desr}` },
-						{ name: "Usage", value: `${help_desr[args[1]].usage}` }
-					)
+				new Discord.MessageEmbed().setTitle("." + args[1]).addFields(
+					{
+						name: "Description",
+						value: `${help_desr[args[1]].desr}`,
+					},
+					{ name: "Usage", value: `${help_desr[args[1]].usage}` }
+				)
 			);
 			return;
 		}
@@ -207,9 +190,9 @@ const roll = (message) => {
 		max = convertedNum;
 	}
 	message.channel.send(
-		`<@${message.author.id}> rolled a ${
-			Math.floor(Math.random() * max - min)
-		}`
+		`<@${message.author.id}> rolled a ${Math.floor(
+			Math.random() * max - min
+		)}`
 	);
 };
 
@@ -297,6 +280,7 @@ const play = (message) => {
 	}, 30000);
 };
 
+// make use of node-fetch
 const scareme = (message) => {
 	fetch(
 		"https://www.reddit.com/r/TwoSentenceHorror/.json?sort=top&t=week&limit=300"
@@ -307,11 +291,6 @@ const scareme = (message) => {
 				let len = Math.floor(
 					Math.random() * (json.data.children.length - 1)
 				);
-				// console.log(
-				// 	json.data.children[len].data.title +
-				// 		"\n\n" +
-				// 		json.data.children[len].data.selftext
-				// );
 				message.channel.send(
 					new Discord.MessageEmbed()
 						.setTitle(json.data.children[len].data.title)
@@ -323,6 +302,49 @@ const scareme = (message) => {
 				);
 			}
 		});
+};
+
+const lvling = (message) => {
+    let args = message.content.split(" ");
+    if (args < 2)
+    {
+        message.reply("What? How do you expect me to give you anything w/o you giving me your current level.");
+        return;
+    }
+    if(isNaN(args[1]))
+    {
+        message.reply("Try again, but with a valid level number");
+        return;
+    }
+	let coryn_request = new coryn();
+    coryn_request.get_exp_list_boss(parseInt(args[1]));
+    message.channel.send(
+        "I'm fetching data from Coryn...\nPlease wait for 6 seconds..."
+    );
+	setTimeout(function () {
+		// console.log(coryn_request.obj);
+		let embeds_field = [];
+		let idx = 0;
+		coryn_request.obj.data.forEach(function (data) {
+			embeds_field[idx] = {
+				name: `${data.lvl} ${data.name}`,
+				value: `Location: ${data.venue}\n${data.exp}`,
+			};
+			idx++;
+		});
+		message.channel.send(
+			new Discord.MessageEmbed()
+				.setColor('#'+(Math.random()*0xFFFFFF<<0).toString(16)) // generate random hex color
+				.setTitle(`Player Lv ${args[1]}`)
+				.setAuthor("Coryn")
+				.addFields(
+					embeds_field.slice(
+						0,
+						embeds_field.length > 10 ? 10 : embeds_field.length
+					)
+				)
+		);
+	}, 6000);
 };
 // ====================================================================================
 // ====================================================================================
@@ -456,7 +478,7 @@ bot.on("message", (message) => {
 		return;
 	}
 	/*
-	// log msg
+	// log msg (Uncommnt this part to start logging)
 	let msg = `[${getDateFast()}]:[${message.author.username}] ${
 		message.content
 	}\n`;
@@ -509,6 +531,8 @@ bot.on("message", (message) => {
 			play(message);
 		} else if (this_msg.startsWith(".scareme")) {
 			scareme(message);
+		} else if (this_msg.startsWith(".lvling")){
+            lvling(message);
 		}
 	}
 });

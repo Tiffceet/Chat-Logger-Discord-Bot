@@ -32,7 +32,11 @@
 		"desr": "Fetch top posts from r/TwoSentenceHorror\n\nWarning: Its disturbing, proceed on your risk",
 		"usage": "`.scareme`"
 	},
-	"play": { "desr": "For now theres only 1 game, I might add more games in future", "usage": "`.play [mention a friend]`" },
-	"smh": { "desr": "Shaking my head", "usage": ".smh" },
-	"doubt": { "desr": "d o u b t", "usage": ".doubt" }
+	"play": {
+		"desr": "For now theres only 1 game, I might add more games in future",
+		"usage": "`.play [mention a friend]`"
+	},
+	"smh": { "desr": "Shaking my head", "usage": "`.smh`" },
+	"doubt": { "desr": "d o u b t", "usage": "`.doubt`" },
+	"lvling": { "desr": "Ask coryn for bosses to farm in toram.", "usage": "`.lvling [your current level]`" }
 }
