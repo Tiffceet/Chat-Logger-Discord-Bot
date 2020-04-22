@@ -17,8 +17,8 @@
 		"usage": "`.roll` or `.roll 10`"
 	},
 	"tellajoke": {
-		"desr": "Tell a joke from r/ShortCleanFunny",
-		"usage": "`.tellajoke`"
+		"desr": "Tell a joke from r/ShortCleanFunny or r/DirtyJokes",
+		"usage": "`.tellajoke` or `.tellajoke dirty`"
 	},
 	"submitjoke": {
 		"desr": "Tell me a joke. I will save it for future use.",
