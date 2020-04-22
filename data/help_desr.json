@@ -17,7 +17,7 @@
 		"usage": "`.roll` or `.roll 10`"
 	},
 	"tellajoke": {
-		"desr": "Fetch a joke from jokes.json\n\nI'm considering fetching jokes from reddit but dk which subreddit it the best, maybe you could give Looz some suggestions ?",
+		"desr": "Tell a joke from r/ShortCleanFunny",
 		"usage": "`.tellajoke`"
 	},
 	"submitjoke": {

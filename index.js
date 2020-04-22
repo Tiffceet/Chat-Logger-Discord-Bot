@@ -13,7 +13,6 @@ const token = JSON.parse(fs.readFileSync("auth.json")).token;
 // ====================================================================================
 // Global variables
 // ====================================================================================
-var jokes = require("./jokes");
 var help_page = require("./help_page");
 var status_msg = [
 	"Yea, I'm here, lurking around, collecting data, bla bla bla.",
@@ -197,8 +196,27 @@ const roll = (message) => {
 };
 
 const tellajoke = (message) => {
-	let len = jokes == null ? 0 : jokes.length;
-	message.channel.send(jokes[Math.floor(Math.random() * len)]);
+	fetch(
+		"https://www.reddit.com/r/ShortCleanFunny/.json?sort=hot&t=week&limit=300"
+	)
+		.then((res) => res.json())
+		.then((json) => {
+			try {
+				let len = Math.floor(
+					Math.random() * (json.data.children.length - 1)
+				);
+				message.channel.send(
+					new Discord.MessageEmbed()
+						.setTitle(json.data.children[len].data.title)
+                        .setDescription(json.data.children[len].data.selftext)
+                        .setColor("#" + ((Math.random() * 0xffffff) << 0).toString(16))
+				);
+			} catch (err) {
+				console.log(
+					"Error getting post from r/ShortCleanFunny, contact Looz !"
+				);
+			}
+		});
 };
 
 const submitjoke = (message) => {
@@ -305,22 +323,22 @@ const scareme = (message) => {
 };
 
 const lvling = (message) => {
-    let args = message.content.split(" ");
-    if (args < 2)
-    {
-        message.reply("What? How do you expect me to give you anything w/o you giving me your current level.");
-        return;
-    }
-    if(isNaN(args[1]))
-    {
-        message.reply("Try again, but with a valid level number");
-        return;
-    }
+	let args = message.content.split(" ");
+	if (args < 2) {
+		message.reply(
+			"What? How do you expect me to give you anything w/o you giving me your current level."
+		);
+		return;
+	}
+	if (isNaN(args[1])) {
+		message.reply("Try again, but with a valid level number");
+		return;
+	}
 	let coryn_request = new coryn();
-    coryn_request.get_exp_list_boss(parseInt(args[1]));
-    message.channel.send(
-        "I'm fetching data from Coryn...\nPlease wait for 6 seconds..."
-    );
+	coryn_request.get_exp_list_boss(parseInt(args[1]));
+	message.channel.send(
+		"I'm fetching data from Coryn...\nPlease wait for 6 seconds..."
+	);
 	setTimeout(function () {
 		// console.log(coryn_request.obj);
 		let embeds_field = [];
@@ -334,7 +352,7 @@ const lvling = (message) => {
 		});
 		message.channel.send(
 			new Discord.MessageEmbed()
-				.setColor('#'+(Math.random()*0xFFFFFF<<0).toString(16)) // generate random hex color
+				.setColor("#" + ((Math.random() * 0xffffff) << 0).toString(16)) // generate random hex color
 				.setTitle(`Player Lv ${args[1]}`)
 				.setAuthor("Coryn")
 				.addFields(
@@ -531,8 +549,8 @@ bot.on("message", (message) => {
 			play(message);
 		} else if (this_msg.startsWith(".scareme")) {
 			scareme(message);
-		} else if (this_msg.startsWith(".lvling")){
-            lvling(message);
+		} else if (this_msg.startsWith(".lvling")) {
+			lvling(message);
 		}
 	}
 });
