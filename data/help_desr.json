@@ -1,0 +1,38 @@
+{
+	"help": { "desr": "Display help page", "usage": "`.help`" },
+	"ualive?": {
+		"desr": "Check if the bot is working",
+		"usage": "`.ualive?` or `.ualive`"
+	},
+	"imaboi": {
+		"desr": "Set your role to King\n\n_* This is exclusive to Lymerist_",
+		"usage": "`.imaboi`"
+	},
+	"imagurl": {
+		"desr": "Set your role to Queen\n\n_* This is exclusive to Lymerist_",
+		"usage": "`.imagurl`"
+	},
+	"roll": {
+		"desr": "Roll a number from 0 to 100\n\nYou could also roll a different range of number if you provide a number.",
+		"usage": "`.roll` or `.roll 10`"
+	},
+	"tellajoke": {
+		"desr": "Fetch a joke from jokes.json\n\nI'm considering fetching jokes from reddit but dk which subreddit it the best, maybe you could give Looz some suggestions ?",
+		"usage": "`.tellajoke`"
+	},
+	"submitjoke": {
+		"desr": "Tell me a joke. I will save it for future use.",
+		"usage": "`.submitjoke What do Japanese people says when they have itchy knees?\n一二三`"
+	},
+	"pick": {
+		"desr": "Pick a random user in discord.\n\nBy default, it will only choose user and not bots.\n\nIf you wish to include bots in the selection add `bot` behind the command.\n\nIf you wish to not include offline users, then add `online` at the end of command",
+		"usage": "`.pick`\n`.pick online`\n`.pick bot`\n`.pick bot online`"
+	},
+	"scareme": {
+		"desr": "Fetch top posts from r/TwoSentenceHorror\n\nWarning: Its disturbing, proceed on your risk",
+		"usage": "`.scareme`"
+	},
+	"play": { "desr": "For now theres only 1 game, I might add more games in future", "usage": "`.play [mention a friend]`" },
+	"smh": { "desr": "Shaking my head", "usage": ".smh" },
+	"doubt": { "desr": "d o u b t", "usage": ".doubt" }
+}

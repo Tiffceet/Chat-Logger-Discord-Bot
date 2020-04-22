@@ -144,6 +144,21 @@ const ualive = (message) => {
 };
 
 const help = (message) => {
+	let args = message.content.split(" ");
+    let help_desr = JSON.parse(fs.readFileSync("./data/help_desr.json"));
+	if (args.length >= 2) {
+		if (help_desr[args[1]]) {
+			message.channel.send(
+				new Discord.MessageEmbed()
+					.setTitle("." + args[1])
+					.addFields(
+						{ name: "Description", value: `${help_desr[args[1]].desr}` },
+						{ name: "Usage", value: `${help_desr[args[1]].usage}` }
+					)
+			);
+			return;
+		}
+	}
 	message.channel.send(help_page);
 };
 
@@ -193,7 +208,7 @@ const roll = (message) => {
 	}
 	message.channel.send(
 		`<@${message.author.id}> rolled a ${
-			Math.round(Math.random() * max + 1) - min - 1
+			Math.floor(Math.random() * max - min)
 		}`
 	);
 };
