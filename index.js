@@ -5,13 +5,13 @@ const Discord = require("discord.js");
 const fs = require("fs");
 const connect_four = require("./games/connect_four");
 const bot = new Discord.Client();
-const token = JSON.parse(fs.readFileSync('auth.json')).token;
+const token = JSON.parse(fs.readFileSync("auth.json")).token;
 
 // ====================================================================================
 // Global variables
 // ====================================================================================
 var jokes = require("./jokes");
-var help_page = fs.readFileSync("help_page.txt", "utf-8");
+var help_page = require("./help_page");
 var status_msg = [
 	"Yea, I'm here, lurking around, collecting data, bla bla bla.",
 	"I know you miss me, I'm here",
@@ -276,17 +276,20 @@ const play = (message) => {
 			if (ongoing_game_stat == ongoing_game.getStat()) {
 				message.channel.send("Game aborted.");
 				ongoing_game = undefined;
-			
 			}
 		}
 	}, 30000);
 };
 
-const scareme = message => {
-	let rawdata = fs.readFileSync('two_sentence_horror.json');
+const scareme = (message) => {
+	let rawdata = fs.readFileSync("two_sentence_horror.json");
 	let horror = JSON.parse(rawdata);
-	let idx = Math.floor(Math.random() * (horror.data.children.length-1));
-	message.channel.send(horror.data.children[idx].data.title + "\n" + horror.data.children[idx].data.selftext);	
+	let idx = Math.floor(Math.random() * (horror.data.children.length - 1));
+	message.channel.send(
+		horror.data.children[idx].data.title +
+			"\n" +
+			horror.data.children[idx].data.selftext
+	);
 };
 // ====================================================================================
 // ====================================================================================
@@ -328,7 +331,7 @@ const game_listening = (message) => {
 					message.channel.send(`${ongoing_game.p1_name} had won !`);
 					message.channel.send(ongoing_game.getGridInEmoji());
 					ongoing_game = undefined;
-				
+
 					return;
 				} else {
 					message.channel.send(ongoing_game.getGridInEmoji());
@@ -375,7 +378,7 @@ const game_listening = (message) => {
 				}
 				let ongoing_game_stat = ongoing_game.getStat();
 				// if the game was not attended, stop it
-				
+
 				setTimeout(function () {
 					if (ongoing_game) {
 						if (ongoing_game_stat == ongoing_game.getStat()) {
@@ -386,7 +389,7 @@ const game_listening = (message) => {
 										: ongoing_game.p1_name
 								} won the game.`
 							);
-							ongoing_game = undefined;							
+							ongoing_game = undefined;
 						}
 					}
 				}, timeout);
@@ -473,6 +476,8 @@ bot.on("message", (message) => {
 			play(message);
 		} else if (this_msg.startsWith(".scareme")) {
 			scareme(message);
+		} else {
+			message.channel.send(help_page);
 		}
 	}
 });
