@@ -3,13 +3,16 @@ module.exports = new Discord.MessageEmbed()
 	.setColor("#e9e9e9")
 	.setTitle("Commands")
 	.addFields(
-		{ name: ":desktop: Misc.", value: "`.help` `.ualive?` `.gamblestat` `.eval`"},
+		{
+			name: ":desktop: Misc.",
+			value: "`.help` `.ualive?` `.gamblestat` `.eval`",
+		},
 		{ name: ":female_sign: Gender switch", value: "`.imaboi` `.imagurl`" },
 		{
 			name: ":pick: Function",
-			value:
-				"`.roll` `.tellajoke` `.submitjoke` `.pick [online|bot]` `.scareme` `.lvling`",
+			value: "`.roll` `.submitjoke` `.pick [online|bot]` `.lvling`",
 		},
+		{ name: ":b:eddit", value: "`.tellajoke` `.scareme` `.cursedfood`" },
 		{ name: ":game_die: Games", value: "`.play [mention a friend]`" },
 		{ name: ":open_mouth: Emotes", value: "`.smh` `.doubt`" }
 	)

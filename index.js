@@ -310,7 +310,7 @@ const play = (message) => {
 // make use of node-fetch
 const scareme = (message) => {
 	fetch(
-		"https://www.reddit.com/r/TwoSentenceHorror/.json?sort=top&t=week&limit=300"
+		"https://www.reddit.com/r/TwoSentenceHorror/.json?sort=hot&t=week&limit=300"
 	)
 		.then((res) => res.json())
 		.then((json) => {
@@ -424,6 +424,29 @@ const eval_cmd = (message) => {
 			"Shame on you Looz, even a programmer make such silly syntax mistake."
 		);
 	}
+};
+
+const cursedfood = (message) => {
+	fetch(
+		"https://www.reddit.com/r/cursedfoods/.json?sort=hot&t=week&limit=800"
+	)
+		.then((res) => res.json())
+		.then((json) => {
+			try {
+				let len = Math.floor(
+					Math.random() * (json.data.children.length - 1)
+				);
+				message.channel.send(
+					new Discord.MessageEmbed()
+						.setTitle("r/CursedFood")
+						.setImage(json.data.children[len].data.url)
+				);
+			} catch (err) {
+				console.log(
+					"Error getting post from r/CursedFood, contact Looz !"
+				);
+			}
+		});
 };
 // ====================================================================================
 // ====================================================================================
@@ -616,6 +639,8 @@ bot.on("message", (message) => {
 			gamblestat(message);
 		} else if (this_msg.startsWith(".eval")) {
 			eval_cmd(message);
+		} else if (this_msg.startsWith(".cursedfood")) {
+			cursedfood(message);
 		}
 	}
 });

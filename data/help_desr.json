@@ -46,5 +46,9 @@
 		"desr": "Want to know the correct way to gamble ? ",
 		"usage": "`.gamblestat [base_bet_amount]`"
 	},
-	"eval": { "desr": "Sorry but only Looz can use this. As for why, you could ask Looz to explain himself", "usage": "`.eval [expr]`" }
+	"eval": {
+		"desr": "Sorry but only Looz can use this. As for why, you could ask Looz to explain himself",
+		"usage": "`.eval [expr]`"
+	},
+	"cursedfood": { "desr": "Fetch image from r/CursedFood", "usage": "`.cursedfood`" }
 }
