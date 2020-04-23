@@ -50,5 +50,6 @@
 		"desr": "Sorry but only Looz can use this. As for why, you could ask Looz to explain himself",
 		"usage": "`.eval [expr]`"
 	},
-	"cursedfood": { "desr": "Fetch image from r/CursedFood", "usage": "`.cursedfood`" }
+    "cursedfood": { "desr": "Fetch image from r/CursedFood", "usage": "`.cursedfood`" },
+    "rekt": {"desr": "r e k t", "usage": "`.rekt`"}
 }

@@ -629,6 +629,12 @@ bot.on("message", (message) => {
 					"https://media1.giphy.com/media/WrP4rFrWxu4IE/source.gif",
 				],
 			});
+		} else if (this_msg.startsWith(".rekt")) {
+            message.channel.send("", {
+				files: [
+					"https://media.giphy.com/media/vSR0fhtT5A9by/giphy.gif"
+				],
+			});
 		} else if (this_msg.startsWith(".play")) {
 			play(message);
 		} else if (this_msg.startsWith(".scareme")) {
