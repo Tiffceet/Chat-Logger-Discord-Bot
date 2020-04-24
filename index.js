@@ -8,6 +8,7 @@ const cheerio = require("cheerio");
 const { exec } = require("child_process");
 const connect_four = require("./games/connect_four");
 const coryn = require("./games/coryn");
+const anilist = require("./anime");
 const bot = new Discord.Client();
 const token = JSON.parse(fs.readFileSync("auth.json")).token;
 
@@ -488,17 +489,58 @@ const unscramble = (message) => {
 				);
 			}
 			if (unscrambled_words.length != 0) {
-                message.channel.send("Possible word(s): " + unscrambled_words.join(", "));
+				message.channel.send(
+					"Possible word(s): " + unscrambled_words.join(", ")
+				);
 			} else {
 				message.channel.send(
 					`Sorry but i could not unscramble ${word}`
 				);
 			}
 		} catch (err) {
-            console.log(err);
+			console.log(err);
 			message.channel.send(`Sorry but i could not unscramble ${word}`);
 		}
 	}, 6000);
+};
+
+const anime = (message) => {
+	let anime_name = message.content
+		.substring(7, message.content.length)
+		.trim();
+	if (!anime_name) {
+		message.channel.send("Please provide an anime name.");
+		return;
+	}
+
+	let anime = new anilist();
+    anime.anime_query(anime_name);
+    // querying needs time and i give it 3s, there might be a way wait for it to be done but nahh im tired
+	setTimeout(function () {
+        // usually happen when the anime name gives no result / server down
+		if (!anime.final_query.data.Page.media[0]) {
+			message.channel.send("Sorry I couldn't find anime of that name.");
+			return;
+		}
+        
+        // ok this is straight up stupid
+        let tmp_recursive_func = (idx) => {
+            if (idx >= 8) {
+                return;
+            }
+            // here might raise error if the content was not found, might change to more elegant way to read data
+            anime.fetch_anime_info(anime.final_query.data.Page.media[idx].id);
+            setTimeout(function () {
+                // if anime embed failed to obtain any data as an error was raised in the fetch_anime_info() call
+                if(!anime.anime_embed) {
+                    tmp_recursive_func(idx+1);
+                } else {
+                    message.channel.send(anime.anime_embed);
+                }
+            }, 3000);
+        };
+        tmp_recursive_func(0);
+	}, 3000);
 };
 // ====================================================================================
 // ====================================================================================
@@ -682,9 +724,9 @@ bot.on("message", (message) => {
 				],
 			});
 		} else if (this_msg.startsWith(".rekt")) {
-            message.channel.send("", {
+			message.channel.send("", {
 				files: [
-					"https://media.giphy.com/media/vSR0fhtT5A9by/giphy.gif"
+					"https://media.giphy.com/media/vSR0fhtT5A9by/giphy.gif",
 				],
 			});
 		} else if (this_msg.startsWith(".play")) {
@@ -699,9 +741,11 @@ bot.on("message", (message) => {
 			eval_cmd(message);
 		} else if (this_msg.startsWith(".cursedfood")) {
 			cursedfood(message);
-		} else if(this_msg.startsWith(".unscramble")) {
-            unscramble(message);
-        }
+		} else if (this_msg.startsWith(".unscramble")) {
+			unscramble(message);
+		} else if (message.content.startsWith(".anime")) {
+			anime(message);
+		}
 	}
 });
 

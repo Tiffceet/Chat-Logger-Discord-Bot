@@ -52,5 +52,6 @@
 	},
     "cursedfood": { "desr": "Fetch image from r/CursedFood", "usage": "`.cursedfood`" },
     "rekt": {"desr": "r e k t", "usage": "`.rekt`"},
-    "unscramble": {"desr": "Unscramble a word", "usage": ".unscramble [word]"}
+    "unscramble": {"desr": "Unscramble a word", "usage": ".unscramble [word]"},
+    "anime": {"desr": "*WARNING: THIS COMMAND IS UNDER HEAVY DEVELOPMENT*\n\nThis is basically the same as m.anime from mirai bot", "usage": ".anime [anime name]"}
 }
