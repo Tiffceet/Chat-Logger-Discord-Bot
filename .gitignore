@@ -2,3 +2,4 @@ node_modules/
 logs/
 auth.json
 package-lock.json
+tmp/

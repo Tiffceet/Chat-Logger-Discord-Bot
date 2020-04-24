@@ -5,6 +5,7 @@ const Discord = require("discord.js");
 const fetch = require("node-fetch");
 const fs = require("fs");
 const cheerio = require("cheerio");
+const { exec } = require("child_process");
 const connect_four = require("./games/connect_four");
 const coryn = require("./games/coryn");
 const bot = new Discord.Client();
@@ -448,6 +449,57 @@ const cursedfood = (message) => {
 			}
 		});
 };
+
+const unscramble = (message) => {
+	let args = message.content.split(" ");
+	if (args.length != 2) {
+		message.reply("You might want to try it again.");
+		return;
+	}
+	let word = args[1];
+	exec(
+		`curl -s -X POST -d "letters=${word}&dictionary=twl&repeat=no" https://wordunscrambler.me/unscramble > tmp/del.html`,
+		(error, stdout, stderr) => {
+			if (error) {
+				console.log(`error: ${error.message}`);
+				return;
+			}
+			if (stderr) {
+				console.log(`stderr: ${stderr}`);
+				return;
+			}
+		}
+	);
+	message.channel.send("Unscrambling...");
+	let unscrambled_words = [];
+	setTimeout(() => {
+		try {
+			let $ = cheerio.load(fs.readFileSync("tmp/del.html"));
+			let answers = $("div.result .list-wrapper ul").children();
+			for (let i = 0; i < answers.length; i++) {
+				if (
+					answers[i].children[0].children[0].data.trim().length !=
+					word.length
+				) {
+					continue;
+				}
+				unscrambled_words.push(
+					answers[i].children[0].children[0].data.trim()
+				);
+			}
+			if (unscrambled_words.length != 0) {
+                message.channel.send("Possible word(s): " + unscrambled_words.join(", "));
+			} else {
+				message.channel.send(
+					`Sorry but i could not unscramble ${word}`
+				);
+			}
+		} catch (err) {
+            console.log(err);
+			message.channel.send(`Sorry but i could not unscramble ${word}`);
+		}
+	}, 6000);
+};
 // ====================================================================================
 // ====================================================================================
 
@@ -647,7 +699,9 @@ bot.on("message", (message) => {
 			eval_cmd(message);
 		} else if (this_msg.startsWith(".cursedfood")) {
 			cursedfood(message);
-		}
+		} else if(this_msg.startsWith(".unscramble")) {
+            unscramble(message);
+        }
 	}
 });
 

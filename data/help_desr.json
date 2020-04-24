@@ -51,5 +51,6 @@
 		"usage": "`.eval [expr]`"
 	},
     "cursedfood": { "desr": "Fetch image from r/CursedFood", "usage": "`.cursedfood`" },
-    "rekt": {"desr": "r e k t", "usage": "`.rekt`"}
+    "rekt": {"desr": "r e k t", "usage": "`.rekt`"},
+    "unscramble": {"desr": "Unscramble a word", "usage": ".unscramble [word]"}
 }

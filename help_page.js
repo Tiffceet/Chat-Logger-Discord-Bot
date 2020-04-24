@@ -10,7 +10,7 @@ module.exports = new Discord.MessageEmbed()
 		{ name: ":female_sign: Gender switch", value: "`.imaboi` `.imagurl`" },
 		{
 			name: ":pick: Function",
-			value: "`.roll` `.submitjoke` `.pick [online|bot]` `.lvling`",
+			value: "`.roll` `.submitjoke` `.pick [online|bot]` `.lvling` `.unscramble`",
 		},
 		{ name: ":b:eddit", value: "`.tellajoke` `.scareme` `.cursedfood`" },
 		{ name: ":game_die: Games", value: "`.play [mention a friend]`" },
