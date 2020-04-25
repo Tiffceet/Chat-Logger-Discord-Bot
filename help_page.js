@@ -17,7 +17,7 @@ module.exports = new Discord.MessageEmbed()
 		{ name: ":game_die: Games", value: "`.play [mention a friend]`" },
 		{ name: ":open_mouth: Emotes", value: "`.smh` `.doubt` `.rekt`" },
 		{ name: ":star: Anime", value: "`.anime`" },
-		{ name: ":crystal_ball: Toram Online", value: "`.lvling` `.torammap` `.tomana" }
+		{ name: ":crystal_ball: Toram Online", value: "`.lvling` `.torammap` `.tomana`" }
 	)
 	.setTimestamp()
 	.setFooter("https://github.com/Tiffceet/Chat-Logger-Discord-Bot");

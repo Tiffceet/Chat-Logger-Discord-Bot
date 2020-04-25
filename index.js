@@ -148,6 +148,11 @@ const help = (message) => {
 };
 
 const imaboi = (message) => {
+    if(message.guild.id != "517721761115013120")
+    {
+        message.channel.send("Sorry, this is limited to Lymerist server only.");
+        return;
+    }
 	let king_role = message.guild.roles.fetch("517755461773033473");
 	let queen_role = message.guild.roles.fetch("549146956828770305");
 	if (!king_role) {
@@ -165,6 +170,11 @@ const imaboi = (message) => {
 	);
 };
 const imagurl = (message) => {
+    if(message.guild.id != "517721761115013120")
+    {
+        message.channel.send("Sorry, this is limited to Lymerist server only.");
+        return;
+    }
 	let king_role = message.guild.roles.fetch("517755461773033473");
 	let queen_role = message.guild.roles.fetch("549146956828770305");
 	if (!king_role) {
