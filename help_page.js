@@ -11,12 +11,13 @@ module.exports = new Discord.MessageEmbed()
 		{
 			name: ":pick: Function",
 			value:
-				"`.roll` `.submitjoke` `.pick [online|bot]` `.lvling` `.unscramble`",
+				"`.roll` `.submitjoke` `.pick [online|bot]` `.unscramble`",
 		},
 		{ name: ":b:eddit", value: "`.tellajoke` `.scareme` `.cursedfood`" },
 		{ name: ":game_die: Games", value: "`.play [mention a friend]`" },
 		{ name: ":open_mouth: Emotes", value: "`.smh` `.doubt` `.rekt`" },
-		{ name: ":star: Anime", value: "`.anime`" }
+		{ name: ":star: Anime", value: "`.anime`" },
+		{ name: ":crystal_ball: Toram Online", value: "`.lvling` `.torammap` `.tomana" }
 	)
 	.setTimestamp()
 	.setFooter("https://github.com/Tiffceet/Chat-Logger-Discord-Bot");

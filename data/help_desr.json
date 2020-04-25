@@ -53,5 +53,7 @@
     "cursedfood": { "desr": "Fetch image from r/CursedFood", "usage": "`.cursedfood`" },
     "rekt": {"desr": "r e k t", "usage": "`.rekt`"},
     "unscramble": {"desr": "Unscramble a word", "usage": ".unscramble [word]"},
-    "anime": {"desr": "*WARNING: THIS COMMAND IS UNDER HEAVY DEVELOPMENT*\n\nThis is basically the same as m.anime from mirai bot", "usage": ".anime [anime name]"}
+    "anime": {"desr": "*WARNING: THIS COMMAND IS UNDER HEAVY DEVELOPMENT*\n\nThis is basically the same as m.anime from mirai bot", "usage": ".anime [anime name]"},
+    "tomana": {"desr": "Abbreviated from TOram MAp NAvigator.\nForgot how to get to one place to another in toram? Use me !\nYou can get a list of map names and their id using `.torammap`", "usage": "`.tomana [source] [destination]`"},
+    "torammap": {"desr": "View a list of toram maps with their id to be used in `.tomana`", "usage": "`.torammap`"}
 }

@@ -9,6 +9,7 @@ const { exec } = require("child_process");
 const connect_four = require("./games/connect_four");
 const coryn = require("./games/coryn");
 const anilist = require("./anime");
+const toram_map_navigator = require("./games/toram_map_navigator");
 const bot = new Discord.Client();
 const token = JSON.parse(fs.readFileSync("auth.json")).token;
 
@@ -514,33 +515,167 @@ const anime = (message) => {
 	}
 
 	let anime = new anilist();
-    anime.anime_query(anime_name);
-    // querying needs time and i give it 3s, there might be a way wait for it to be done but nahh im tired
+	anime.anime_query(anime_name);
+	// querying needs time and i give it 3s, there might be a way wait for it to be done but nahh im tired
 	setTimeout(function () {
-        // usually happen when the anime name gives no result / server down
+		// usually happen when the anime name gives no result / server down
 		if (!anime.final_query.data.Page.media[0]) {
 			message.channel.send("Sorry I couldn't find anime of that name.");
 			return;
 		}
-        
-        // ok this is straight up stupid
-        let tmp_recursive_func = (idx) => {
-            if (idx >= 8) {
-                return;
-            }
-            // here might raise error if the content was not found, might change to more elegant way to read data
-            anime.fetch_anime_info(anime.final_query.data.Page.media[idx].id);
-            setTimeout(function () {
-                // if anime embed failed to obtain any data as an error was raised in the fetch_anime_info() call
-                if(!anime.anime_embed) {
-                    tmp_recursive_func(idx+1);
-                } else {
-                    message.channel.send(anime.anime_embed);
-                }
-            }, 3000);
-        };
-        tmp_recursive_func(0);
+
+		// ok this is straight up stupid
+		let tmp_recursive_func = (idx) => {
+			if (idx >= 8) {
+				return;
+			}
+			// here might raise error if the content was not found, might change to more elegant way to read data
+			anime.fetch_anime_info(anime.final_query.data.Page.media[idx].id);
+			setTimeout(function () {
+				// if anime embed failed to obtain any data as an error was raised in the fetch_anime_info() call
+				if (!anime.anime_embed) {
+					tmp_recursive_func(idx + 1);
+				} else {
+					message.channel.send(anime.anime_embed);
+				}
+			}, 3000);
+		};
+		tmp_recursive_func(0);
 	}, 3000);
+};
+
+const torammap = (message) => {
+	let toram = new toram_map_navigator();
+	let desc, page_num, map_listing, embed;
+	page_num = 1;
+	let update_desc = (page_num) => {
+		desc = "id mapname\n";
+		map_listing = toram.get_maplist(page_num);
+
+		for (let a = 0; a < map_listing.length; a++) {
+			desc += `${map_listing[a][0]} ${map_listing[a][1]}\n`;
+		}
+
+		embed = new Discord.MessageEmbed()
+			.setTitle("Toram Map Navigator")
+			.setDescription(desc);
+	};
+	update_desc(page_num);
+	message.channel.send(embed).then((msg) => {
+		msg.react("◀").then((r) => {
+			msg.react("▶");
+			const prev = msg.createReactionCollector(
+				(reaction, user) =>
+					reaction.emoji.name === "◀" && user.id == message.author.id,
+				{
+					time: 60000,
+				}
+			);
+			const next = msg.createReactionCollector(
+				(reaction, user) =>
+					reaction.emoji.name === "▶" && user.id == message.author.id,
+				{
+					time: 60000,
+				}
+			);
+			prev.on("collect", (r) => {
+				if (page_num <= 1) return;
+				update_desc(--page_num);
+				msg.edit(embed);
+			});
+			next.on("collect", (r) => {
+				if (page_num >= 5) return;
+				update_desc(++page_num);
+				msg.edit(embed);
+			});
+		});
+	});
+};
+
+const tomana = (message) => {
+	// =====================================
+	// Weirdest argument parsing i ever had
+	// =====================================
+	let args = message.content.split(" ");
+	if (args.length < 3) {
+		message.channel.send(
+			"You need to give me map names / id\nTo view id, do `.torammap`"
+		);
+		return;
+	}
+
+	args.forEach((element, idx) => {
+		if (element[0] == '"' && element.slice(-1)[0] == '"') {
+			args[idx] = element.substring(1, element.length - 1);
+		}
+	});
+	let tmp = "";
+	let continue_append = false;
+	let new_args = [];
+	for (let a = 0; a < args.length; a++) {
+		if (args[a].indexOf('"') > -1) {
+			if (continue_append) {
+				continue_append = false;
+				tmp += " " + args[a].substring(0, args[a].length - 1);
+				new_args.push(tmp);
+				tmp = "";
+			} else {
+				tmp = tmp + args[a].substring(1, args[a].length);
+				continue_append = true;
+			}
+			continue;
+		}
+		if (continue_append) {
+			tmp += " " + args[a];
+			continue;
+		}
+		new_args.push(args[a]);
+	}
+	args = new_args.slice();
+	// =====================================
+	// =====================================
+	let toram = new toram_map_navigator();
+	let source = -1,
+		dest = -1;
+	// if source is a number
+	if (!isNaN(parseInt(args[1]))) {
+		// if the idx is not valid
+		if (!toram.raw_data[parseInt(args[1])]) {
+			message.channel.send(
+				`Sorry, I couldn't find map with id \"${args[1]}\"`
+			);
+			return;
+		}
+		source = parseInt(args[1]);
+	} else if (toram.get_idx_from_name(args[1]) == -1) {
+		message.channel.send(
+			`Sorry, I couldn't find map with name \"${args[1]}\"`
+		);
+		return;
+	} else {
+		source = toram.get_idx_from_name(args[1]);
+	}
+
+	// if dest is a number
+	if (!isNaN(parseInt(args[2]))) {
+		// if the idx is not valid
+		if (!toram.raw_data[parseInt(args[2])]) {
+			message.channel.send(
+				`Sorry, I couldn't find map with id \"${args[2]}\"`
+			);
+			return;
+		}
+		dest = parseInt(args[2]);
+	} else if (toram.get_idx_from_name(args[2]) == -1) {
+		message.channel.send(
+			`Sorry, I couldn't find map with name \"${args[2]}\"`
+		);
+		return;
+	} else {
+		dest = toram.get_idx_from_name(args[2]);
+	}
+	toram.run(source, dest);
+	message.channel.send(toram.result_path.join(" --> "));
 };
 // ====================================================================================
 // ====================================================================================
@@ -745,6 +880,10 @@ bot.on("message", (message) => {
 			unscramble(message);
 		} else if (message.content.startsWith(".anime")) {
 			anime(message);
+		} else if (message.content.startsWith(".tomana")) {
+			tomana(message);
+		} else if (message.content.startsWith(".torammap")) {
+			torammap(message);
 		}
 	}
 });
