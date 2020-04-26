@@ -85,14 +85,16 @@ module.exports = class ConnectFour {
 					) {
 						return this.grid[a][b];
 					}
-				}
-				if (a + 3 < a_lim && b - 3 >= 0) {
+                }
+                // left top
+				if (a - 3 >= 0 && b - 3 >= 0) {
+                    // console.log(`${a} ${b}`);
 					if (
 						[
 							this.grid[a][b],
-							this.grid[a + 1][b - 1],
-							this.grid[a + 2][b - 2],
-							this.grid[a + 3][b - 3],
+							this.grid[a - 1][b - 1],
+							this.grid[a - 2][b - 2],
+							this.grid[a - 3][b - 3],
 						].every((val, i, arr) => val === this.grid[a][b]) &&
 						this.grid[a][b] != 0
 					) {
