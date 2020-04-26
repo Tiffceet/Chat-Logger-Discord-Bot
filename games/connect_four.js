@@ -131,6 +131,17 @@ module.exports = class ConnectFour {
 		return -1;
 	}
 
+	is_full() {
+		for (let a = 0; a < 6; a++) {
+			for (let b = 0; b < 7; b++) {
+				if (this.grid[a][b] == 0) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
 	best_move() {
 		const backup_grid = this.grid.map((inner) => inner.slice());
 		let tmp_grid = this.grid.map((inner) => inner.slice());
@@ -151,7 +162,7 @@ module.exports = class ConnectFour {
 		};
 
 		for (let a = 0; a < 7; a++) {
-            place_piece(a);
+			place_piece(a);
 			if (custom_check_grid(tmp_grid) != -1) {
 				this.grid = backup_grid.map((inner) => inner.slice());
 				return a;
@@ -159,6 +170,16 @@ module.exports = class ConnectFour {
 			tmp_grid = backup_grid.map((inner) => inner.slice());
 		}
 		this.grid = backup_grid.map((inner) => inner.slice());
-		return Math.floor(Math.random() * 6);
+
+		// Need to make sure the col is placeable
+		let placeable_col = [];
+		for (let a = 0; a < 6; a++) {
+			if (this.grid[0][a] == 0) {
+				placeable_col.push(a);
+			}
+		}
+		return placeable_col[
+			Math.round(Math.random() * (placeable_col.length - 1))
+		];
 	}
 };

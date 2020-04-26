@@ -290,6 +290,7 @@ const play = (message) => {
 			return;
 		}
 	} else {
+        message.channel.send("Mention a friend to play with ! Or you can play me instead.");
 		return;
 	}
 	if (ongoing_game) {
@@ -307,7 +308,6 @@ const play = (message) => {
 	);
 	message.channel.send("A game have been started!");
 	message.channel.send(ongoing_game.getGridInEmoji());
-	console.log("bestmove:" + ongoing_game.best_move());
 	let ongoing_game_stat = ongoing_game.getStat();
 	setTimeout(function () {
 		if (ongoing_game) {
@@ -728,12 +728,31 @@ const game_listening = (message) => {
 					ongoing_game = undefined;
 
 					return;
+				} else if (ongoing_game.is_full()) {
+					message.channel.send(`It was a draw !`);
+					message.channel.send(ongoing_game.getGridInEmoji());
+					ongoing_game = undefined;
+					return;
 				} else {
 					message.channel.send(ongoing_game.getGridInEmoji());
 					// IF P2 IS SET TO MY BOT
 					if (ongoing_game.p2 == "697682159355428875") {
 						ongoing_game.play(ongoing_game.best_move());
-						message.channel.send(ongoing_game.getGridInEmoji());
+						if (ongoing_game.checkGrid() == 2) {
+							message.channel.send(
+								`<@${ongoing_game.p1}> lost against a bot lol, you suck.`
+							);
+							message.channel.send(ongoing_game.getGridInEmoji());
+							ongoing_game = undefined;
+							return;
+						} else if (ongoing_game.is_full()) {
+							message.channel.send(`It was a draw !`);
+							message.channel.send(ongoing_game.getGridInEmoji());
+							ongoing_game = undefined;
+							return;
+						} else {
+							message.channel.send(ongoing_game.getGridInEmoji());
+						}
 					}
 				}
 				let ongoing_game_stat = ongoing_game.getStat();
@@ -753,6 +772,7 @@ const game_listening = (message) => {
 					}
 				}, timeout);
 			} catch (err) {
+				console.log(err);
 				message.channel.send("That is not a valid col number (1-7).");
 				return;
 			}
@@ -770,6 +790,11 @@ const game_listening = (message) => {
 				ongoing_game.play(num - 1);
 				if (ongoing_game.checkGrid() == 2) {
 					message.channel.send(`${ongoing_game.p2_name} had won !`);
+					message.channel.send(ongoing_game.getGridInEmoji());
+					ongoing_game = undefined;
+					return;
+				} else if (ongoing_game.is_full()) {
+					message.channel.send(`It was a draw !`);
 					message.channel.send(ongoing_game.getGridInEmoji());
 					ongoing_game = undefined;
 					return;
@@ -878,7 +903,7 @@ bot.on("message", (message) => {
 					"https://media.giphy.com/media/vSR0fhtT5A9by/giphy.gif",
 				],
 			});
-		} else if (this_msg.startsWith(".play")) {
+		} else if (this_msg.startsWith(".pc")) {
 			play(message);
 		} else if (this_msg.startsWith(".scareme")) {
 			scareme(message);
