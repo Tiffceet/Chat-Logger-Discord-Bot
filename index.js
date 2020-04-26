@@ -148,11 +148,10 @@ const help = (message) => {
 };
 
 const imaboi = (message) => {
-    if(message.guild.id != "517721761115013120")
-    {
-        message.channel.send("Sorry, this is limited to Lymerist server only.");
-        return;
-    }
+	if (message.guild.id != "517721761115013120") {
+		message.channel.send("Sorry, this is limited to Lymerist server only.");
+		return;
+	}
 	let king_role = message.guild.roles.fetch("517755461773033473");
 	let queen_role = message.guild.roles.fetch("549146956828770305");
 	if (!king_role) {
@@ -170,11 +169,10 @@ const imaboi = (message) => {
 	);
 };
 const imagurl = (message) => {
-    if(message.guild.id != "517721761115013120")
-    {
-        message.channel.send("Sorry, this is limited to Lymerist server only.");
-        return;
-    }
+	if (message.guild.id != "517721761115013120") {
+		message.channel.send("Sorry, this is limited to Lymerist server only.");
+		return;
+	}
 	let king_role = message.guild.roles.fetch("517755461773033473");
 	let queen_role = message.guild.roles.fetch("549146956828770305");
 	if (!king_role) {
@@ -287,7 +285,7 @@ const play = (message) => {
 			message.channel.send("This user doesn't exist you baka.");
 			return;
 		}
-		if (p2_usr.user.bot) {
+		if (p2_usr.user.bot && p2_usr.user.id != "697682159355428875") {
 			message.channel.send("You cannot play with a bot you baka.");
 			return;
 		}
@@ -309,6 +307,7 @@ const play = (message) => {
 	);
 	message.channel.send("A game have been started!");
 	message.channel.send(ongoing_game.getGridInEmoji());
+	console.log("bestmove:" + ongoing_game.best_move());
 	let ongoing_game_stat = ongoing_game.getStat();
 	setTimeout(function () {
 		if (ongoing_game) {
@@ -731,6 +730,11 @@ const game_listening = (message) => {
 					return;
 				} else {
 					message.channel.send(ongoing_game.getGridInEmoji());
+					// IF P2 IS SET TO MY BOT
+					if (ongoing_game.p2 == "697682159355428875") {
+						ongoing_game.play(ongoing_game.best_move());
+						message.channel.send(ongoing_game.getGridInEmoji());
+					}
 				}
 				let ongoing_game_stat = ongoing_game.getStat();
 				// if the game was not attended, stop it
@@ -874,7 +878,7 @@ bot.on("message", (message) => {
 					"https://media.giphy.com/media/vSR0fhtT5A9by/giphy.gif",
 				],
 			});
-		} else if (this_msg.startsWith(".play")) {
+		} else if (this_msg.startsWith(".pc")) {
 			play(message);
 		} else if (this_msg.startsWith(".scareme")) {
 			scareme(message);

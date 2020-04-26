@@ -17,8 +17,8 @@ module.exports = class ConnectFour {
 			for (let b = 0; b < 7; b++) {
 				txt = txt + this.grid[a][b];
 			}
-        }
-        return txt;
+		}
+		return txt;
 	}
 
 	resetGrid() {
@@ -129,5 +129,36 @@ module.exports = class ConnectFour {
 			}
 		}
 		return -1;
+	}
+
+	best_move() {
+		const backup_grid = this.grid.map((inner) => inner.slice());
+		let tmp_grid = this.grid.map((inner) => inner.slice());
+		let place_piece = (col) => {
+			for (let i = 5; i >= 0; i--) {
+				if (tmp_grid[i][col] === 0) {
+					tmp_grid[i][col] = this.turn == 1 ? 2 : 1;
+					return;
+				}
+			}
+		};
+
+		let custom_check_grid = (gr) => {
+			this.grid = gr.map((inner) => inner.slice());
+			let result = this.checkGrid();
+			this.grid = backup_grid.map((inner) => inner.slice());
+			return result;
+		};
+
+		for (let a = 0; a < 7; a++) {
+            place_piece(a);
+			if (custom_check_grid(tmp_grid) != -1) {
+				this.grid = backup_grid.map((inner) => inner.slice());
+				return a;
+			}
+			tmp_grid = backup_grid.map((inner) => inner.slice());
+		}
+		this.grid = backup_grid.map((inner) => inner.slice());
+		return Math.floor(Math.random() * 6);
 	}
 };

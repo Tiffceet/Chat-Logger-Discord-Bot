@@ -33,7 +33,7 @@
 		"usage": "`.scareme`"
 	},
 	"play": {
-		"desr": "For now theres only 1 game, I might add more games in future",
+		"desr": "For now theres only 1 game, I might add more games in future.\n`.end` to end a ongoing game",
 		"usage": "`.play [mention a friend]`"
 	},
 	"smh": { "desr": "Shaking my head", "usage": "`.smh`" },
