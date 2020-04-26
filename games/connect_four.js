@@ -8,6 +8,7 @@ module.exports = class ConnectFour {
 		this.p2_name = p2_name;
 		this.ch = ch;
 		this.grid = "";
+		this.winner = undefined;
 		this.resetGrid();
 	}
 
@@ -54,11 +55,28 @@ module.exports = class ConnectFour {
 		let grid_msg = ":one::two::three::four::five::six::seven:\n";
 		for (let a = 0; a < 6; a++) {
 			for (let b = 0; b < 7; b++) {
-				if (this.grid[a][b] == 0) {
+                let highlighted = false;
+				if (this.winner) {
+					for (let x = 0; x < 4; x++) {
+						if (
+							a == this.winner.pos[x * 2] &&
+							b == this.winner.pos[x * 2 + 1]
+						) {
+                            highlighted = true;
+							grid_msg +=
+								this.grid[a][b] == 1
+									? ":green_circle:"
+									: ":negative_squared_cross_mark:";
+							break;
+						}
+					}
+                }
+                if (this.grid[a][b] == 0) {
 					grid_msg = grid_msg + ":black_large_square:";
-				} else if (this.grid[a][b] == 1) {
+					continue;
+				} else if (this.grid[a][b] == 1 && !highlighted) {
 					grid_msg = grid_msg + ":o:";
-				} else if (this.grid[a][b] == 2) {
+				} else if (this.grid[a][b] == 2 && !highlighted) {
 					grid_msg = grid_msg + ":x:";
 				}
 			}
@@ -73,6 +91,7 @@ module.exports = class ConnectFour {
 		let b_lim = 7;
 		for (let a = 0; a < 6; a++) {
 			for (let b = 0; b < 7; b++) {
+				// check for diagonal going up
 				if (a - 3 >= 0 && b + 3 < b_lim) {
 					if (
 						[
@@ -83,12 +102,25 @@ module.exports = class ConnectFour {
 						].every((val, i, arr) => val === this.grid[a][b]) &&
 						this.grid[a][b] != 0
 					) {
+						this.winner = {
+							player: this.grid[a][b],
+							pos: [
+								a,
+								b,
+								a - 1,
+								b + 1,
+								a - 2,
+								b + 2,
+								a - 3,
+								b + 3,
+							],
+						};
 						return this.grid[a][b];
 					}
-                }
-                // left top
+				}
+				// check for diagonal going down
 				if (a - 3 >= 0 && b - 3 >= 0) {
-                    // console.log(`${a} ${b}`);
+					// console.log(`${a} ${b}`);
 					if (
 						[
 							this.grid[a][b],
@@ -98,6 +130,19 @@ module.exports = class ConnectFour {
 						].every((val, i, arr) => val === this.grid[a][b]) &&
 						this.grid[a][b] != 0
 					) {
+						this.winner = {
+							player: this.grid[a][b],
+							pos: [
+								a,
+								b,
+								a - 1,
+								b - 1,
+								a - 2,
+								b - 2,
+								a - 3,
+								b - 3,
+							],
+						};
 						return this.grid[a][b];
 					}
 				}
@@ -112,6 +157,10 @@ module.exports = class ConnectFour {
 						].every((val, i, arr) => val === this.grid[a][b]) &&
 						this.grid[a][b] != 0
 					) {
+						this.winner = {
+							player: this.grid[a][b],
+							pos: [a, b, a - 1, b, a - 2, b, a - 3, b],
+						};
 						return this.grid[a][b];
 					}
 				}
@@ -125,6 +174,10 @@ module.exports = class ConnectFour {
 						].every((val, i, arr) => val === this.grid[a][b]) &&
 						this.grid[a][b] != 0
 					) {
+						this.winner = {
+							player: this.grid[a][b],
+							pos: [a, b, a, b + 1, a, b + 2, a, b + 3],
+						};
 						return this.grid[a][b];
 					}
 				}
@@ -159,6 +212,9 @@ module.exports = class ConnectFour {
 		let custom_check_grid = (gr) => {
 			this.grid = gr.map((inner) => inner.slice());
 			let result = this.checkGrid();
+
+			// return the state of this class
+			this.winner = undefined;
 			this.grid = backup_grid.map((inner) => inner.slice());
 			return result;
 		};
@@ -166,12 +222,10 @@ module.exports = class ConnectFour {
 		for (let a = 0; a < 7; a++) {
 			place_piece(a);
 			if (custom_check_grid(tmp_grid) != -1) {
-				this.grid = backup_grid.map((inner) => inner.slice());
 				return a;
 			}
 			tmp_grid = backup_grid.map((inner) => inner.slice());
 		}
-		this.grid = backup_grid.map((inner) => inner.slice());
 
 		// Need to make sure the col is placeable
 		let placeable_col = [];
