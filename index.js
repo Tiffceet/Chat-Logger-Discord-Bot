@@ -878,7 +878,7 @@ bot.on("message", (message) => {
 					"https://media.giphy.com/media/vSR0fhtT5A9by/giphy.gif",
 				],
 			});
-		} else if (this_msg.startsWith(".pc")) {
+		} else if (this_msg.startsWith(".play")) {
 			play(message);
 		} else if (this_msg.startsWith(".scareme")) {
 			scareme(message);
