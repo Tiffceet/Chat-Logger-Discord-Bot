@@ -70,11 +70,11 @@ query ($page: Int, $perPage: Int, $search: String, $media_type: MediaType, $desc
 		fetch(url, options)
 			.then((r) => r.json())
 			.then((d) => {
-				// log into a file for viewing
-				// should be removed after this is done
-				fs.writeFileSync("data.json", JSON.stringify(d), (err) => {
-					console.log(err);
-				});
+				// // log into a file for viewing
+				// // should be removed after this is done
+				// fs.writeFileSync("data.json", JSON.stringify(d), (err) => {
+				// 	console.log(err);
+				// });
 
 				// If anime is not found
 				if (d.data.Page.media.length == 0) {
