@@ -8,7 +8,7 @@ const cheerio = require("cheerio");
 const { exec } = require("child_process");
 const connect_four = require("./games/connect_four");
 const coryn = require("./games/coryn");
-const anilist = require("./anime");
+const anilist = require("./libs/anilist_API");
 const toram_map_navigator = require("./games/toram_map_navigator");
 const bot = new Discord.Client();
 const token = JSON.parse(fs.readFileSync("auth.json")).token;
@@ -524,35 +524,8 @@ const anime = (message) => {
 		message.channel.send("Please provide an anime name.");
 		return;
 	}
-
-	let anime = new anilist();
-	anime.anime_query(anime_name);
-	// querying needs time and i give it 3s, there might be a way wait for it to be done but nahh im tired
-	setTimeout(function () {
-		// usually happen when the anime name gives no result / server down
-		if (!anime.final_query.data.Page.media[0]) {
-			message.channel.send("Sorry I couldn't find anime of that name.");
-			return;
-		}
-
-		// ok this is straight up stupid
-		let tmp_recursive_func = (idx) => {
-			if (idx >= 8) {
-				return;
-			}
-			// here might raise error if the content was not found, might change to more elegant way to read data
-			anime.fetch_anime_info(anime.final_query.data.Page.media[idx].id);
-			setTimeout(function () {
-				// if anime embed failed to obtain any data as an error was raised in the fetch_anime_info() call
-				if (!anime.anime_embed) {
-					tmp_recursive_func(idx + 1);
-				} else {
-					message.channel.send(anime.anime_embed);
-				}
-			}, 3000);
-		};
-		tmp_recursive_func(0);
-	}, 3000);
+    let obj = new anilist();
+    obj.anime_query(anime_name, message);
 };
 
 const torammap = (message) => {
