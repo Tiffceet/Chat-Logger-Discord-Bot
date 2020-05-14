@@ -106,7 +106,7 @@ query ($page: Int, $perPage: Int, $search: String, $media_type: MediaType, $desc
 			.addFields(
 				{
 					name: "Format",
-					value: `${data.format}`,
+					value: `${data.format} `,
 					inline: true,
 				},
 				{
@@ -119,7 +119,7 @@ query ($page: Int, $perPage: Int, $search: String, $media_type: MediaType, $desc
 					value: `${
 						data.status.charAt(0).toUpperCase() +
 						data.status.slice(1).toLowerCase()
-					}`,
+					} `,
 					inline: true,
 				},
 				{
@@ -137,15 +137,19 @@ query ($page: Int, $perPage: Int, $search: String, $media_type: MediaType, $desc
 				},
 				{
 					name: "Genres",
-					value: `${data.genres.join(", ")}`,
+					value: `${
+						data.genres.length != 0 ? data.genres.join(", ") : "-"
+					}`,
 					inline: true,
 				},
 				{
 					name: "Description",
 					value: `${
-						data.description.length > 1000
-							? data.description.substring(0, 1000) + "..."
-							: data.description
+						data.description.length != 0
+							? data.description.length > 1000
+								? data.description.substring(0, 1000) + "..."
+								: data.description
+							: "-"
 					}`,
 				},
 				{
@@ -154,9 +158,13 @@ query ($page: Int, $perPage: Int, $search: String, $media_type: MediaType, $desc
 				},
 				{
 					name: "Links",
-					value: `${data.externalLinks
-						.map((e) => `[${e.site}](${e.url})`)
-						.join(" - ")}`,
+					value: `${
+						data.externalLinks.length != 0
+							? data.externalLinks
+									.map((e) => `[${e.site}](${e.url})`)
+									.join(" - ")
+							: "-"
+					}`,
 				}
 			);
 	}
