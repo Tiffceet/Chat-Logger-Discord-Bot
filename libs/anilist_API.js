@@ -78,14 +78,11 @@ query ($page: Int, $perPage: Int, $search: String, $media_type: MediaType, $desc
 
 				// If anime is not found
 				if (d.data.Page.media.length == 0) {
-					console.log("Anime not found");
 					message.channel.send(
 						`${anime_name} can't be found on AniList.`
 					);
 					return; // Note that this only stop this annoymous function, it doesnt stop anime_query()
 				}
-				// Lets assume anime is found and there are no shit first
-				console.log("Success");
 
 				// get first item found only
 				// I might consider doing something like
