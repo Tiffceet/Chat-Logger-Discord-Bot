@@ -153,7 +153,7 @@ query ($page: Int, $perPage: Int, $search: String, $media_type: MediaType, $desc
 				},
 				{
 					name: "Release Date",
-					value: `${data.startDate.year}-${data.startDate.month}-${data.startDate.day} to `,
+					value: `${data.startDate.year}-${data.startDate.month}-${data.startDate.day} to ${data.endDate.year}-${data.endDate.month}-${data.endDate.day}`,
 				},
 				{
 					name: "Links",
