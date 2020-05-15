@@ -8,7 +8,7 @@ const cheerio = require("cheerio");
 const { exec } = require("child_process");
 const connect_four = require("./games/connect_four");
 const coryn = require("./games/coryn");
-const anilist = require("./libs/anilist_API");
+const anilist_API = require("./libs/anilist_API");
 const toram_map_navigator = require("./games/toram_map_navigator");
 const bot = new Discord.Client();
 const token = JSON.parse(fs.readFileSync("auth.json")).token;
@@ -524,8 +524,8 @@ const anime = (message) => {
 		message.channel.send("Please provide an anime name.");
 		return;
 	}
-    let obj = new anilist();
-    obj.anime_query(anime_name, message);
+	let obj = new anilist_API();
+	obj.anime_query(anime_name, message);
 };
 
 const torammap = (message) => {
@@ -661,6 +661,41 @@ const tomana = (message) => {
 	toram.run(source, dest);
 	message.channel.send(toram.result_path.join(" --> "));
 };
+
+const anilist = (message) => {
+	let alAPI = new anilist_API();
+	let args = message.content.split(" ");
+	if (args[1] == "link") {
+		let user_name = args[2];
+		// there should be a link function but then im not sure how to do it
+		alAPI.link(user_name, message);
+		return;
+	}
+	if (args[1] == "unlink") {
+		if (!alAPI.unlink(message.author.id)) {
+			// if unlinking failed
+			message.channel.send(
+				"You can't unlink if you don't link first, you baka."
+			);
+		} else {
+			message.channel.send("Successfully unlinked your anilist profile");
+		}
+		return;
+	}
+
+	// if user only entered .anilist
+	if (args.length == 1) {
+		let usr_prof = alAPI.find_linked_anilist_profile(message.author.id);
+		if (usr_prof == null) {
+			message.channel.send(
+				"Please link your anilist profile first\n`.anilist link <username>`"
+			);
+			return;
+		}
+		alAPI.user_activity_query(usr_prof.AL_ID, message);
+	}
+};
+
 // ====================================================================================
 // ====================================================================================
 
@@ -906,6 +941,8 @@ bot.on("message", (message) => {
 			tomana(message);
 		} else if (message.content.startsWith(".torammap")) {
 			torammap(message);
+		} else if (message.content.startsWith(".anilist")) {
+			anilist(message);
 		}
 	}
 });
