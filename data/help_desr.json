@@ -60,7 +60,7 @@
 		"usage": ".unscramble [word]"
 	},
 	"anime": {
-		"desr": "*WARNING: THIS COMMAND IS UNDER HEAVY DEVELOPMENT*\n\nThis is basically the same as m.anime from mirai bot",
+		"desr": "Get anime from anilist.co",
 		"usage": ".anime [anime name]"
 	},
 	"tomana": {
@@ -75,5 +75,7 @@
 	"anilist": {
 		"desr": "Use this command to see your anilist.co recent activities (only manga and anime)\nYou need to link your anilist.co profile first to use it",
 		"usage": "`.anilist`\n`.anilist link <username>`\n`.anilist unlink`"
-	}
+	},
+	"manga": { "desr": "Get manga from anilist.co", "usage": "`.manga <manga_name>`" },
+	"hentai": { "desr": "Get hentai from anilist.co", "usage": "`.hentai <hentai_name>`" }
 }

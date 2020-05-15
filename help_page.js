@@ -16,7 +16,7 @@ module.exports = new Discord.MessageEmbed()
 		{ name: ":b:eddit", value: "`.tellajoke` `.scareme` `.cursedfood`" },
 		{ name: ":game_die: Games", value: "`.play [mention a friend]`" },
 		{ name: ":open_mouth: Emotes", value: "`.smh` `.doubt` `.rekt` `.confuse`" },
-		{ name: ":star: Anime", value: "`.anime` `.anilist`" },
+		{ name: ":star: Anime", value: "`.anime` `.anilist` `.manga` `.hentai`" },
 		{ name: ":crystal_ball: Toram Online", value: "`.lvling` `.torammap` `.tomana`" }
 	)
 	.setTimestamp()

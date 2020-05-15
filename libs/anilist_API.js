@@ -124,13 +124,21 @@ query ($search: String) {
 
 	// anime_name for querying
 	// message passed from discord bot
-	anime_query(anime_name, message) {
+	anime_query(anime_name, message, isHentai, isManga) {
 		var query = `
-query ($page: Int, $perPage: Int, $search: String, $media_type: MediaType, $desc_in_html: Boolean) {
+query ($page: Int, $perPage: Int, $search: String, $media_type: MediaType, $desc_in_html: Boolean, $genre_fil: [String]) {
     Page (page: $page, perPage: $perPage) {
-        media (search: $search, type: $media_type) {
+        media (search: $search, type: $media_type, ${
+			isHentai ? "genre_in: $genre_fil" : "genre_not_in: $genre_fil"
+		}) {
             title {
                 romaji
+            }
+            tags {
+                name
+                rank
+                isGeneralSpoiler
+                isMediaSpoiler
             }
             format
             status
@@ -148,6 +156,7 @@ query ($page: Int, $perPage: Int, $search: String, $media_type: MediaType, $desc
             season
             seasonYear
             episodes
+            chapters
             duration
             averageScore
             genres
@@ -168,8 +177,9 @@ query ($page: Int, $perPage: Int, $search: String, $media_type: MediaType, $desc
 			search: `${anime_name}`,
 			page: 1, // first page
 			perPage: 9, // further pagination is future? idk
-			media_type: "ANIME", // this ensure it only query for anime
+			media_type: isManga ? "MANGA" : "ANIME",
 			desc_in_html: false, // this is dumb
+			genre_fil: "Hentai",
 		};
 
 		var url = "https://graphql.anilist.co",
@@ -206,7 +216,10 @@ query ($page: Int, $perPage: Int, $search: String, $media_type: MediaType, $desc
 				// I might consider doing something like
 				// if the first one is missing some info, then we try to use the next one, idk
 				// Will do that in future
-				let embd = this.prepare_anime_embed(d.data.Page.media[0]);
+				let embd = this.prepare_anime_embed(
+					d.data.Page.media[0],
+					isManga
+				);
 				message.channel.send(embd);
 			})
 			.catch((err) => console.log(err));
@@ -384,8 +397,14 @@ query ($userid: Int, $page: Int, $perPage: Int, $sort_direction: [ActivitySort])
 	// Prepare embed for anime query
 	// message object passed from discord bot
 	// data is a MediaType js object <-- refer to AniList GraphQL Reference Doc
-	prepare_anime_embed(data) {
+	prepare_anime_embed(data, isManga) {
 		data.description = data.description.replace(/<br>/g, "\n");
+		if (data.chapters == null) {
+			data.chapters = "?";
+		}
+		if (data.episodes == null) {
+			data.episodes = "?";
+		}
 		return new Discord.MessageEmbed()
 			.setTitle(`${data.title.romaji}`)
 			.setURL(`${data.siteUrl}`)
@@ -398,8 +417,10 @@ query ($userid: Int, $page: Int, $perPage: Int, $sort_direction: [ActivitySort])
 					inline: true,
 				},
 				{
-					name: "Episodes",
-					value: `${data.episodes} (${data.duration} min / ep)`,
+					name: isManga ? "Chapters" : "Episodes",
+					value: isManga
+						? `${data.chapters}`
+						: `${data.episodes} (${data.duration} min / ep)`,
 					inline: true,
 				},
 				{
@@ -412,10 +433,12 @@ query ($userid: Int, $page: Int, $perPage: Int, $sort_direction: [ActivitySort])
 				},
 				{
 					name: "Season",
-					value: `${
-						data.season.charAt(0).toUpperCase() +
-						data.season.slice(1).toLowerCase()
-					} ${data.seasonYear}`,
+					value: isManga
+						? "?"
+						: `${
+								data.season.charAt(0).toUpperCase() +
+								data.season.slice(1).toLowerCase()
+						  } ${data.seasonYear}`,
 					inline: true,
 				},
 				{
@@ -441,8 +464,29 @@ query ($userid: Int, $page: Int, $perPage: Int, $sort_direction: [ActivitySort])
 					}`,
 				},
 				{
+					name: "Tags",
+					value: `${
+						data.tags.length == 0
+							? "-"
+							: data.tags
+									.filter((e) => { // remove spoiler tags
+										return (
+											!e.isGeneralSpoiler &&
+											!e.isMediaSpoiler
+										);
+									})
+									.map((e) => e.name + " - " + e.rank + "%")
+									.join("\n")
+					}`,
+				},
+				{
 					name: "Release Date",
-					value: `${data.startDate.year}-${data.startDate.month}-${data.startDate.day} to ${data.endDate.year}-${data.endDate.month}-${data.endDate.day}`,
+					value:
+						`${data.startDate.year}-${data.startDate.month}-${data.startDate.day} to ` +
+							(data.endDate.year ==
+						null
+							? `?`
+							: `${data.endDate.year}-${data.endDate.month}-${data.endDate.day}`),
 				},
 				{
 					name: "Links",

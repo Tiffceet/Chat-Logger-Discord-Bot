@@ -516,7 +516,7 @@ const unscramble = (message) => {
 	}, 6000);
 };
 
-const anime = (message) => {
+const anime = (message, isHentai, isManga) => {
 	let anime_name = message.content
 		.substring(7, message.content.length)
 		.trim();
@@ -525,7 +525,7 @@ const anime = (message) => {
 		return;
 	}
 	let obj = new anilist_API();
-	obj.anime_query(anime_name, message);
+    obj.anime_query(anime_name, message, isHentai, isManga);
 };
 
 const torammap = (message) => {
@@ -936,7 +936,11 @@ bot.on("message", (message) => {
 		} else if (this_msg.startsWith(".unscramble")) {
 			unscramble(message);
 		} else if (message.content.startsWith(".anime")) {
-			anime(message);
+			anime(message, false, false);
+		} else if (message.content.startsWith(".hentai")) {
+            anime(message, true, false);
+		} else if (message.content.startsWith(".manga")) {
+            anime(message, false, true);
 		} else if (message.content.startsWith(".tomana")) {
 			tomana(message);
 		} else if (message.content.startsWith(".torammap")) {
