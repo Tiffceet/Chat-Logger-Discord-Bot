@@ -77,5 +77,6 @@
 		"usage": "`.anilist`\n`.anilist link <username>`\n`.anilist unlink`"
 	},
 	"manga": { "desr": "Get manga from anilist.co", "usage": "`.manga <manga_name>`" },
-	"hentai": { "desr": "Get hentai from anilist.co", "usage": "`.hentai <hentai_name>`" }
+    "hentai": { "desr": "Get hentai from anilist.co", "usage": "`.hentai <hentai_name>`" },
+    "prefix": {"desr": "Change commands prefix for this server\n\nFor now i only accept 1 character as prefix, will allow multiple char in future", "usage": "`.prefix <new_prefix>`"}
 }

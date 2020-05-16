@@ -5,19 +5,19 @@ module.exports = new Discord.MessageEmbed()
 	.addFields(
 		{
 			name: ":desktop: Misc.",
-			value: "`.help` `.ualive?` `.gamblestat` `.eval`",
+			value: "`help` `ualive?` `gamblestat` `eval` `prefix`",
 		},
-		{ name: ":female_sign: Gender switch", value: "`.imaboi` `.imagurl`" },
+		{ name: ":female_sign: Gender switch", value: "`imaboi` `imagurl`" },
 		{
 			name: ":pick: Function",
 			value:
-				"`.roll` `.submitjoke` `.pick [online|bot]` `.unscramble`",
+				"`roll` `submitjoke` `pick [online|bot]` `unscramble`",
 		},
-		{ name: ":b:eddit", value: "`.tellajoke` `.scareme` `.cursedfood`" },
-		{ name: ":game_die: Games", value: "`.play [mention a friend]`" },
-		{ name: ":open_mouth: Emotes", value: "`.smh` `.doubt` `.rekt` `.confuse`" },
-		{ name: ":star: Anime", value: "`.anime` `.anilist` `.manga` `.hentai`" },
-		{ name: ":crystal_ball: Toram Online", value: "`.lvling` `.torammap` `.tomana`" }
+		{ name: ":b:eddit", value: "`tellajoke` `scareme` `cursedfood`" },
+		{ name: ":game_die: Games", value: "`play [mention a friend]`" },
+		{ name: ":open_mouth: Emotes", value: "`smh` `doubt` `rekt` `confuse`" },
+		{ name: ":star: Anime", value: "`anime` `anilist` `manga` `hentai`" },
+		{ name: ":crystal_ball: Toram Online", value: "`lvling` `torammap` `tomana`" }
 	)
 	.setTimestamp()
 	.setFooter("https://github.com/Tiffceet/Chat-Logger-Discord-Bot");

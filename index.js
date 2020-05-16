@@ -16,6 +16,7 @@ const token = JSON.parse(fs.readFileSync("auth.json")).token;
 // ====================================================================================
 // Global variables
 // ====================================================================================
+var global_prefix = ".";
 var help_page = require("./help_page");
 var status_msg = [
 	"Yea, I'm here, lurking around, collecting data, bla bla bla.",
@@ -60,6 +61,15 @@ String.prototype.replaceAll = function (searchStr, replaceStr) {
 	searchStr = searchStr.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
 
 	return str.replace(new RegExp(searchStr, "gi"), replaceStr);
+};
+
+const getGuildPrefixByID = (guild_id) => {
+	if (guild_id == null) return;
+	let guild_profs = JSON.parse(fs.readFileSync("data/prefixProfile.json"));
+	let guild = null;
+	if ((guild = guild_profs.data.find((e) => e.guild_ID == guild_id))) {
+		return guild.prefix;
+	}
 };
 
 const updateOnlineCount = (guild) => {
@@ -133,7 +143,7 @@ const help = (message) => {
 	if (args.length >= 2) {
 		if (help_desr[args[1]]) {
 			message.channel.send(
-				new Discord.MessageEmbed().setTitle("." + args[1]).addFields(
+				new Discord.MessageEmbed().setTitle(args[1]).addFields(
 					{
 						name: "Description",
 						value: `${help_desr[args[1]].desr}`,
@@ -194,10 +204,13 @@ const roll = (message) => {
 	let min = 0;
 	let max = 100;
 	// extract number at the back if any
-	let substr = message.content.substring(5, message.content.length);
-	let convertedNum = parseInt(substr, 10);
-	if (!isNaN(convertedNum)) {
-		max = convertedNum;
+	let args = message.content.split(" ");
+	if (args.length >= 2) {
+		let substr = args[1];
+		let convertedNum = parseInt(substr, 10);
+		if (!isNaN(convertedNum)) {
+			max = convertedNum;
+		}
 	}
 	message.channel.send(
 		`<@${message.author.id}> rolled a ${Math.floor(
@@ -240,9 +253,14 @@ const tellajoke = (message) => {
 };
 
 const submitjoke = (message) => {
+	let args = message.content.split(" ");
+	if (args.length < 2) {
+		message.channel.send("Uhh...");
+		return;
+	}
 	fs.appendFile(
 		`custom_jokes.txt`,
-		"::" + message.content.substring(12, message.content.length) + "\n",
+		"::" + args.slice(1).join(" ") + "\n",
 		(err) => {
 			if (err) console.log(err.message);
 		}
@@ -431,7 +449,8 @@ const eval_cmd = (message) => {
 		return;
 	}
 	try {
-		let cmd = message.content.substring(6, message.content.length);
+		let args = message.content.split(" ");
+		let cmd = args.slice(1).join(" ");
 		message.channel.send(eval(cmd));
 	} catch (err) {
 		message.channel.send(
@@ -517,15 +536,14 @@ const unscramble = (message) => {
 };
 
 const anime = (message, isHentai, isManga) => {
-	let anime_name = message.content
-		.substring(7, message.content.length)
-		.trim();
+	let args = message.content.split(" ");
+	let anime_name = args.length > 1 ? args.slice(1).join(" ") : "";
 	if (!anime_name) {
 		message.channel.send("Please provide an anime name.");
 		return;
 	}
 	let obj = new anilist_API();
-    obj.anime_query(anime_name, message, isHentai, isManga);
+	obj.anime_query(anime_name, message, isHentai, isManga);
 };
 
 const torammap = (message) => {
@@ -693,6 +711,43 @@ const anilist = (message) => {
 			return;
 		}
 		alAPI.user_activity_query(usr_prof.AL_ID, message);
+	}
+};
+
+const prefix = (message) => {
+	let args = message.content.split(" ");
+	let guild_id = message.guild.id;
+	let prefix_profs = JSON.parse(fs.readFileSync("data/prefixProfile.json"));
+	let guild_entry = prefix_profs.data.findIndex(
+		(e) => e.guild_ID == `${guild_id}`
+	);
+	if (args.length > 1) {
+		let new_prefix = args[1].charAt(0);
+		// if there exist old records, replace em
+		if (guild_entry == -1) {
+			prefix_profs.data.push({
+				guild_ID: `${guild_id}`,
+				prefix: `${new_prefix}`,
+			});
+		} else {
+			prefix_profs.data[guild_entry].prefix = new_prefix;
+		}
+		fs.writeFileSync(
+			"data/prefixProfile.json",
+			JSON.stringify(prefix_profs),
+			(err) => {
+				console.log(err);
+			}
+        );
+        message.channel.send(`The prefix for this server had changed to \`${new_prefix}\``);
+	} else {
+		if (guild_entry == -1) {
+			message.channel.send(`The prefix for this server is \`.\``);
+		} else {
+			message.channel.send(
+				`The prefix for this server is \`${prefix_profs.data[guild_entry].prefix}\``
+			);
+		}
 	}
 };
 
@@ -873,47 +928,50 @@ bot.on("message", (message) => {
     */
 
 	// listen to an ongoing connect four game
-	game_listening(message);
-
+    game_listening(message);
+    
+    let gpfx = getGuildPrefixByID(message.guild.id);
+    global_prefix = gpfx == null ? global_prefix : gpfx;
+    
 	let this_msg = message.content;
 
 	// check for command;
-	if (this_msg.startsWith(".")) {
-		if (this_msg.startsWith(".ualive")) {
+	if (this_msg.startsWith(global_prefix)) {
+		if (this_msg.startsWith(global_prefix + "ualive")) {
 			ualive(message);
-		} else if (this_msg.startsWith(".help")) {
+		} else if (this_msg.startsWith(global_prefix + "help")) {
 			help(message);
-		} else if (this_msg.startsWith(".imaboi")) {
+		} else if (this_msg.startsWith(global_prefix + "imaboi")) {
 			imaboi(message);
-		} else if (this_msg.startsWith(".imagurl")) {
+		} else if (this_msg.startsWith(global_prefix + "imagurl")) {
 			imagurl(message);
-		} else if (this_msg.startsWith(".roll")) {
+		} else if (this_msg.startsWith(global_prefix + "roll")) {
 			roll(message);
-		} else if (this_msg.startsWith(".tellajoke")) {
+		} else if (this_msg.startsWith(global_prefix + "tellajoke")) {
 			tellajoke(message);
-		} else if (this_msg.startsWith(".submitjoke ")) {
+		} else if (this_msg.startsWith(global_prefix + "submitjoke ")) {
 			submitjoke(message);
-		} else if (this_msg.startsWith(".pick")) {
+		} else if (this_msg.startsWith(global_prefix + "pick")) {
 			pick(message);
-		} else if (this_msg.startsWith(".doubt")) {
+		} else if (this_msg.startsWith(global_prefix + "doubt")) {
 			message.channel.send("", {
 				files: [
 					"https://i.kym-cdn.com/entries/icons/facebook/000/023/021/e02e5ffb5f980cd8262cf7f0ae00a4a9_press-x-to-doubt-memes-memesuper-la-noire-doubt-meme_419-238.jpg",
 				],
 			});
-		} else if (this_msg.startsWith(".smh")) {
+		} else if (this_msg.startsWith(global_prefix + "smh")) {
 			message.channel.send("", {
 				files: [
 					"https://media1.giphy.com/media/WrP4rFrWxu4IE/source.gif",
 				],
 			});
-		} else if (this_msg.startsWith(".rekt")) {
+		} else if (this_msg.startsWith(global_prefix + "rekt")) {
 			message.channel.send("", {
 				files: [
 					"https://media.giphy.com/media/vSR0fhtT5A9by/giphy.gif",
 				],
 			});
-		} else if (message.content.startsWith(".confuse")) {
+		} else if (message.content.startsWith(global_prefix + "confuse")) {
 			message.channel.send(
 				new Discord.MessageEmbed()
 					.setImage(
@@ -921,32 +979,34 @@ bot.on("message", (message) => {
 					)
 					.setTitle(`${message.author.username} is confused.`)
 			);
-		} else if (this_msg.startsWith(".play")) {
+		} else if (this_msg.startsWith(global_prefix + "play")) {
 			play(message);
-		} else if (this_msg.startsWith(".scareme")) {
+		} else if (this_msg.startsWith(global_prefix + "scareme")) {
 			scareme(message);
-		} else if (this_msg.startsWith(".lvling")) {
+		} else if (this_msg.startsWith(global_prefix + "lvling")) {
 			lvling(message);
-		} else if (this_msg.startsWith(".gamblestat")) {
+		} else if (this_msg.startsWith(global_prefix + "gamblestat")) {
 			gamblestat(message);
-		} else if (this_msg.startsWith(".eval")) {
+		} else if (this_msg.startsWith(global_prefix + "eval")) {
 			eval_cmd(message);
-		} else if (this_msg.startsWith(".cursedfood")) {
+		} else if (this_msg.startsWith(global_prefix + "cursedfood")) {
 			cursedfood(message);
-		} else if (this_msg.startsWith(".unscramble")) {
+		} else if (this_msg.startsWith(global_prefix + "unscramble")) {
 			unscramble(message);
-		} else if (message.content.startsWith(".anime")) {
+		} else if (message.content.startsWith(global_prefix + "anime")) {
 			anime(message, false, false);
-		} else if (message.content.startsWith(".hentai")) {
-            anime(message, true, false);
-		} else if (message.content.startsWith(".manga")) {
-            anime(message, false, true);
-		} else if (message.content.startsWith(".tomana")) {
+		} else if (message.content.startsWith(global_prefix + "hentai")) {
+			anime(message, true, false);
+		} else if (message.content.startsWith(global_prefix + "manga")) {
+			anime(message, false, true);
+		} else if (message.content.startsWith(global_prefix + "tomana")) {
 			tomana(message);
-		} else if (message.content.startsWith(".torammap")) {
+		} else if (message.content.startsWith(global_prefix + "torammap")) {
 			torammap(message);
-		} else if (message.content.startsWith(".anilist")) {
+		} else if (message.content.startsWith(global_prefix + "anilist")) {
 			anilist(message);
+		} else if (message.content.startsWith(global_prefix + "prefix")) {
+			prefix(message);
 		}
 	}
 });

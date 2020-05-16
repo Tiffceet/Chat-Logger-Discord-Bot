@@ -3,3 +3,4 @@ logs/
 auth.json
 package-lock.json
 tmp/
+data.json
