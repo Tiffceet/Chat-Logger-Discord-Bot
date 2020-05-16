@@ -936,7 +936,7 @@ bot.on("message", (message) => {
 	game_listening(message);
 
 	let gpfx = getGuildPrefixByID(message.guild.id);
-	global_prefix = gpfx == null ? global_prefix : gpfx;
+	global_prefix = gpfx == null ? "." : gpfx;
 
 	let this_msg = message.content;
 
