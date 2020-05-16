@@ -65,6 +65,7 @@ String.prototype.replaceAll = function (searchStr, replaceStr) {
 
 const getGuildPrefixByID = (guild_id) => {
 	if (guild_id == null) return;
+	if (!fs.existsSync("data/prefixProfile.json")) return;
 	let guild_profs = JSON.parse(fs.readFileSync("data/prefixProfile.json"));
 	let guild = null;
 	if ((guild = guild_profs.data.find((e) => e.guild_ID == guild_id))) {
@@ -717,7 +718,9 @@ const anilist = (message) => {
 const prefix = (message) => {
 	let args = message.content.split(" ");
 	let guild_id = message.guild.id;
-	let prefix_profs = JSON.parse(fs.readFileSync("data/prefixProfile.json"));
+	let prefix_profs = fs.existsSync("data/prefixProfile.json")
+		? JSON.parse(fs.readFileSync("data/prefixProfile.json"))
+		: { data: [] };
 	let guild_entry = prefix_profs.data.findIndex(
 		(e) => e.guild_ID == `${guild_id}`
 	);
@@ -738,8 +741,10 @@ const prefix = (message) => {
 			(err) => {
 				console.log(err);
 			}
-        );
-        message.channel.send(`The prefix for this server had changed to \`${new_prefix}\``);
+		);
+		message.channel.send(
+			`The prefix for this server had changed to \`${new_prefix}\``
+		);
 	} else {
 		if (guild_entry == -1) {
 			message.channel.send(`The prefix for this server is \`.\``);
@@ -928,11 +933,11 @@ bot.on("message", (message) => {
     */
 
 	// listen to an ongoing connect four game
-    game_listening(message);
-    
-    let gpfx = getGuildPrefixByID(message.guild.id);
-    global_prefix = gpfx == null ? global_prefix : gpfx;
-    
+	game_listening(message);
+
+	let gpfx = getGuildPrefixByID(message.guild.id);
+	global_prefix = gpfx == null ? global_prefix : gpfx;
+
 	let this_msg = message.content;
 
 	// check for command;

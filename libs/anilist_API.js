@@ -45,9 +45,9 @@ query ($search: String) {
 			.then((r) => r.json())
 			.then((d) => {
 				// this.user_activity_query(d.data.User.id, message);
-				let profiles = JSON.parse(
-					fs.readFileSync(this.ANILIST_PROFILE_PATH)
-				);
+				let profiles = fs.existsSync(this.ANILIST_PROFILE_PATH)
+					? JSON.parse(fs.readFileSync(this.ANILIST_PROFILE_PATH))
+					: { data: [] };
 				let prof = undefined;
 				if (
 					(prof = profiles.data.find(
@@ -94,7 +94,11 @@ query ($search: String) {
 	}
 
 	unlink(discord_id) {
-		let profiles = JSON.parse(fs.readFileSync(this.ANILIST_PROFILE_PATH));
+		let profiles = fs.existsSync(this.ANILIST_PROFILE_PATH)
+			? JSON.parse(fs.readFileSync(this.ANILIST_PROFILE_PATH))
+			: {
+					data: [],
+			  };
 		let prof = undefined;
 		if (!(prof = profiles.data.find((e) => e.discord_id == discord_id))) {
 			return false; // return false if there are no previous link
@@ -117,6 +121,7 @@ query ($search: String) {
 	}
 
 	find_linked_anilist_profile(discord_id) {
+		if (!fs.existsSync(this.ANILIST_PROFILE_PATH)) return;
 		return JSON.parse(fs.readFileSync(this.ANILIST_PROFILE_PATH)).data.find(
 			(e) => e.discord_id == discord_id
 		);
@@ -469,7 +474,8 @@ query ($userid: Int, $page: Int, $perPage: Int, $sort_direction: [ActivitySort])
 						data.tags.length == 0
 							? "-"
 							: data.tags
-									.filter((e) => { // remove spoiler tags
+									.filter((e) => {
+										// remove spoiler tags
 										return (
 											!e.isGeneralSpoiler &&
 											!e.isMediaSpoiler
@@ -483,8 +489,7 @@ query ($userid: Int, $page: Int, $perPage: Int, $sort_direction: [ActivitySort])
 					name: "Release Date",
 					value:
 						`${data.startDate.year}-${data.startDate.month}-${data.startDate.day} to ` +
-							(data.endDate.year ==
-						null
+						(data.endDate.year == null
 							? `?`
 							: `${data.endDate.year}-${data.endDate.month}-${data.endDate.day}`),
 				},
