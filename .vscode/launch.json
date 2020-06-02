@@ -11,7 +11,10 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}\\index.js"
+            "program": "${workspaceFolder}\\index.js",
+            "env": {
+                "TOKEN": "Njk3NjgyMTU5MzU1NDI4ODc1.XpLApA.N1b4MxllJLSo3YBCMs8A6yt1ITE"
+            }
         }
     ]
 }

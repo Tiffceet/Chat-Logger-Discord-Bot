@@ -11,7 +11,8 @@ const coryn = require("./games/coryn");
 const anilist_API = require("./libs/anilist_API");
 const toram_map_navigator = require("./games/toram_map_navigator");
 const bot = new Discord.Client();
-const token = JSON.parse(fs.readFileSync("auth.json")).token;
+// const token = JSON.parse(fs.readFileSync("auth.json")).token;
+const token = process.env.TOKEN;
 
 // ====================================================================================
 // Global variables
