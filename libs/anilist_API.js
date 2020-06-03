@@ -73,7 +73,7 @@ query ($search: String) {
 								AL_ID: d.data.User.id,
 								AL_NAME: d.data.User.name,
 								siteUrl: d.data.User.siteUrl,
-                            });
+							});
 						}
 					} else {
 						user_ref.set({
@@ -82,14 +82,14 @@ query ($search: String) {
 							AL_NAME: d.data.User.name,
 							siteUrl: d.data.User.siteUrl,
 						});
-                    }
-                    message.channel.send(
-                        new Discord.MessageEmbed()
-                            .setTitle("Anilist profile linking")
-                            .setDescription(
-                                `You have been linked to [${d.data.User.name}](${d.data.User.siteUrl})`
-                            )
-                    );
+					}
+					message.channel.send(
+						new Discord.MessageEmbed()
+							.setTitle("Anilist profile linking")
+							.setDescription(
+								`You have been linked to [${d.data.User.name}](${d.data.User.siteUrl})`
+							)
+					);
 				});
 			})
 			.catch((err) => console.log(err));
@@ -105,11 +105,13 @@ query ($search: String) {
 		return true;
 	}
 
-    // this func return AL_ID if found, else it returns false
+	// this func return AL_ID if found, else it returns false
 	async find_linked_anilist_profile(discord_id) {
-        let user_ref = this.firebase_db.collection("users").doc(discord_id);
-        let doc = await user_ref.get();
-        return doc.exists && doc.data().AL_ID != null ? doc.data().AL_ID : false;
+		let user_ref = this.firebase_db.collection("users").doc(discord_id);
+		let doc = await user_ref.get();
+		return doc.exists && doc.data().AL_ID != null
+			? doc.data().AL_ID
+			: false;
 	}
 
 	// anime_name for querying
@@ -426,8 +428,10 @@ query ($userid: Int, $page: Int, $perPage: Int, $sort_direction: [ActivitySort])
 					value: isManga
 						? "?"
 						: `${
-								data.season.charAt(0).toUpperCase() +
-								data.season.slice(1).toLowerCase()
+								data.season
+									? data.season.charAt(0).toUpperCase() +
+									  data.season.slice(1).toLowerCase()
+									: "?"
 						  } ${data.seasonYear}`,
 					inline: true,
 				},
