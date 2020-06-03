@@ -17,7 +17,7 @@ const bot = new Discord.Client();
 // Secrets
 // ====================================================================================
 const token = process.env.TOKEN;
-firebase_serviceAccount.private_key = process.env.FIREBASE_PRIVATE_KEY;
+firebase_serviceAccount.private_key = new Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii');
 // ====================================================================================
 // ====================================================================================
 
