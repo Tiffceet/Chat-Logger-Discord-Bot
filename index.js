@@ -1,7 +1,8 @@
-require("http")
-	.createServer((req, res) => res.end("hello world"))
-	.listen(3000);
 const Discord = require("discord.js");
+const firebase = require("firebase/app");
+require("firebase/firestore");
+const firebase_admin = require("firebase-admin");
+const firebase_serviceAccount = require("./pinkfredor-firebase-adminsdk-ujfaz-4c1e8a5d88.json");
 const fetch = require("node-fetch");
 const fs = require("fs");
 const cheerio = require("cheerio");
@@ -11,13 +12,30 @@ const coryn = require("./games/coryn");
 const anilist_API = require("./libs/anilist_API");
 const toram_map_navigator = require("./games/toram_map_navigator");
 const bot = new Discord.Client();
-// const token = JSON.parse(fs.readFileSync("auth.json")).token;
+
+// ====================================================================================
+// Secrets
+// ====================================================================================
 const token = process.env.TOKEN;
+firebase_serviceAccount.private_key = process.env.FIREBASE_PRIVATE_KEY;
+// ====================================================================================
+// ====================================================================================
+
+// ====================================================================================
+// Firebase init
+// ====================================================================================
+firebase_admin.initializeApp({
+	credential: firebase_admin.credential.cert(firebase_serviceAccount),
+	databaseURL: "https://pinkfredor.firebaseio.com",
+});
+// ====================================================================================
+// ====================================================================================
 
 // ====================================================================================
 // Global variables
 // ====================================================================================
 var global_prefix = ".";
+var guilds_prefixes = {}; // format: {"guild_1_ID": "prefix", "guild_2_ID": "prefix", ...}
 var help_page = require("./help_page");
 var status_msg = [
 	"Yea, I'm here, lurking around, collecting data, bla bla bla.",
@@ -64,14 +82,21 @@ String.prototype.replaceAll = function (searchStr, replaceStr) {
 	return str.replace(new RegExp(searchStr, "gi"), replaceStr);
 };
 
+const reloadGuildPrefix = async () => {
+	let db = firebase_admin.firestore();
+	let querySnapshot = await db.collection("guilds").get();
+	querySnapshot.forEach(function (doc) {
+		guilds_prefixes[doc.id] = doc.data().prefix;
+	});
+};
+
 const getGuildPrefixByID = (guild_id) => {
 	if (guild_id == null) return;
-	if (!fs.existsSync("data/prefixProfile.json")) return;
-	let guild_profs = JSON.parse(fs.readFileSync("data/prefixProfile.json"));
-	let guild = null;
-	if ((guild = guild_profs.data.find((e) => e.guild_ID == guild_id))) {
-		return guild.prefix;
+	let prefix = global_prefix;
+	if (guilds_prefixes[guild_id] != undefined) {
+		prefix = guilds_prefixes[guild_id];
 	}
+	return prefix;
 };
 
 const updateOnlineCount = (guild) => {
@@ -683,77 +708,74 @@ const tomana = (message) => {
 };
 
 const anilist = (message) => {
-	let alAPI = new anilist_API();
+	let db = firebase_admin.firestore();
+	let alAPI = new anilist_API(db);
 	let args = message.content.split(" ");
 	if (args[1] == "link") {
 		let user_name = args[2];
 		// there should be a link function but then im not sure how to do it
+		let db = firebase_admin.firestore();
 		alAPI.link(user_name, message);
 		return;
 	}
 	if (args[1] == "unlink") {
-		if (!alAPI.unlink(message.author.id)) {
-			// if unlinking failed
+		alAPI.unlink(message.author.id).then((status) => {
 			message.channel.send(
-				"You can't unlink if you don't link first, you baka."
+				status
+					? "Successfully unlinked your anilist profile"
+					: "You can't unlink if you don't link first, you baka."
 			);
-		} else {
-			message.channel.send("Successfully unlinked your anilist profile");
-		}
+		});
 		return;
 	}
 
 	// if user only entered .anilist
 	if (args.length == 1) {
-		let usr_prof = alAPI.find_linked_anilist_profile(message.author.id);
-		if (usr_prof == null) {
-			message.channel.send(
-				"Please link your anilist profile first\n`.anilist link <username>`"
-			);
-			return;
-		}
-		alAPI.user_activity_query(usr_prof.AL_ID, message);
+		alAPI.find_linked_anilist_profile(message.author.id).then((al_id) => {
+			if (!al_id) {
+				message.channel.send(
+					"Please link your anilist profile first\n`.anilist link <username>`"
+				);
+				return;
+			}
+			alAPI.user_activity_query(al_id, message);
+		});
 	}
 };
 
 const prefix = (message) => {
 	let args = message.content.split(" ");
 	let guild_id = message.guild.id;
-	let prefix_profs = fs.existsSync("data/prefixProfile.json")
-		? JSON.parse(fs.readFileSync("data/prefixProfile.json"))
-		: { data: [] };
-	let guild_entry = prefix_profs.data.findIndex(
-		(e) => e.guild_ID == `${guild_id}`
-	);
+	let db = firebase_admin.firestore();
+	let guild_ref = db.collection("guilds").doc(guild_id);
 	if (args.length > 1) {
 		let new_prefix = args[1].charAt(0);
 		// if there exist old records, replace em
-		if (guild_entry == -1) {
-			prefix_profs.data.push({
-				guild_ID: `${guild_id}`,
-				prefix: `${new_prefix}`,
-			});
-		} else {
-			prefix_profs.data[guild_entry].prefix = new_prefix;
-		}
-		fs.writeFileSync(
-			"data/prefixProfile.json",
-			JSON.stringify(prefix_profs),
-			(err) => {
-				console.log(err);
+		guild_ref.get().then(function (doc) {
+			if (doc.exists) {
+				guild_ref.update({ prefix: new_prefix });
+			} else {
+				guild_ref.set({
+					prefix: new_prefix,
+					name: `${message.guild.name}`,
+				});
 			}
-		);
-		message.channel.send(
-			`The prefix for this server had changed to \`${new_prefix}\``
-		);
-	} else {
-		if (guild_entry == -1) {
-			message.channel.send(`The prefix for this server is \`.\``);
-		} else {
 			message.channel.send(
-				`The prefix for this server is \`${prefix_profs.data[guild_entry].prefix}\``
+				`The prefix for this server had changed to \`${new_prefix}\``
 			);
-		}
+		});
+		reloadGuildPrefix(); // this need to called to update local prefixes
+	} else {
+		// print current server prefix
+		guild_ref.get().then(function (doc) {
+			if (doc.exists) {
+				message.channel.send(
+					`The prefix for this server is \`${doc.data().prefix}\``
+				);
+			} else {
+				message.channel.send(`The prefix for this server is \`.\``);
+			}
+		});
 	}
 };
 
@@ -904,7 +926,8 @@ const game_listening = (message) => {
 // Discord Client Events
 // ====================================================================================
 // on ready function
-bot.on("ready", () => {
+bot.on("ready", async () => {
+	await reloadGuildPrefix();
 	bot.user.setPresence({
 		activity: { name: "您的聊天记录", type: "WATCHING" },
 		status: "online",
@@ -913,7 +936,7 @@ bot.on("ready", () => {
 });
 
 // on message event
-bot.on("message", (message) => {
+bot.on("message", async (message) => {
 	// if msg were sent from bots, ignore
 	if (message.author.bot) {
 		return;
@@ -936,48 +959,48 @@ bot.on("message", (message) => {
 	// listen to an ongoing connect four game
 	game_listening(message);
 
-	let gpfx = getGuildPrefixByID(message.guild.id);
-	global_prefix = gpfx == null ? "." : gpfx;
+	current_prefix = getGuildPrefixByID(message.guild.id);
+	if (current_prefix == null) return;
 
 	let this_msg = message.content;
 
 	// check for command;
-	if (this_msg.startsWith(global_prefix)) {
-		if (this_msg.startsWith(global_prefix + "ualive")) {
+	if (this_msg.startsWith(current_prefix)) {
+		if (this_msg.startsWith(current_prefix + "ualive")) {
 			ualive(message);
-		} else if (this_msg.startsWith(global_prefix + "help")) {
+		} else if (this_msg.startsWith(current_prefix + "help")) {
 			help(message);
-		} else if (this_msg.startsWith(global_prefix + "imaboi")) {
+		} else if (this_msg.startsWith(current_prefix + "imaboi")) {
 			imaboi(message);
-		} else if (this_msg.startsWith(global_prefix + "imagurl")) {
+		} else if (this_msg.startsWith(current_prefix + "imagurl")) {
 			imagurl(message);
-		} else if (this_msg.startsWith(global_prefix + "roll")) {
+		} else if (this_msg.startsWith(current_prefix + "roll")) {
 			roll(message);
-		} else if (this_msg.startsWith(global_prefix + "tellajoke")) {
+		} else if (this_msg.startsWith(current_prefix + "tellajoke")) {
 			tellajoke(message);
-		} else if (this_msg.startsWith(global_prefix + "submitjoke ")) {
+		} else if (this_msg.startsWith(current_prefix + "submitjoke ")) {
 			submitjoke(message);
-		} else if (this_msg.startsWith(global_prefix + "pick")) {
+		} else if (this_msg.startsWith(current_prefix + "pick")) {
 			pick(message);
-		} else if (this_msg.startsWith(global_prefix + "doubt")) {
+		} else if (this_msg.startsWith(current_prefix + "doubt")) {
 			message.channel.send("", {
 				files: [
 					"https://i.kym-cdn.com/entries/icons/facebook/000/023/021/e02e5ffb5f980cd8262cf7f0ae00a4a9_press-x-to-doubt-memes-memesuper-la-noire-doubt-meme_419-238.jpg",
 				],
 			});
-		} else if (this_msg.startsWith(global_prefix + "smh")) {
+		} else if (this_msg.startsWith(current_prefix + "smh")) {
 			message.channel.send("", {
 				files: [
 					"https://media1.giphy.com/media/WrP4rFrWxu4IE/source.gif",
 				],
 			});
-		} else if (this_msg.startsWith(global_prefix + "rekt")) {
+		} else if (this_msg.startsWith(current_prefix + "rekt")) {
 			message.channel.send("", {
 				files: [
 					"https://media.giphy.com/media/vSR0fhtT5A9by/giphy.gif",
 				],
 			});
-		} else if (message.content.startsWith(global_prefix + "confuse")) {
+		} else if (message.content.startsWith(current_prefix + "confuse")) {
 			message.channel.send(
 				new Discord.MessageEmbed()
 					.setImage(
@@ -985,33 +1008,33 @@ bot.on("message", (message) => {
 					)
 					.setTitle(`${message.author.username} is confused.`)
 			);
-		} else if (this_msg.startsWith(global_prefix + "play")) {
+		} else if (this_msg.startsWith(current_prefix + "play")) {
 			play(message);
-		} else if (this_msg.startsWith(global_prefix + "scareme")) {
+		} else if (this_msg.startsWith(current_prefix + "scareme")) {
 			scareme(message);
-		} else if (this_msg.startsWith(global_prefix + "lvling")) {
+		} else if (this_msg.startsWith(current_prefix + "lvling")) {
 			lvling(message);
-		} else if (this_msg.startsWith(global_prefix + "gamblestat")) {
+		} else if (this_msg.startsWith(current_prefix + "gamblestat")) {
 			gamblestat(message);
-		} else if (this_msg.startsWith(global_prefix + "eval")) {
+		} else if (this_msg.startsWith(current_prefix + "eval")) {
 			eval_cmd(message);
-		} else if (this_msg.startsWith(global_prefix + "cursedfood")) {
+		} else if (this_msg.startsWith(current_prefix + "cursedfood")) {
 			cursedfood(message);
-		} else if (this_msg.startsWith(global_prefix + "unscramble")) {
+		} else if (this_msg.startsWith(current_prefix + "unscramble")) {
 			unscramble(message);
-		} else if (message.content.startsWith(global_prefix + "anime")) {
+		} else if (message.content.startsWith(current_prefix + "anime")) {
 			anime(message, false, false);
-		} else if (message.content.startsWith(global_prefix + "hentai")) {
+		} else if (message.content.startsWith(current_prefix + "hentai")) {
 			anime(message, true, false);
-		} else if (message.content.startsWith(global_prefix + "manga")) {
+		} else if (message.content.startsWith(current_prefix + "manga")) {
 			anime(message, false, true);
-		} else if (message.content.startsWith(global_prefix + "tomana")) {
+		} else if (message.content.startsWith(current_prefix + "tomana")) {
 			tomana(message);
-		} else if (message.content.startsWith(global_prefix + "torammap")) {
+		} else if (message.content.startsWith(current_prefix + "torammap")) {
 			torammap(message);
-		} else if (message.content.startsWith(global_prefix + "anilist")) {
+		} else if (message.content.startsWith(current_prefix + "anilist")) {
 			anilist(message);
-		} else if (message.content.startsWith(global_prefix + "prefix")) {
+		} else if (message.content.startsWith(current_prefix + "prefix")) {
 			prefix(message);
 		}
 	}

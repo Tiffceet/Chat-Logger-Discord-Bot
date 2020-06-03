@@ -1,9 +1,11 @@
 const fetch = require("node-fetch");
 const fs = require("fs");
 const Discord = require("discord.js");
+const firebase = require("firebase/app");
+require("firebase/firestore");
 module.exports = class AL_GraphQL_API {
-	constructor() {
-		this.ANILIST_PROFILE_PATH = "data/anilistProfile.json";
+	constructor(db) {
+		this.firebase_db = db;
 	}
 
 	first_cap(str) {
@@ -44,24 +46,6 @@ query ($search: String) {
 		fetch(url, options)
 			.then((r) => r.json())
 			.then((d) => {
-				// this.user_activity_query(d.data.User.id, message);
-				let profiles = fs.existsSync(this.ANILIST_PROFILE_PATH)
-					? JSON.parse(fs.readFileSync(this.ANILIST_PROFILE_PATH))
-					: { data: [] };
-				let prof = undefined;
-				if (
-					(prof = profiles.data.find(
-						(e) => e.discord_id == message.author.id
-					))
-				) {
-					message.channel.send(
-						new Discord.MessageEmbed().setDescription(
-							`Sorry, but you already linked to [${prof.AL_NAME}](${prof.siteUrl})`
-						)
-					);
-					return;
-				}
-
 				if (!d.data.User.id) {
 					message.channel.send(
 						`There are no such user named ${user_name}`
@@ -69,62 +53,63 @@ query ($search: String) {
 					return;
 				}
 
-				profiles.data.push({
-					discord_id: message.author.id,
-					AL_ID: d.data.User.id,
-					AL_NAME: d.data.User.name,
-					siteUrl: d.data.User.siteUrl,
+				let user_ref = this.firebase_db
+					.collection("users")
+					.doc(message.author.id);
+
+				user_ref.get().then(function (doc) {
+					if (doc.exists) {
+						if (doc.data().AL_NAME != null) {
+							message.channel.send(
+								new Discord.MessageEmbed().setDescription(
+									`Sorry, but you already linked to [${
+										doc.data().AL_NAME
+									}](${doc.data().siteUrl})`
+								)
+							);
+							return;
+						} else {
+							user_rer.update({
+								AL_ID: d.data.User.id,
+								AL_NAME: d.data.User.name,
+								siteUrl: d.data.User.siteUrl,
+                            });
+						}
+					} else {
+						user_ref.set({
+							name: `${message.author.username}`,
+							AL_ID: d.data.User.id,
+							AL_NAME: d.data.User.name,
+							siteUrl: d.data.User.siteUrl,
+						});
+                    }
+                    message.channel.send(
+                        new Discord.MessageEmbed()
+                            .setTitle("Anilist profile linking")
+                            .setDescription(
+                                `You have been linked to [${d.data.User.name}](${d.data.User.siteUrl})`
+                            )
+                    );
 				});
-				fs.writeFileSync(
-					this.ANILIST_PROFILE_PATH,
-					JSON.stringify(profiles),
-					(err) => {
-						console.log(err);
-					}
-				);
-				message.channel.send(
-					new Discord.MessageEmbed()
-						.setTitle("Anilist profile linking")
-						.setDescription(
-							`You have been linked to [${d.data.User.name}](${d.data.User.siteUrl})`
-						)
-				);
 			})
 			.catch((err) => console.log(err));
 	}
 
-	unlink(discord_id) {
-		let profiles = fs.existsSync(this.ANILIST_PROFILE_PATH)
-			? JSON.parse(fs.readFileSync(this.ANILIST_PROFILE_PATH))
-			: {
-					data: [],
-			  };
-		let prof = undefined;
-		if (!(prof = profiles.data.find((e) => e.discord_id == discord_id))) {
+	async unlink(discord_id) {
+		let user_ref = this.firebase_db.collection("users").doc(discord_id);
+		let doc = await user_ref.get();
+		if (!doc.exists) {
 			return false; // return false if there are no previous link
 		}
-		let new_profiles = { data: [] };
-		for (let x = 0; x < profiles.data.length; x++) {
-			if (profiles.data[x].discord_id == discord_id) {
-				continue;
-			}
-			new_profiles.data.push(profiles.data[x]);
-		}
-		fs.writeFileSync(
-			this.ANILIST_PROFILE_PATH,
-			JSON.stringify(new_profiles),
-			(err) => {
-				console.log(err);
-			}
-		);
+		user_ref.delete();
 		return true;
 	}
 
-	find_linked_anilist_profile(discord_id) {
-		if (!fs.existsSync(this.ANILIST_PROFILE_PATH)) return;
-		return JSON.parse(fs.readFileSync(this.ANILIST_PROFILE_PATH)).data.find(
-			(e) => e.discord_id == discord_id
-		);
+    // this func return AL_ID if found, else it returns false
+	async find_linked_anilist_profile(discord_id) {
+        let user_ref = this.firebase_db.collection("users").doc(discord_id);
+        let doc = await user_ref.get();
+        return doc.exists && doc.data().AL_ID != null ? doc.data().AL_ID : false;
 	}
 
 	// anime_name for querying

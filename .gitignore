@@ -4,6 +4,4 @@ auth.json
 package-lock.json
 tmp/
 data.json
-data/anilistProfile.json
-data/prefixProfile.json
 .*/
