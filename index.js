@@ -17,7 +17,10 @@ const bot = new Discord.Client();
 // Secrets
 // ====================================================================================
 const token = process.env.TOKEN;
-firebase_serviceAccount.private_key = new Buffer.from(process.env.FIREBASE_PRIVATE_KEY, 'base64').toString('ascii');
+firebase_serviceAccount.private_key = new Buffer.from(
+	process.env.FIREBASE_PRIVATE_KEY,
+	"base64"
+).toString("ascii");
 // ====================================================================================
 // ====================================================================================
 
@@ -1043,13 +1046,15 @@ bot.on("message", async (message) => {
 // on presenceUpdate event
 bot.on("presenceUpdate", (od, nw) => {
 	// make sure od is defined
-	let server;
-	if (od) {
-		server = od.guild;
-	} else {
-		return;
-	}
-	updateOnlineCount(server);
+	setTimeout(() => {
+		let server;
+		if (nw) {
+			server = nw.guild;
+		} else {
+			return;
+		}
+		updateOnlineCount(server);
+	}, 5000);
 });
 
 bot.on("guildMemberAdd", (mem) => {
