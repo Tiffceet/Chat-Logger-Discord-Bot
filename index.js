@@ -756,18 +756,23 @@ const prefix = (message) => {
 		// if there exist old records, replace em
 		guild_ref.get().then(function (doc) {
 			if (doc.exists) {
-				guild_ref.update({ prefix: new_prefix });
-			} else {
-				guild_ref.set({
-					prefix: new_prefix,
-					name: `${message.guild.name}`,
+				guild_ref.update({ prefix: new_prefix }).then(() => {
+					reloadGuildPrefix(); // this need to called to update local prefixes
 				});
+			} else {
+				guild_ref
+					.set({
+						prefix: new_prefix,
+						name: `${message.guild.name}`,
+					})
+					.then(() => {
+						reloadGuildPrefix(); // this need to called to update local prefixes
+					});
 			}
 			message.channel.send(
 				`The prefix for this server had changed to \`${new_prefix}\``
 			);
 		});
-		reloadGuildPrefix(); // this need to called to update local prefixes
 	} else {
 		// print current server prefix
 		guild_ref.get().then(function (doc) {
