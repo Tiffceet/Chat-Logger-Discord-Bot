@@ -11,6 +11,8 @@ const connect_four = require("./games/connect_four");
 const coryn = require("./games/coryn");
 const anilist_API = require("./libs/anilist_API");
 const toram_map_navigator = require("./games/toram_map_navigator");
+const MCServer = require("./libs/pterodactyl_API");
+const mcapi = new MCServer(); // as requested by the api, login on start of app
 const bot = new Discord.Client();
 
 // ====================================================================================
@@ -787,6 +789,42 @@ const prefix = (message) => {
 	}
 };
 
+const mc = (message) => {
+    if (message.guild.id != "655770436629561394" || message.channel.id != "712528849648484403") {
+        message.channel.send("Sorry but you cant do that here.");
+        return;
+    }
+	let args = message.content.split(" ");
+	let sub_cmd = args[1];
+
+	if (mcapi.status == mcapi.NOT_READY) {
+		message.channel.send(
+			"Something went wrong in the Pterodactyl API, ask Looz to check."
+		);
+		mcapi.api_login();
+		return;
+	}
+	switch (sub_cmd) {
+		case "start":
+			mcapi.startServer().then((msg) => {
+				message.channel.send(`${msg}`);
+			});
+			break;
+		case "status":
+			mcapi.getServerStatus().then((msg) => {
+				message.channel.send(`The server is ${msg}`);
+			});
+			break;
+		case "stop":
+			mcapi.stopServer().then((msg) => {
+				message.channel.send(msg);
+			});
+            break;
+        default:
+            message.channel.send("Do `.help mc` to see the commands");
+	}
+};
+
 // ====================================================================================
 // ====================================================================================
 
@@ -974,76 +1012,103 @@ bot.on("message", async (message) => {
 
 	// check for command;
 	if (this_msg.startsWith(current_prefix)) {
-		if (this_msg.startsWith(current_prefix + "ualive")) {
-			ualive(message);
-		} else if (this_msg.startsWith(current_prefix + "help")) {
-			help(message);
-		} else if (this_msg.startsWith(current_prefix + "imaboi")) {
-			imaboi(message);
-		} else if (this_msg.startsWith(current_prefix + "imagurl")) {
-			imagurl(message);
-		} else if (this_msg.startsWith(current_prefix + "roll")) {
-			roll(message);
-		} else if (this_msg.startsWith(current_prefix + "tellajoke")) {
-			tellajoke(message);
-		} else if (this_msg.startsWith(current_prefix + "submitjoke ")) {
-			submitjoke(message);
-		} else if (this_msg.startsWith(current_prefix + "pick")) {
-			pick(message);
-		} else if (this_msg.startsWith(current_prefix + "doubt")) {
-			message.channel.send("", {
-				files: [
-					"https://i.kym-cdn.com/entries/icons/facebook/000/023/021/e02e5ffb5f980cd8262cf7f0ae00a4a9_press-x-to-doubt-memes-memesuper-la-noire-doubt-meme_419-238.jpg",
-				],
-			});
-		} else if (this_msg.startsWith(current_prefix + "smh")) {
-			message.channel.send("", {
-				files: [
-					"https://media1.giphy.com/media/WrP4rFrWxu4IE/source.gif",
-				],
-			});
-		} else if (this_msg.startsWith(current_prefix + "rekt")) {
-			message.channel.send("", {
-				files: [
-					"https://media.giphy.com/media/vSR0fhtT5A9by/giphy.gif",
-				],
-			});
-		} else if (message.content.startsWith(current_prefix + "confuse")) {
-			message.channel.send(
-				new Discord.MessageEmbed()
-					.setImage(
-						"https://media.giphy.com/media/1X7lCRp8iE0yrdZvwd/giphy.gif"
-					)
-					.setTitle(`${message.author.username} is confused.`)
-			);
-		} else if (this_msg.startsWith(current_prefix + "play")) {
-			play(message);
-		} else if (this_msg.startsWith(current_prefix + "scareme")) {
-			scareme(message);
-		} else if (this_msg.startsWith(current_prefix + "lvling")) {
-			lvling(message);
-		} else if (this_msg.startsWith(current_prefix + "gamblestat")) {
-			gamblestat(message);
-		} else if (this_msg.startsWith(current_prefix + "eval")) {
-			eval_cmd(message);
-		} else if (this_msg.startsWith(current_prefix + "cursedfood")) {
-			cursedfood(message);
-		} else if (this_msg.startsWith(current_prefix + "unscramble")) {
-			unscramble(message);
-		} else if (message.content.startsWith(current_prefix + "anime")) {
-			anime(message, false, false);
-		} else if (message.content.startsWith(current_prefix + "hentai")) {
-			anime(message, true, false);
-		} else if (message.content.startsWith(current_prefix + "manga")) {
-			anime(message, false, true);
-		} else if (message.content.startsWith(current_prefix + "tomana")) {
-			tomana(message);
-		} else if (message.content.startsWith(current_prefix + "torammap")) {
-			torammap(message);
-		} else if (message.content.startsWith(current_prefix + "anilist")) {
-			anilist(message);
-		} else if (message.content.startsWith(current_prefix + "prefix")) {
-			prefix(message);
+		switch (message.content.split(" ")[0].slice(current_prefix.length)) {
+			case "ualive":
+				ualive(message);
+				break;
+			case "help":
+				help(message);
+				break;
+			case "imaboi":
+				imaboi(message);
+				break;
+			case "imagurl":
+				imagurl(message);
+				break;
+			case "roll":
+				roll(message);
+				break;
+			case "tellajoke":
+				tellajoke(message);
+				break;
+			case "submitjoke":
+				submitjoke(message);
+				break;
+			case "doubt":
+				message.channel.send("", {
+					files: [
+						"https://i.kym-cdn.com/entries/icons/facebook/000/023/021/e02e5ffb5f980cd8262cf7f0ae00a4a9_press-x-to-doubt-memes-memesuper-la-noire-doubt-meme_419-238.jpg",
+					],
+				});
+				break;
+			case "smh":
+				message.channel.send("", {
+					files: [
+						"https://media1.giphy.com/media/WrP4rFrWxu4IE/source.gif",
+					],
+				});
+				break;
+			case "rekt":
+				message.channel.send("", {
+					files: [
+						"https://media.giphy.com/media/vSR0fhtT5A9by/giphy.gif",
+					],
+				});
+				break;
+			case "confuse":
+				message.channel.send(
+					new Discord.MessageEmbed()
+						.setImage(
+							"https://media.giphy.com/media/1X7lCRp8iE0yrdZvwd/giphy.gif"
+						)
+						.setTitle(`${message.author.username} is confused.`)
+				);
+				break;
+			case "play":
+				play(message);
+				break;
+			case "scareme":
+				scareme(message);
+				break;
+			case "lvling":
+				lvling(message);
+				break;
+			case "gamblestat":
+				gamblestat(message);
+				break;
+			case "eval":
+				eval_cmd(message);
+				break;
+			case "cursedfood":
+				cursedfood(message);
+				break;
+			case "unscramble":
+				unscramble(message);
+				break;
+			case "anime":
+				anime(message);
+				break;
+			case "hentai":
+				hentai(message);
+				break;
+			case "manga":
+				manga(message);
+				break;
+			case "tomana":
+				tomana(message);
+				break;
+			case "torammap":
+				torammap(message);
+				break;
+			case "anilist":
+				anilist(message);
+				break;
+			case "prefix":
+				prefix(message);
+				break;
+			case "mc":
+				mc(message);
+				break;
 		}
 	}
 });

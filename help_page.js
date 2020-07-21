@@ -10,14 +10,20 @@ module.exports = new Discord.MessageEmbed()
 		{ name: ":female_sign: Gender switch", value: "`imaboi` `imagurl`" },
 		{
 			name: ":pick: Function",
-			value:
-				"`roll` `submitjoke` `pick [online|bot]` `unscramble`",
+			value: "`roll` `submitjoke` `pick [online|bot]` `unscramble`",
 		},
 		{ name: ":b:eddit", value: "`tellajoke` `scareme` `cursedfood`" },
 		{ name: ":game_die: Games", value: "`play [mention a friend]`" },
-		{ name: ":open_mouth: Emotes", value: "`smh` `doubt` `rekt` `confuse`" },
+		{
+			name: ":open_mouth: Emotes",
+			value: "`smh` `doubt` `rekt` `confuse`",
+		},
 		{ name: ":star: Anime", value: "`anime` `anilist` `manga` `hentai`" },
-		{ name: ":crystal_ball: Toram Online", value: "`lvling` `torammap` `tomana`" }
+		{
+			name: ":crystal_ball: Toram Online",
+			value: "`lvling` `torammap` `tomana`",
+		},
+		{ name: "Minecraft", value: "`mc`" }
 	)
 	.setTimestamp()
 	.setFooter("https://github.com/Tiffceet/Chat-Logger-Discord-Bot");
