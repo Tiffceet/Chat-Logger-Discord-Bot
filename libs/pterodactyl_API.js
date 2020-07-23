@@ -51,5 +51,8 @@ module.exports = class mcserverAPI {
         return await ptero_client.stopServer(this.serverID);
     }
 
+    async killServer() {
+        return await ptero_client.killServer(this.serverID);
+    }
     
 };

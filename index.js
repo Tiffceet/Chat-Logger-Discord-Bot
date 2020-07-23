@@ -1,3 +1,4 @@
+require("dotenv").config();
 const Discord = require("discord.js");
 const firebase = require("firebase/app");
 require("firebase/firestore");
@@ -790,10 +791,10 @@ const prefix = (message) => {
 };
 
 const mc = (message) => {
-    if (message.guild.id != "655770436629561394" || message.channel.id != "712528849648484403") {
-        message.channel.send("Sorry but you cant do that here.");
-        return;
-    }
+	// if (message.guild.id != "655770436629561394" || message.channel.id != "712528849648484403") {
+	//     message.channel.send("Sorry but you cant do that here.");
+	//     return;
+	// }
 	let args = message.content.split(" ");
 	let sub_cmd = args[1];
 
@@ -806,22 +807,57 @@ const mc = (message) => {
 	}
 	switch (sub_cmd) {
 		case "start":
-			mcapi.startServer().then((msg) => {
-				message.channel.send(`${msg}`);
-			});
+			mcapi
+				.startServer()
+				.then((msg) => {
+					message.channel.send(`${msg}`);
+				})
+				.catch((err) => {
+					message.channel.send(
+						"Fail to start the server.\nfreemc.host is probably down.\nTry `.mc status` to check server status"
+					);
+					console.log(err);
+				});
 			break;
 		case "status":
-			mcapi.getServerStatus().then((msg) => {
-				message.channel.send(`The server is ${msg}`);
-			});
+			mcapi
+				.getServerStatus()
+				.then((msg) => {
+					message.channel.send(`The server is ${msg}`);
+				})
+				.catch((err) => {
+					message.channel.send("freemc.host is dead at the moment");
+					console.log(err);
+				});
 			break;
 		case "stop":
-			mcapi.stopServer().then((msg) => {
-				message.channel.send(msg);
-			});
-            break;
-        default:
-            message.channel.send("Do `.help mc` to see the commands");
+			mcapi
+				.stopServer()
+				.then((msg) => {
+					message.channel.send(msg);
+				})
+				.catch((err) => {
+					message.channel.send(
+						"Fail to stop the server.\nfreemc.host is probably down.\nTry `.mc status` to check server status\nIf the server is up you still cant stop it, consider `.mc kill`"
+					);
+					console.log(err);
+				});
+			break;
+		case "kill":
+			mcapi
+				.killServer()
+				.then((msg) => {
+					message.channel.send(msg);
+				})
+				.catch((err) => {
+					message.channel.send(
+						"Fail to kill the server.\nfreemc.host is probably down.\nTry `.mc status` to check server status"
+					);
+					console.log(err);
+				});
+			break;
+		default:
+			message.channel.send("Do `.help mc` to see the commands");
 	}
 };
 
