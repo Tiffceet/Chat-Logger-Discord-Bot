@@ -791,10 +791,10 @@ const prefix = (message) => {
 };
 
 const mc = (message) => {
-	// if (message.guild.id != "655770436629561394" || message.channel.id != "712528849648484403") {
-	//     message.channel.send("Sorry but you cant do that here.");
-	//     return;
-	// }
+	if (message.guild.id != "655770436629561394" || message.channel.id != "712528849648484403") {
+	    message.channel.send("Sorry but you cant do that here.");
+	    return;
+	}
 	let args = message.content.split(" ");
 	let sub_cmd = args[1];
 
