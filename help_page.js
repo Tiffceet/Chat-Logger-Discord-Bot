@@ -12,7 +12,7 @@ module.exports = new Discord.MessageEmbed()
 			name: ":pick: Function",
 			value: "`roll` `submitjoke` `pick [online|bot]` `unscramble`",
 		},
-		{ name: ":b:eddit", value: "`tellajoke` `scareme` `cursedfood`" },
+		{ name: ":b:eddit", value: "`tellajoke` `scareme` `cursedfood` `food`" },
 		{ name: ":game_die: Games", value: "`play [mention a friend]`" },
 		{
 			name: ":open_mouth: Emotes",

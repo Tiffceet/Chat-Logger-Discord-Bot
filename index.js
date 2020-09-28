@@ -791,9 +791,12 @@ const prefix = (message) => {
 };
 
 const mc = (message) => {
-	if (message.guild.id != "655770436629561394" || message.channel.id != "712528849648484403") {
-	    message.channel.send("Sorry but you cant do that here.");
-	    return;
+	if (
+		message.guild.id != "655770436629561394" ||
+		message.channel.id != "712528849648484403"
+	) {
+		message.channel.send("Sorry but you cant do that here.");
+		return;
 	}
 	let args = message.content.split(" ");
 	let sub_cmd = args[1];
@@ -859,6 +862,29 @@ const mc = (message) => {
 		default:
 			message.channel.send("Do `.help mc` to see the commands");
 	}
+};
+
+const food = (message) => {
+	fetch(
+		"https://www.reddit.com/r/Food/.json?sort=hot&t=week&limit=800"
+	)
+		.then((res) => res.json())
+		.then((json) => {
+			try {
+				let len = Math.floor(
+					Math.random() * (json.data.children.length - 1)
+				);
+				message.channel.send(
+					new Discord.MessageEmbed()
+						.setTitle("r/Food")
+						.setImage(json.data.children[len].data.url)
+				);
+			} catch (err) {
+				console.log(
+					"Error getting post from r/CursedFood, contact Looz !"
+				);
+			}
+		});
 };
 
 // ====================================================================================
@@ -1144,6 +1170,9 @@ bot.on("message", async (message) => {
 				break;
 			case "mc":
 				mc(message);
+				break;
+			case "food":
+				food(message);
 				break;
 		}
 	}
