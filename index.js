@@ -65,9 +65,6 @@ bot.on("ready", async () => {
 });
 
 bot.on("message", async (message) => {
-	if (message.guild.id != "680297709420412942") {
-		return;
-	}
 	if (message.author.bot) {
 		return;
     }
