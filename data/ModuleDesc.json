@@ -1,0 +1,24 @@
+{
+    "module": {
+        "Miscellaneous": {
+            "modulePath": "../module/Miscellaneous.js",
+            "dependency": ["PinkFredorFirebase"]
+        },
+        "Tool": {
+            "modulePath": "../module/Tool.js",
+            "dependency": []
+        },
+        "Reddit": {
+            "modulePath": "../module/Reddit.js",
+            "dependency": []
+        },
+        "Emotes": {
+            "modulePath": "../module/Emotes.js",
+            "dependency": []
+        }, 
+        "Anime": {
+            "modulePath": "../module/Emotes.js",
+            "dependency": ["PinkFredorFirebase"]
+        }
+    }
+}

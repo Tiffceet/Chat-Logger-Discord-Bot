@@ -1,0 +1,68 @@
+{
+	"help_page": [
+		{
+			"name": ":desktop: Misc.",
+			"value": "`help` `ualive?` `prefix`"
+		},
+		{
+			"name": ":pick: Function",
+			"value": "`roll` `pick [online|bot]` `unscramble`"
+		},
+		{
+			"name": ":b:eddit",
+			"value": "`tellajoke` `scareme` `cursedfood` `food`"
+		},
+		{
+			"name": ":open_mouth: Emotes",
+			"value": "`smh` `doubt` `rekt` `confuse`"
+		},
+		{
+			"name": ":star: Anime",
+			"value": "`anime` `manga` `hentai`"
+		}
+	],
+	"command": {
+		"help": { "desc": "Display help page", "usage": "`.help`" },
+		"ualive?": {
+			"desc": "Check if the bot is working",
+			"usage": "`.ualive?` or `.ualive`"
+		},
+		"roll": {
+			"desc": "Roll a number from 0 to 100\n\nYou could also roll a different range of number if you provide a number.",
+			"usage": "`.roll` or `.roll 10`"
+		},
+		"tellajoke": {
+			"desc": "Tell a joke from r/ShortCleanFunny or r/DirtyJokes",
+			"usage": "`.tellajoke` or `.tellajoke dirty`"
+		},
+		"pick": {
+			"desc": "Pick a random user in discord.\n\nBy default, it will only choose user and not bots.\n\nIf you wish to include bots in the selection add `bot` behind the command.\n\nIf you wish to not include offline users, then add `online` at the end of command",
+			"usage": "`.pick`\n`.pick online`\n`.pick bot`\n`.pick bot online`"
+		},
+		"scareme": {
+			"desc": "Fetch top posts from r/TwoSentenceHorror\n\nWarning: Its disturbing, proceed on your risk",
+			"usage": "`.scareme`"
+		},
+		"smh": { "desc": "Shaking my head", "usage": "`.smh`" },
+		"doubt": { "desc": "d o u b t", "usage": "`.doubt`" },
+		"lvling": {
+			"desc": "Ask coryn for bosses to farm in toram.",
+			"usage": "`.lvling [your current level]`"
+		},
+		"cursedfood": {
+			"desc": "Fetch image from r/CursedFood",
+			"usage": "`.cursedfood`"
+		},
+		"rekt": { "desc": "r e k t", "usage": "`.rekt`" },
+		"unscramble": {
+			"desc": "Unscramble a word",
+			"usage": ".unscramble [word]"
+		},
+		"confuse": { "desc": "[visible confusion]", "usage": "`.confuse`" },
+		"prefix": {
+			"desc": "Change commands prefix for this server\n\nFor now i only accept 1 character as prefix, will allow multiple char in future",
+			"usage": "`.prefix <new_prefix>`"
+		},
+		"food": { "desc": "Fetch image from r/Food", "usage": "`.food`" }
+	}
+}

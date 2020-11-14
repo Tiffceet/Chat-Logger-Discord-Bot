@@ -9,7 +9,6 @@ npm install
 2. Set required API keys as environment variable
 - TOKEN (discord bot token)
 - FIREBASE_PRIVATE_KEY (Google Firebase - Cloud firestore - where server prefixes are stored)
-- PTERODACTYL_API_KEY (to allow .mc to work)
 3. Run it
 ```
 node .
