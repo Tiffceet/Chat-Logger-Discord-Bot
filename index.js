@@ -1,4 +1,4 @@
-// require("dotenv").config();
+require("dotenv").config();
 const fs = require("fs");
 const Discord = require("discord.js");
 const fetch = require("node-fetch");
@@ -65,6 +65,10 @@ bot.on("ready", async () => {
 });
 
 bot.on("message", async (message) => {
+    if(message.guild.id != 680297709420412942) {
+        return;
+    }
+
 	if (message.author.bot) {
 		return;
     }
