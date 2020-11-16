@@ -36,6 +36,8 @@ async function preload() {
 		)
     );
 
+    CLASS_INSTANCES["MAL"] = new CLASSES["MAL"](process.env.MAL_CLIENT_SECRET, CLASS_INSTANCES["PinkFredorFirebase"]);
+
 	// Import all modules and include their dependency
 	let module_desc = JSON.parse(fs.readFileSync("./data/ModuleDesc.json"));
 	for (let filename of filenames[1]) {
@@ -65,6 +67,10 @@ bot.on("ready", async () => {
 });
 
 bot.on("message", async (message) => {
+    // if(message.guild.id != 680297709420412942) {
+    //     return;
+    // }
+
 	if (message.author.bot) {
 		return;
     }
