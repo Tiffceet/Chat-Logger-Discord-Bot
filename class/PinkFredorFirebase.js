@@ -18,7 +18,7 @@ module.exports = class PinkFredorFirebase {
     /**
      * Retreive an array of data from a specific collection
      * @param {string} collection_name 
-     * @return Array
+     * @return Array of object: {id: string, content: object}
      */
     async retrieve_collection(collection_name) {
         let collection_content = [];

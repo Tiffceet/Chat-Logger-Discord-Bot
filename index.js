@@ -36,6 +36,8 @@ async function preload() {
 		)
     );
 
+    CLASS_INSTANCES["MAL"] = new CLASSES["MAL"](process.env.MAL_CLIENT_SECRET, CLASS_INSTANCES["PinkFredorFirebase"]);
+
 	// Import all modules and include their dependency
 	let module_desc = JSON.parse(fs.readFileSync("./data/ModuleDesc.json"));
 	for (let filename of filenames[1]) {
@@ -86,7 +88,7 @@ bot.on("message", async (message) => {
     }
 
     // New Command instance for every single message as they might come from different server
-	let command = new CLASSES["Command"](g_prefix);
+	let command = new CLASSES["Command"](".dev");
 	let cmd_info = {
 		is_command: false,
 		command_name: "",
