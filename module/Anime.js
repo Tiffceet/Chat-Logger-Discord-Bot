@@ -1,6 +1,7 @@
 /**
  * Handles all command related to anime
  */
+const Miscellaneous = require("./Miscellaneous");
 const Discord = require("discord.js");
 var Anime = {
 	// =============================================================
@@ -44,7 +45,11 @@ var Anime = {
 	// =============================================================
 
 	anime: async function (origin, args = []) {
-		// console.log(args.join(' '));
+        if(args.length == 0) {
+            Miscellaneous.help("anime");
+            return;
+        }
+
 		let status = await this._module_dependency.MAL.query_anime(args.join(' '));
 		if (!status.status) {
 			origin.channel.send(
