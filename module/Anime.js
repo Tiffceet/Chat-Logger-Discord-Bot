@@ -46,7 +46,7 @@ var Anime = {
 
 	anime: async function (origin, args = []) {
         if(args.length == 0) {
-            Miscellaneous.help(origin, "anime");
+            Miscellaneous.help(origin, ["anime"]);
             return;
         }
 

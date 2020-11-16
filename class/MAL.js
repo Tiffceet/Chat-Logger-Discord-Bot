@@ -147,6 +147,8 @@ module.exports = class MAL {
 			return return_obj;
 		}
 
+        // console.log(json_response);
+
         let anime_id = json_response.data[0].node.id;
         
 		url =
