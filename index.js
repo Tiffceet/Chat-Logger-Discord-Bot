@@ -1,4 +1,4 @@
-// require("dotenv").config();
+require("dotenv").config();
 const fs = require("fs");
 const Discord = require("discord.js");
 const fetch = require("node-fetch");
@@ -62,7 +62,8 @@ async function preload() {
 }
 
 bot.on("ready", async () => {
-	await preload();
+    await preload();
+    await MODULES["ScheduledJob"]._init(bot);
 	console.log("Bot is loaded");
 });
 

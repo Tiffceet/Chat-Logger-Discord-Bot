@@ -19,6 +19,10 @@
         "Anime": {
             "modulePath": "../module/Emotes.js",
             "dependency": ["PinkFredorFirebase", "MAL"]
+        },
+        "ScheduledJob": {
+            "modulePath": "../module/ScheduledJob.js",
+            "dependency": ["PinkFredorFirebase"]
         }
     }
 }

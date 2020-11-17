@@ -10,11 +10,13 @@
   "license": "ISC",
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
+    "cron": "^1.8.2",
     "discord.js": "^12.4.1",
     "dotenv": "^8.2.0",
     "firebase": "^8.0.2",
     "firebase-admin": "^9.4.1",
     "fs.js": "0.0.1",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "rss-parser": "^3.9.0"
   }
 }
