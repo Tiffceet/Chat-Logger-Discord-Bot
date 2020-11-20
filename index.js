@@ -1,4 +1,4 @@
-require("dotenv").config();
+// require("dotenv").config();
 const fs = require("fs");
 const Discord = require("discord.js");
 const fetch = require("node-fetch");
@@ -68,7 +68,7 @@ bot.on("ready", async () => {
 });
 
 bot.on("message", async (message) => {
-    // if(message.guild.id != 680297709420412942) {
+    // if(message.guild.id != 779331940843126814) {
     //     return;
     // }
 
@@ -88,6 +88,7 @@ bot.on("message", async (message) => {
         g_prefix = MODULES["Miscellaneous"].DEFAULT_PREFIX;
     }
 
+    // console.log(g_prefix);
     // New Command instance for every single message as they might come from different server
 	let command = new CLASSES["Command"](g_prefix);
 	let cmd_info = {

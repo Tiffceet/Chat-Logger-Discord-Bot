@@ -31,6 +31,7 @@
 		"doubt": { "moduleName": "Emotes" },
 		"rekt": { "moduleName": "Emotes" },
 		"confuse": { "moduleName": "Emotes" },
-		"anime": { "moduleName": "Anime" }
+        "anime": { "moduleName": "Anime" },
+        "nhentai": { "moduleName": "Anime" }
 	}
 }
