@@ -2,6 +2,8 @@
  * Handles all command related to anime
  */
 const Miscellaneous = require("./Miscellaneous");
+const { API } = require("nhentai-api");
+const nhentaiAPI = new API();
 const Discord = require("discord.js");
 var Anime = {
 	// =============================================================
@@ -37,6 +39,20 @@ var Anime = {
 		return string.charAt(0).toUpperCase() + string.slice(1);
 	},
 
+	/**
+	 * Function that return a discord embed from a given book from nhentai api
+	 * @param {API.Book} book book object returned by the nhentai api
+	 * @param {number} page_num page to display
+	 * @return {Discord.MessageEmbed}
+	 */
+	nhentai_read_embed: function (book, page_num) {
+		let embed = new Discord.MessageEmbed();
+		embed.setTitle(book.title.english);
+		embed.setImage(nhentaiAPI.getImageURL(book.pages[page_num - 1]));
+		embed.setFooter(`Page ${page_num} of ${book.pages.length}`);
+		return embed;
+	},
+
 	// =============================================================
 	// =============================================================
 
@@ -45,12 +61,14 @@ var Anime = {
 	// =============================================================
 
 	anime: async function (origin, args = []) {
-        if(args.length == 0) {
-            Miscellaneous.help(origin, ["anime"]);
-            return;
-        }
+		if (args.length == 0) {
+			Miscellaneous.help(origin, ["anime"]);
+			return;
+		}
 
-		let status = await this._module_dependency.MAL.query_anime(args.join(' '));
+		let status = await this._module_dependency.MAL.query_anime(
+			args.join(" ")
+		);
 		if (!status.status) {
 			origin.channel.send(
 				"It looks like I'm not weeb enough to know what is this..."
@@ -89,21 +107,22 @@ var Anime = {
 			anime_details.mean =
 				anime_details.mean +
 				` (scored by ${anime_details.num_list_users} users)`;
-        }
-        
-        if(anime_details.synopsis == null) {
-            anime_details.synopsis = "?";
-        }
-        if(anime_details.start_date == null) {
-            anime_details.start_date = "?";
-        }
-        if(anime_details.end_date == null) {
-            anime_details.end_date = "?";
-        }
+		}
 
-        if(anime_details.synopsis.length > 1000) {
-            anime_details.synopsis = anime_details.synopsis.substring(0, 1000) + "...";
-        }
+		if (anime_details.synopsis == null) {
+			anime_details.synopsis = "?";
+		}
+		if (anime_details.start_date == null) {
+			anime_details.start_date = "?";
+		}
+		if (anime_details.end_date == null) {
+			anime_details.end_date = "?";
+		}
+
+		if (anime_details.synopsis.length > 1000) {
+			anime_details.synopsis =
+				anime_details.synopsis.substring(0, 1000) + "...";
+		}
 
 		let dme = new Discord.MessageEmbed()
 			.setTitle(`${anime_details.title}`)
@@ -151,21 +170,92 @@ var Anime = {
 					anime_details.genres.length != 0
 						? anime_details.genres.map((e) => e.name).join(", ")
 						: "-"
-                }`,
-                inline: true,
-            },
-            {
+				}`,
+				inline: true,
+			},
+			{
 				name: "Synopsis",
 				value: anime_details.synopsis,
-            },
-            {
+			},
+			{
 				name: "Release Date",
-				value: `${anime_details.start_date} to ${anime_details.end_date}`
+				value: `${anime_details.start_date} to ${anime_details.end_date}`,
 			},
 		];
 
 		dme.addFields(embed_fields);
 		origin.channel.send(dme);
+	},
+	nhentai: async function (origin, args = []) {
+		if (args.length == 0) {
+			return;
+		}
+
+		switch (args[0]) {
+			case "info":
+				if (args.length == 1) {
+					Miscellaneous.help(origin, ["nhentai"]);
+					break;
+				}
+				break;
+			case "read":
+				if (args.length == 1) {
+					Miscellaneous.help(origin, ["nhentai"]);
+					break;
+				}
+
+				if (isNaN(args[1])) {
+					origin.channel.send("The nuke code is invalid");
+					break;
+				}
+
+				let book = {};
+				try {
+                    book = await nhentaiAPI.getBook(args[1]);
+                    nhentaiAPI.search();
+					console.log(book);
+				} catch (e) {
+					origin.channel.send("The nuke code is invalid");
+					break;
+					// console.log(e);
+				}
+
+				let page_num = 1;
+
+				let max_page = book.pages.length + 1;
+
+				let timeout = 5 * 60000;
+
+				let embed = Anime.nhentai_read_embed(book, page_num);
+
+				let msg = await origin.channel.send(embed);
+				await msg.react("◀");
+				await msg.react("▶");
+
+				const prev = msg.createReactionCollector(
+					(reaction, user) => reaction.emoji.name === "◀",
+					{
+						time: timeout,
+					}
+				);
+				const next = msg.createReactionCollector(
+					(reaction, user) => reaction.emoji.name === "▶",
+					{
+						time: timeout,
+					}
+				);
+				prev.on("collect", (r) => {
+					if (page_num <= 1) return;
+					embed = Anime.nhentai_read_embed(book, --page_num);
+					msg.edit(embed);
+				});
+				next.on("collect", (r) => {
+					if (page_num >= max_page) return;
+					embed = Anime.nhentai_read_embed(book, ++page_num);
+					msg.edit(embed);
+				});
+				break;
+		}
 	},
 
 	// =============================================================

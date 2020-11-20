@@ -140,7 +140,11 @@ var Miscellaneous = {
 			]
 		);
 		Miscellaneous.ualive_last_called_timestamp = Date.now();
-	},
+    },
+
+    "ualive?":  async function (origin = null, args = []) {
+        Miscellaneous.ualive(origin, args);
+    },
 
 	/**
 	 * Change the prefix of the server

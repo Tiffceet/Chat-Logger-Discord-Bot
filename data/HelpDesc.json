@@ -64,6 +64,7 @@
 			"usage": "`.prefix <new_prefix>`"
 		},
 		"food": { "desc": "Fetch image from r/Food", "usage": "`.food`" },
-		"anime": { "desc": "Get details about an anime from MAL !", "usage": "`.anime Eromanga Sensei`" }
+        "anime": { "desc": "Get details about an anime from MAL !", "usage": "`.anime Eromanga Sensei`" },
+        "nhentai": { "desc": "You bad bad boy", "usage": "`.nhentai`" }
 	}
 }

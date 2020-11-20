@@ -16,6 +16,7 @@
     "firebase": "^8.0.2",
     "firebase-admin": "^9.4.1",
     "fs.js": "0.0.1",
+    "nhentai-api": "^3.0.2",
     "node-fetch": "^2.6.1",
     "rss-parser": "^3.9.0"
   }
