@@ -68,7 +68,7 @@ bot.on("ready", async () => {
 });
 
 bot.on("message", async (message) => {
-    // if(message.guild.id != 779331940843126814) {
+    // if(message.guild.id != 680297709420412942) {
     //     return;
     // }
 
