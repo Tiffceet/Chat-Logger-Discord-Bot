@@ -60,7 +60,7 @@
 		},
 		"confuse": { "desc": "[visible confusion]", "usage": "`.confuse`" },
 		"prefix": {
-			"desc": "Change commands prefix for this server\n\nFor now i only accept 1 character as prefix, will allow multiple char in future",
+			"desc": "Change commands prefix for this server",
 			"usage": "`.prefix <new_prefix>`"
 		},
 		"food": { "desc": "Fetch image from r/Food", "usage": "`.food`" },

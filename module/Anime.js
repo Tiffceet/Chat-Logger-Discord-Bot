@@ -43,41 +43,57 @@ var Anime = {
 	 * Function that return a discord embed from a given book from nhentai api
 	 * @param {API.Book} book book object returned by the nhentai api
 	 * @param {number} page_num page to display
+	 * @param {boolean} rand_color (optional) set this to true to set embed to random color
 	 * @return {Discord.MessageEmbed}
 	 */
-	nhentai_read_embed: async function (book, page_num) {
+	nhentai_read_embed: async function (book, page_num, rand_color = false) {
 		let embed = new Discord.MessageEmbed();
 		embed.setTitle(book.title.english);
 		embed.setURL(`https://www.nhentai.net/g/${book.id}`);
 		embed.setImage(nhentaiAPI.getImageURL(book.pages[page_num - 1]));
 		embed.setFooter(`Page ${page_num} of ${book.pages.length}`);
+		if (rand_color) {
+			embed.setColor(
+				"#" + Math.floor(Math.random() * 16777215).toString(16)
+			);
+		}
 		return embed;
 	},
 
 	/**
 	 * Get nhentai info about the given nuke code
 	 * @param {API.Book} book Book objecr from nhentai API
-     * @param {any} footer (optional) footer of the embed
+	 * @param {any} footer (optional) footer of the embed
+	 * @param {boolean} rand_color (optional) set this to true to set embed to random color
 	 * @return {Discord.MessageEmbed}
 	 */
-	nhentai_info_embed: function (book, footer = undefined) {
-        let embed = new Discord.MessageEmbed();
-        embed.setTitle(book.title.english);
+	nhentai_info_embed: function (
+		book,
+		footer = undefined,
+		rand_color = false
+	) {
+		let embed = new Discord.MessageEmbed();
+		embed.setTitle(book.title.english);
 		embed.setURL(`https://www.nhentai.net/g/${book.id}`);
-        embed.setThumbnail(nhentaiAPI.getImageURL(book.cover));
+		embed.setThumbnail(nhentaiAPI.getImageURL(book.cover));
 
-        let nuke = `Nuke code: ${book.id}\n\n`;
+		let nuke = `Nuke code: ${book.id}\n\n`;
 
-        let tags = `Tags:\n${book.tags.map(e=>"`" + e.name + "`").join(", ")}`
+		let tags = `Tags:\n${book.tags
+			.map((e) => "`" + e.name + "`")
+			.join(", ")}`;
+		if (rand_color) {
+			embed.setColor(
+				"#" + Math.floor(Math.random() * 16777215).toString(16)
+			);
+		}
+		embed.setDescription(nuke + tags);
+		if (typeof footer !== "undefined") {
+			embed.setFooter(footer);
+		}
 
-        embed.setDescription(nuke + tags);
-
-        if(typeof footer !== "undefined") {
-            embed.setFooter(footer);
-        }
-
-        return embed;
-    },
+		return embed;
+	},
 
 	// =============================================================
 	// =============================================================
@@ -214,10 +230,16 @@ var Anime = {
 	},
 	nhentai: async function (origin, args = []) {
 		if (args.length == 0) {
-            Miscellaneous.help(origin, ["nhentai"]);
+			Miscellaneous.help(origin, ["nhentai"]);
 			return;
-		}
-        let book = {};
+        }
+        
+        if(!origin.channel.nsfw) {
+            origin.reply("Im not so sure if you really want to do that here...\nGo to NSFW channel if you will?");
+            return;
+        }
+
+		let book = {};
 		switch (args[0]) {
 			case "info":
 				if (args.length == 1) {
@@ -231,10 +253,10 @@ var Anime = {
 					origin.channel.send("The nuke code is invalid");
 					break;
 					// console.log(e);
-                }
-                
-                let embed_send = Anime.nhentai_info_embed(book);
-                origin.channel.send(embed_send);
+				}
+
+				let embed_send = Anime.nhentai_info_embed(book);
+				origin.channel.send(embed_send);
 
 				break;
 			case "read":
@@ -251,8 +273,7 @@ var Anime = {
 				book = {};
 				try {
 					book = await nhentaiAPI.getBook(args[1]);
-                    // console.log(book);
-                    
+					// console.log(book);
 				} catch (e) {
 					origin.channel.send("The nuke code is invalid");
 					break;
@@ -279,7 +300,11 @@ var Anime = {
 
 				let timeout = 60000;
 
-				let embed = await Anime.nhentai_read_embed(book, page_num);
+				let embed = await Anime.nhentai_read_embed(
+					book,
+					page_num,
+					true
+				);
 
 				let msg = await origin.channel.send(embed);
 				await msg.react("◀");
@@ -288,40 +313,56 @@ var Anime = {
 				const prev = msg.createReactionCollector(
 					(reaction, user) => reaction.emoji.name === "◀",
 					{
-                        time: timeout,
-                        dispose: true
+						time: timeout,
+						dispose: true,
 					}
 				);
 				const next = msg.createReactionCollector(
 					(reaction, user) => reaction.emoji.name === "▶",
 					{
-                        time: timeout,
-                        dispose: true
+						time: timeout,
+						dispose: true,
 					}
 				);
 				prev.on("collect", async (r) => {
 					if (page_num <= 1) return;
-					embed = await Anime.nhentai_read_embed(book, --page_num);
+					embed = await Anime.nhentai_read_embed(
+						book,
+						--page_num,
+						true
+					);
 					msg.edit(embed);
 					prev.resetTimer();
-                });
-            
+				});
+
 				next.on("collect", async (r) => {
 					if (page_num >= max_page) return;
-					embed = await Anime.nhentai_read_embed(book, ++page_num);
+					embed = await Anime.nhentai_read_embed(
+						book,
+						++page_num,
+						true
+					);
 					msg.edit(embed);
 					next.resetTimer();
 				});
 				prev.on("remove", async (r) => {
 					if (page_num <= 1) return;
-					embed = await Anime.nhentai_read_embed(book, --page_num);
+					embed = await Anime.nhentai_read_embed(
+						book,
+						--page_num,
+						true
+					);
 					msg.edit(embed);
 					prev.resetTimer();
-                });
-            
+				});
+
 				next.on("remove", async (r) => {
 					if (page_num >= max_page) return;
-					embed = await Anime.nhentai_read_embed(book, ++page_num);
+					embed = await Anime.nhentai_read_embed(
+						book,
+						++page_num,
+						true
+					);
 					msg.edit(embed);
 					next.resetTimer();
 				});
@@ -330,67 +371,89 @@ var Anime = {
 				if (args.length == 1) {
 					Miscellaneous.help(origin, ["nhentai"]);
 					break;
-                }
-                
-                let query = encodeURIComponent(args.slice(1).join(" "));
+				}
 
-                let result = await nhentaiAPI.search(query);
+				let query = encodeURIComponent(args.slice(1).join(" "));
 
-                if(result.books.length == 0) {
-                    origin.channel.send("I could not understand your ~~fetish~~...");
-                    break;
-                }
+				let result = await nhentaiAPI.search(query);
 
-                let s_page_num = 0;
+				if (result.books.length == 0) {
+					origin.channel.send(
+						"I could not understand your ~~fetish~~..."
+					);
+					break;
+				}
 
-                let search_result_embed = await Anime.nhentai_info_embed(result.books[s_page_num], `Result ${s_page_num+1} of ${result.books.length}`);
+				let s_page_num = 0;
 
-                let s_msg = await origin.channel.send(search_result_embed);
+				let search_result_embed = await Anime.nhentai_info_embed(
+					result.books[s_page_num],
+					`Result ${s_page_num + 1} of ${result.books.length}`,
+					true
+				);
 
-                let s_timeout = 60000;
+				let s_msg = await origin.channel.send(search_result_embed);
 
-                await s_msg.react("◀");
+				let s_timeout = 60000;
+
+				await s_msg.react("◀");
 				await s_msg.react("▶");
 
 				const s_prev = s_msg.createReactionCollector(
 					(reaction, user) => reaction.emoji.name === "◀",
 					{
-                        time: s_timeout,
-                        dispose: true
+						time: s_timeout,
+						dispose: true,
 					}
 				);
 				const s_next = s_msg.createReactionCollector(
 					(reaction, user) => reaction.emoji.name === "▶",
 					{
-                        time: s_timeout,
-                        dispose: true
+						time: s_timeout,
+						dispose: true,
 					}
 				);
 				s_prev.on("collect", async (r, u) => {
 					if (s_page_num <= 0) return;
-					search_result_embed = await Anime.nhentai_info_embed(result.books[--s_page_num], `Result ${s_page_num+1} of ${result.books.length}`);
-                    s_msg.edit(search_result_embed);
-                    s_prev.resetTimer();
+					search_result_embed = await Anime.nhentai_info_embed(
+						result.books[--s_page_num],
+						`Result ${s_page_num + 1} of ${result.books.length}`,
+						true
+					);
+					s_msg.edit(search_result_embed);
+					s_prev.resetTimer();
 				});
 				s_prev.on("remove", async (r, u) => {
 					if (s_page_num <= 0) return;
-					search_result_embed = await Anime.nhentai_info_embed(result.books[--s_page_num], `Result ${s_page_num+1} of ${result.books.length}`);
-                    s_msg.edit(search_result_embed);
-                    s_prev.resetTimer();
+					search_result_embed = await Anime.nhentai_info_embed(
+						result.books[--s_page_num],
+						`Result ${s_page_num + 1} of ${result.books.length}`,
+						true
+					);
+					s_msg.edit(search_result_embed);
+					s_prev.resetTimer();
 				});
 				s_next.on("collect", async (r, u) => {
-					if (s_page_num >= result.books.length-1) return;
-					search_result_embed = await Anime.nhentai_info_embed(result.books[++s_page_num], `Result ${s_page_num+1} of ${result.books.length}`);
-                    s_msg.edit(search_result_embed);
-                    s_next.resetTimer();
+					if (s_page_num >= result.books.length - 1) return;
+					search_result_embed = await Anime.nhentai_info_embed(
+						result.books[++s_page_num],
+						`Result ${s_page_num + 1} of ${result.books.length}`,
+						true
+					);
+					s_msg.edit(search_result_embed);
+					s_next.resetTimer();
 				});
 				s_next.on("remove", async (r, u) => {
-					if (s_page_num >= result.books.length-1) return;
-					search_result_embed = await Anime.nhentai_info_embed(result.books[++s_page_num], `Result ${s_page_num+1} of ${result.books.length}`);
-                    s_msg.edit(search_result_embed);
-                    s_next.resetTimer();
+					if (s_page_num >= result.books.length - 1) return;
+					search_result_embed = await Anime.nhentai_info_embed(
+						result.books[++s_page_num],
+						`Result ${s_page_num + 1} of ${result.books.length}`,
+						true
+					);
+					s_msg.edit(search_result_embed);
+					s_next.resetTimer();
 				});
-                
+
 				break;
 		}
 	},
