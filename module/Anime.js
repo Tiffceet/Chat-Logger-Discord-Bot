@@ -324,7 +324,7 @@ var Anime = {
 						dispose: true,
 					}
 				);
-				prev.on("collect", async (r) => {
+				prev.on("collect", async (r, u) => {
 					if (page_num <= 1) return;
 					embed = await Anime.nhentai_read_embed(
 						book,
@@ -333,9 +333,10 @@ var Anime = {
 					);
 					msg.edit(embed);
 					prev.resetTimer();
+					r.users.remove(u.id);
 				});
 
-				next.on("collect", async (r) => {
+				next.on("collect", async (r, u) => {
 					if (page_num >= max_page) return;
 					embed = await Anime.nhentai_read_embed(
 						book,
@@ -344,7 +345,9 @@ var Anime = {
 					);
 					msg.edit(embed);
 					next.resetTimer();
+					r.users.remove(u.id);
 				});
+				/*
 				prev.on("remove", async (r) => {
 					if (page_num <= 1) return;
 					embed = await Anime.nhentai_read_embed(
@@ -366,6 +369,7 @@ var Anime = {
 					msg.edit(embed);
 					next.resetTimer();
 				});
+				*/
 				break;
 			case "search":
 				if (args.length == 1) {
@@ -422,17 +426,18 @@ var Anime = {
 					);
 					s_msg.edit(search_result_embed);
 					s_prev.resetTimer();
+					r.users.remove(u.id);
 				});
-				s_prev.on("remove", async (r, u) => {
-					if (s_page_num <= 0) return;
-					search_result_embed = await Anime.nhentai_info_embed(
-						result.books[--s_page_num],
-						`Result ${s_page_num + 1} of ${result.books.length}`,
-						true
-					);
-					s_msg.edit(search_result_embed);
-					s_prev.resetTimer();
-				});
+				// s_prev.on("remove", async (r, u) => {
+				// 	if (s_page_num <= 0) return;
+				// 	search_result_embed = await Anime.nhentai_info_embed(
+				// 		result.books[--s_page_num],
+				// 		`Result ${s_page_num + 1} of ${result.books.length}`,
+				// 		true
+				// 	);
+				// 	s_msg.edit(search_result_embed);
+				// 	s_prev.resetTimer();
+				// });
 				s_next.on("collect", async (r, u) => {
 					if (s_page_num >= result.books.length - 1) return;
 					search_result_embed = await Anime.nhentai_info_embed(
@@ -442,17 +447,18 @@ var Anime = {
 					);
 					s_msg.edit(search_result_embed);
 					s_next.resetTimer();
+					r.users.remove(u.id);
 				});
-				s_next.on("remove", async (r, u) => {
-					if (s_page_num >= result.books.length - 1) return;
-					search_result_embed = await Anime.nhentai_info_embed(
-						result.books[++s_page_num],
-						`Result ${s_page_num + 1} of ${result.books.length}`,
-						true
-					);
-					s_msg.edit(search_result_embed);
-					s_next.resetTimer();
-				});
+				// s_next.on("remove", async (r, u) => {
+				// 	if (s_page_num >= result.books.length - 1) return;
+				// 	search_result_embed = await Anime.nhentai_info_embed(
+				// 		result.books[++s_page_num],
+				// 		`Result ${s_page_num + 1} of ${result.books.length}`,
+				// 		true
+				// 	);
+				// 	s_msg.edit(search_result_embed);
+				// 	s_next.resetTimer();
+				// });
 
 				break;
 		}
