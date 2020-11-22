@@ -356,6 +356,7 @@ var Anime = {
 						true
 					);
 					msg.edit(embed);
+next.resetTimer();
 					prev.resetTimer();
 				});
 
@@ -368,6 +369,7 @@ var Anime = {
 					);
 					msg.edit(embed);
 					next.resetTimer();
+prev.resetTimer();
 				});
 				*/
 				break;
@@ -426,6 +428,7 @@ var Anime = {
 					);
 					s_msg.edit(search_result_embed);
 					s_prev.resetTimer();
+s_next.resetTimer();
 					r.users.remove(u.id);
 				});
 				// s_prev.on("remove", async (r, u) => {
@@ -447,6 +450,7 @@ var Anime = {
 					);
 					s_msg.edit(search_result_embed);
 					s_next.resetTimer();
+s_prev.resetTimer();
 					r.users.remove(u.id);
 				});
 				// s_next.on("remove", async (r, u) => {
