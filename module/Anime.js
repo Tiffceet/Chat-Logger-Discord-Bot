@@ -333,6 +333,7 @@ var Anime = {
 					);
 					msg.edit(embed);
 					prev.resetTimer();
+next.resetTimer();
 					r.users.remove(u.id);
 				});
 
@@ -345,6 +346,7 @@ var Anime = {
 					);
 					msg.edit(embed);
 					next.resetTimer();
+prev.resetTimer();
 					r.users.remove(u.id);
 				});
 				/*
