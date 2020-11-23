@@ -325,7 +325,11 @@ var Anime = {
 					}
 				);
 				prev.on("collect", async (r, u) => {
-					if (page_num <= 1) return;
+					if (page_num <= 1) {
+						prev.resetTimer();
+						next.resetTimer();
+						r.users.remove(u.id);
+					}
 					embed = await Anime.nhentai_read_embed(
 						book,
 						--page_num,
@@ -333,12 +337,17 @@ var Anime = {
 					);
 					msg.edit(embed);
 					prev.resetTimer();
-next.resetTimer();
+					next.resetTimer();
 					r.users.remove(u.id);
 				});
 
 				next.on("collect", async (r, u) => {
-					if (page_num >= max_page) return;
+					if (page_num >= max_page) {
+						next.resetTimer();
+						prev.resetTimer();
+						r.users.remove(u.id);
+						return;
+					}
 					embed = await Anime.nhentai_read_embed(
 						book,
 						++page_num,
@@ -346,7 +355,7 @@ next.resetTimer();
 					);
 					msg.edit(embed);
 					next.resetTimer();
-prev.resetTimer();
+					prev.resetTimer();
 					r.users.remove(u.id);
 				});
 				/*
@@ -358,7 +367,6 @@ prev.resetTimer();
 						true
 					);
 					msg.edit(embed);
-next.resetTimer();
 					prev.resetTimer();
 				});
 
@@ -371,7 +379,6 @@ next.resetTimer();
 					);
 					msg.edit(embed);
 					next.resetTimer();
-prev.resetTimer();
 				});
 				*/
 				break;
@@ -422,7 +429,12 @@ prev.resetTimer();
 					}
 				);
 				s_prev.on("collect", async (r, u) => {
-					if (s_page_num <= 0) return;
+					if (s_page_num <= 0) {
+						s_prev.resetTimer();
+						s_next.resetTimer();
+						r.users.remove(u.id);
+						return;
+					}
 					search_result_embed = await Anime.nhentai_info_embed(
 						result.books[--s_page_num],
 						`Result ${s_page_num + 1} of ${result.books.length}`,
@@ -430,7 +442,7 @@ prev.resetTimer();
 					);
 					s_msg.edit(search_result_embed);
 					s_prev.resetTimer();
-s_next.resetTimer();
+					s_next.resetTimer();
 					r.users.remove(u.id);
 				});
 				// s_prev.on("remove", async (r, u) => {
@@ -444,7 +456,12 @@ s_next.resetTimer();
 				// 	s_prev.resetTimer();
 				// });
 				s_next.on("collect", async (r, u) => {
-					if (s_page_num >= result.books.length - 1) return;
+					if (s_page_num >= result.books.length - 1) {
+						s_next.resetTimer();
+						s_prev.resetTimer();
+						r.users.remove(u.id);
+						return;
+					}
 					search_result_embed = await Anime.nhentai_info_embed(
 						result.books[++s_page_num],
 						`Result ${s_page_num + 1} of ${result.books.length}`,
@@ -452,7 +469,7 @@ s_next.resetTimer();
 					);
 					s_msg.edit(search_result_embed);
 					s_next.resetTimer();
-s_prev.resetTimer();
+					s_prev.resetTimer();
 					r.users.remove(u.id);
 				});
 				// s_next.on("remove", async (r, u) => {
