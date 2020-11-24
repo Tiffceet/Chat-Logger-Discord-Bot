@@ -40,6 +40,12 @@ async function preload() {
 		)
     );
 
+    CLASS_INSTANCES["GoogleDriveAPI"] = new CLASSES["GoogleDriveAPI"](
+		new Buffer.from(process.env.DRIVE_CLIENT_SECRET, "base64").toString(
+			"ascii"
+		), CLASS_INSTANCES["PinkFredorFirebase"]
+    );
+
     CLASS_INSTANCES["MAL"] = new CLASSES["MAL"](process.env.MAL_CLIENT_SECRET, CLASS_INSTANCES["PinkFredorFirebase"]);
 
 	// Import all modules and include their dependency

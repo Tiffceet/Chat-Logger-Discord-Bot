@@ -22,9 +22,9 @@ module.exports = class MAL {
 
 	async init() {
 		this.credentials = await this.firebase_instance.retrieve_collection(
-			"mal_cred"
+			"cred"
 		);
-		this.credentials = this.credentials.find((e) => e.id == "cred").content;
+		this.credentials = this.credentials.find((e) => e.id == "mal_cred").content;
 		await this.check_token_expiry();
 	}
 
@@ -42,8 +42,8 @@ module.exports = class MAL {
 			);
 			this.credentials.date_generated = Date.now();
 			await this.firebase_instance.update_document(
-				"mal_cred",
 				"cred",
+				"mal_cred",
 				this.credentials
 			);
 		}
