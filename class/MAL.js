@@ -132,7 +132,7 @@ module.exports = class MAL {
         // Always perform this check
         await this.check_token_expiry();
 
-		let url = `https://api.myanimelist.net/v2/anime?q=${query_name}&limit=4`;
+		let url = `https://api.myanimelist.net/v2/anime?q=${encodeURIComponent(query_name)}&limit=4`;
 		let HTMLResponse = await fetch(url, {
 			method: "GET",
 			headers: {
