@@ -19,7 +19,11 @@
 		{
 			"name": ":star: Anime",
 			"value": "`anime` `nhentai`"
-		}
+        },
+        {
+            "name": ":musical_note: Looz's Private Music Collection",
+            "value": "`pmc`"
+        }
 	],
 	"command": {
 		"help": { "desc": "Display help page", "usage": "`.help`" },

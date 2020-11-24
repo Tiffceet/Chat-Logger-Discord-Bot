@@ -23,6 +23,10 @@
         "ScheduledJob": {
             "modulePath": "../module/ScheduledJob.js",
             "dependency": ["PinkFredorFirebase"]
+        }, 
+        "PrivateMusicCollection": {
+            "modulePath": "../module/PrivateMusicCollection.js",
+            "dependency": ["GoogleDriveAPI"]
         }
     }
 }
