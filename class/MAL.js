@@ -25,7 +25,7 @@ module.exports = class MAL {
 			"mal_cred"
 		);
 		this.credentials = this.credentials.find((e) => e.id == "cred").content;
-		this.check_token_expiry();
+		await this.check_token_expiry();
 	}
 
 	/**
@@ -41,7 +41,7 @@ module.exports = class MAL {
 				true
 			);
 			this.credentials.date_generated = Date.now();
-			this.firebase_instance.update_document(
+			await this.firebase_instance.update_document(
 				"mal_cred",
 				"cred",
 				this.credentials
@@ -130,7 +130,7 @@ module.exports = class MAL {
         };
         
         // Always perform this check
-        this.check_token_expiry();
+        await this.check_token_expiry();
 
 		let url = `https://api.myanimelist.net/v2/anime?q=${query_name}&limit=4`;
 		let HTMLResponse = await fetch(url, {
