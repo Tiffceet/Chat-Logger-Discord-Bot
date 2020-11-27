@@ -3,6 +3,7 @@
  * @author Looz
  * @version ∞.∞
  */
+const { google } = require("googleapis");
 var PrivateMusicCollection = {
 // =============================================================
 	// DEFAULT MODULE MEMBER
@@ -21,7 +22,7 @@ var PrivateMusicCollection = {
 		if (origin == null) {
 			return;
 		}
-		
+		PrivateMusicCollection[cmd_name](origin, args);
 	},
 	_import: function (dependency) {
 		PrivateMusicCollection._module_dependency = dependency;
@@ -31,7 +32,11 @@ var PrivateMusicCollection = {
 
 	// =============================================================
 	// Command Function
-	// =============================================================
+    // =============================================================
+    
+    pmc: async function(origin, args = []) {
+        this._module_dependency["GoogleDriveAPI"].play_music(origin);
+    },
 }
 
 

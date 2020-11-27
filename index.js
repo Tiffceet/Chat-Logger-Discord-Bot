@@ -78,7 +78,7 @@ bot.on("ready", async () => {
 });
 
 bot.on("message", async (message) => {
-    if(debug_mode && message.guild.id != 680297709420412942) {
+    if(debug_mode && message.guild.id != 779331940843126814) {
         return;
     }
 

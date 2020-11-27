@@ -32,6 +32,7 @@
 		"rekt": { "moduleName": "Emotes" },
 		"confuse": { "moduleName": "Emotes" },
         "anime": { "moduleName": "Anime" },
-        "nhentai": { "moduleName": "Anime" }
+        "nhentai": { "moduleName": "Anime" },
+        "pmc": {"moduleName": "PrivateMusicCollection"}
 	}
 }
