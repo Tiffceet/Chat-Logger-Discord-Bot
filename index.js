@@ -9,6 +9,10 @@ const fetch = require("node-fetch");
 const cheerio = require("cheerio");
 const bot = new Discord.Client();
 
+if (!fs.existsSync('./tmp')){
+    fs.mkdirSync('./tmp');
+}
+
 // ====================================================================================
 // Secrets
 // ====================================================================================
