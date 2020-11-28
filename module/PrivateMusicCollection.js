@@ -73,7 +73,10 @@ var PrivateMusicCollection = {
 		switch (args[0]) {
 			case "view":
 				PrivateMusicCollection.pmc_view(origin, args.slice(1));
-				break;
+                break;
+                case "play":
+                    PrivateMusicCollection.pmc_play(origin, args.slice(1));
+                    break
 			default:
 				Miscellaneous.help(origin, ["pmc"]);
 		}
@@ -132,11 +135,12 @@ var PrivateMusicCollection = {
 
 		let album_info = JSON.parse(fs.readFileSync(tmp_filename));
 
-        let album_desc = `Tracks:\n\n`;
-        for(let i = 0; i < album_info.track.length; i++) {
-            album_desc += `${i}. ${album_info.track[`${i}`].title}\n`;
-        }
+		console.log(JSON.stringify(idx));
 
+		let album_desc = `Tracks:\n\n`;
+		for (let i = 0; i < Object.keys(album_info.track).length; i++) {
+			album_desc += `${i + 1}. ${album_info.track[`${i + 1}`].title}\n`;
+		}
 
 		origin.channel.send(
 			new Discord.MessageEmbed()
@@ -145,6 +149,21 @@ var PrivateMusicCollection = {
 				.setThumbnail(`attachment://${tmp_filename2.slice(6)}`)
 				.setDescription(album_desc)
 		);
+	},
+
+	pmc_play: async function (origin, args = []) {
+
+        let data = await this._module_dependency["GoogleDriveAPI"].get_file_stream(args[0]);
+        data = data.data;
+
+		origin.member.voice.channel
+			.join()
+			.then((connection) => {
+                connection.play(data);
+                let disp = connection.dispatcher;
+                disp.setVolume(0.1);
+			})
+			.catch((err) => console.log(err));
 	},
 };
 
