@@ -4,8 +4,11 @@
  * @version ∞.∞
  */
 const { google } = require("googleapis");
+const Discord = require("discord.js");
+const fs = require("fs");
+const Miscellaneous = require("./Miscellaneous");
 var PrivateMusicCollection = {
-// =============================================================
+	// =============================================================
 	// DEFAULT MODULE MEMBER
 	// _module_dependency: store the class instances to be used
 	// _init: To initalise this module
@@ -31,13 +34,118 @@ var PrivateMusicCollection = {
 	// =============================================================
 
 	// =============================================================
-	// Command Function
-    // =============================================================
-    
-    pmc: async function(origin, args = []) {
-        this._module_dependency["GoogleDriveAPI"].play_music(origin);
-    },
-}
+	// Module Vars
+	// =============================================================
 
+	/**
+	 * @example
+	 * {
+	 *  "123456789": {
+	 *      queue: [
+	 *          {
+	 *              song_title: "Barin-ko",
+	 *              song_artist: "Kano",
+	 *              album_art_drive_file_id: "1A2B3C_4D5F",
+	 *              google_drive_file_id: "1A2B3C_4D5F"
+	 *              data_stream: DATASTREAM // If this is possible at all
+	 *          },
+	 *          ...
+	 *      ]
+	 *  }
+	 * }
+	 */
+	song_queue: {},
+
+	// =============================================================
+	// =============================================================
+
+	// =============================================================
+	// Command Function
+	// =============================================================
+
+	pmc: async function (origin, args = []) {
+		if (args.length == 0) {
+			Miscellaneous.help(origin, ["pmc"]);
+			return;
+		}
+
+		// Pmc Sub command
+		switch (args[0]) {
+			case "view":
+				PrivateMusicCollection.pmc_view(origin, args.slice(1));
+				break;
+			default:
+				Miscellaneous.help(origin, ["pmc"]);
+		}
+		/**
+             (err, { data }) => {
+              // console.log(data);
+              origin.member.voice.channel
+                .join()
+                .then(connection => {
+                  connection.play(data);
+                })
+                .catch(err => console.log(err));
+            }
+        */
+	},
+
+	pmc_view: async function (origin, args = []) {
+		let idx = await this._module_dependency[
+			"GoogleDriveAPI"
+		].get_music_index();
+
+		let item = idx.album[0].content.find((val) => {
+			return val.name === "info.json";
+		});
+
+		let item2 = idx.album[0].content.find((val) => {
+			return val.name === "cover.jpg";
+		});
+
+		let item_stream = await this._module_dependency[
+			"GoogleDriveAPI"
+		].get_file_stream(item.id);
+
+		let item_stream2 = await this._module_dependency[
+			"GoogleDriveAPI"
+		].get_file_stream(item2.id);
+
+		let tmp_filename = `./tmp/info${Date.now()}.json`;
+		let tmp_filename2 = `./tmp/cover${Date.now()}.jpg`;
+
+		let dest = fs.createWriteStream(tmp_filename);
+		item_stream.data.pipe(dest);
+		await new Promise((resolve) => {
+			dest.on("finish", (_) => {
+				resolve("");
+			});
+		});
+
+		let dest2 = fs.createWriteStream(tmp_filename2);
+		item_stream2.data.pipe(dest2);
+		await new Promise((resolve) => {
+			dest2.on("finish", (_) => {
+				resolve("");
+			});
+		});
+
+		let album_info = JSON.parse(fs.readFileSync(tmp_filename));
+
+        let album_desc = `Tracks:\n\n`;
+        for(let i = 0; i < album_info.track.length; i++) {
+            album_desc += `${i}. ${album_info.track[`${i}`].title}\n`;
+        }
+
+
+		origin.channel.send(
+			new Discord.MessageEmbed()
+				.setTitle(album_info.name)
+				.attachFiles([tmp_filename2])
+				.setThumbnail(`attachment://${tmp_filename2.slice(6)}`)
+				.setDescription(album_desc)
+		);
+	},
+};
 
 module.exports = PrivateMusicCollection;

@@ -25,10 +25,107 @@ module.exports = class GoogleDriveAPI {
 			redirect_uris[0]
 		);
 
-		this.authorize().then(
-            // this.listFiles(this.oAuth2Client)
-            );
+		this.authorize().then((_) => {
+			// this.get_music_index();
+		});
 	}
+
+	/**
+	 * Return a list of albums with its content's files index
+	 * @return {object} music index
+	 * @example
+	 * {
+	 *  album: [
+	 *      {
+	 *          folder_id: "5e6f7g"
+	 *          name: "yuanfen"
+	 *          content: [
+	 *              {
+	 *                  kind: "drive#file",
+	 *                  id: "1a2b3c",
+	 *                  name: "10.mp3"
+	 *                  mimeType: "audio/mpeg"
+	 *              },
+	 *              ...
+	 *          ]
+	 *      },
+	 *      ...
+	 *  ]
+	 * }
+	 */
+	async get_music_index() {
+		let index = {
+			album: [],
+		};
+		let auth = this.oAuth2Client;
+		const drive = google.drive({ version: "v3", auth });
+		let res = await drive.files.list(
+			// Get folders in the "Music" Folder
+			{
+				q:
+					"'1DeuKTBAo7JzlobaApyynTPHbTuHce7lS' in parents and mimeType='application/vnd.google-apps.folder'",
+			}
+		);
+
+		for (let i = 0; i < res.data.files.length; i++) {
+			index["album"].push({
+				folder_id: res.data.files[i].id,
+				name: res.data.files[i].name,
+				content: [],
+			});
+		}
+
+		for (let i = 0; i < index.album.length; i++) {
+			let res2 = await drive.files.list(
+				// Get folders in the "Music" Folder
+				{
+					q: `'${index.album[i].folder_id}' in parents`,
+				}
+			);
+
+			index.album[i].content = res2.data.files;
+		}
+		return index;
+	}
+
+	async get_file(file_id) {
+		let auth = this.oAuth2Client;
+		const drive = google.drive({ version: "v3", auth });
+		return drive.files
+			.get({
+				fileId: file_id,
+				alt: "media",
+			});
+	}
+
+	/**
+	 * Get File stream of a given file id
+	 * @param {string} file_id
+	 * @return {object} object returned by drive.files.get()
+	 */
+	async get_file_stream(file_id) {
+		let auth = this.oAuth2Client;
+		const drive = google.drive({ version: "v3", auth });
+		// drive.files.get(
+		// 	{
+		// 		fileId: file_id,
+		// 		alt: "media",
+		// 	},
+		// 	{ responseType: "stream" },
+		// 	callback
+		// );
+		return drive.files.get(
+			{
+				fileId: file_id,
+				alt: "media",
+			},
+			{ responseType: "stream" }
+		);
+	}
+
+	// =======================================================================================
+	// Code below this points contain code for Google Drive authorization only, do not touch
+	// =======================================================================================
 
 	/**
 	 * Create an OAuth2 client with the given credentials, and then execute the
@@ -39,9 +136,9 @@ module.exports = class GoogleDriveAPI {
 		// this.getAccessToken(this.oAuth2Client, "4/0AY0e-g5kfZeWsxAEpgnINQhxaz6zNlPEKrNs1WM3CcL6SpdGwf0LWY0RhCjntmSsr5zvMw");
 
 		let token = await this.fb_inst.retrieve_collection("cred");
-        token = token.find((val) => val.id === "drive_cred").content;
-        this.oAuth2Client.setCredentials(token);
-        // this.play_music();
+		token = token.find((val) => val.id === "drive_cred").content;
+		this.oAuth2Client.setCredentials(token);
+		// this.play_music();
 	}
 
 	/**
@@ -52,58 +149,16 @@ module.exports = class GoogleDriveAPI {
 	getAuthUrl(oAuth2Client, callback) {
 		const authUrl = oAuth2Client.generateAuthUrl({
 			access_type: "offline",
-			scope: ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.metadata.readonly", "https://www.googleapis.com/auth/drive.readonly","https://www.googleapis.com/auth/drive.file"],
+			scope: [
+				"https://www.googleapis.com/auth/drive",
+				"https://www.googleapis.com/auth/drive.metadata.readonly",
+				"https://www.googleapis.com/auth/drive.readonly",
+				"https://www.googleapis.com/auth/drive.file",
+			],
 		});
 		console.log("Authorize this app by visiting this url:", authUrl);
 	}
-	/**
-	 * Lists the names and IDs of up to 10 files.
-	 * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
-	 */
-	listFiles(auth) {
-		const drive = google.drive({ version: "v3", auth });
-		drive.files.list(
-			{
-				pageSize: 100,
-				fields: "nextPageToken, files(id, name)",
-			},
-			(err, res) => {
-				if (err)
-					return console.log("The API returned an error: " + err);
-				const files = res.data.files;
-				if (files.length) {
-					console.log("Files:");
-					files.map((file) => {
-						console.log(`${file.name} (${file.id})`);
-					});
-				} else {
-					console.log("No files found.");
-				}
-			}
-		);
-    }
-    
-    play_music(origin) {
-        let auth = this.oAuth2Client;
-        const drive = google.drive({ version: "v3", auth });
-        let fil_id = "124KNs98Wk_-nXWxLKEpVMFLy17bqoz67";
-        drive.files.get(
-            {
-              fileId: fil_id,
-              alt: "media"
-            },
-            { responseType: "stream" },
-            (err, { data }) => {
-              // console.log(data);
-              origin.member.voice.channel
-                .join()
-                .then(connection => {
-                  connection.play(data);
-                })
-                .catch(err => console.log(err));
-            }
-          );
-    }
+
 	/**
 	 * Get and store new token after prompting for user authorization, and then
 	 * execute the given callback with the authorized OAuth2 client.
