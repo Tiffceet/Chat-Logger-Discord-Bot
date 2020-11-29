@@ -5,12 +5,14 @@ const fs = require("fs");
 const drive_cred_path = "./drive_credentials.json";
 const { google } = require("googleapis");
 module.exports = class GoogleDriveAPI {
+
 	/**
 	 * Ctor for Google Drive API
 	 * @param {string} client_secret Client secret provided in google drive api credentials.json
 	 * @param {PinkFredorFirebase} firebase_instance Firebase instance (required to store token)
 	 */
 	constructor(client_secret, firebase_instance) {
+        this.readyState = false;
 		this.client_secret = client_secret;
 		this.fb_inst = firebase_instance;
 		this.credentials = JSON.parse(fs.readFileSync(drive_cred_path));
@@ -26,7 +28,7 @@ module.exports = class GoogleDriveAPI {
 		);
 
 		this.authorize().then((_) => {
-			// this.get_music_index();
+			this.readyState = true;
 		});
 	}
 
