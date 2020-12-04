@@ -18,31 +18,28 @@ var PrivateMusicCollection = {
 	// =============================================================
 	_module_dependency: {},
 	_init: function () {
-		let p = new Promise((resolve) => {
-			while (!this._module_dependency["GoogleDriveAPI"].readyState) {
-				continue;
+		PrivateMusicCollection._module_dependency["GoogleDriveAPI"].onReady(
+			(_) => {
+				PrivateMusicCollection._module_dependency["GoogleDriveAPI"]
+					.get_music_index()
+					.then((idx) => {
+						PrivateMusicCollection.lib_index = idx;
+						PrivateMusicCollection._init_status = true;
+					});
 			}
-			this._module_dependency["GoogleDriveAPI"]
-				.get_music_index()
-				.then((idx) => {
-                    PrivateMusicCollection.lib_index = idx;
-                    resolve("");
-				});
-		});
-		p.then((_) => {
-			PrivateMusicCollection._init_status = true;
-		});
+		);
 	},
 	_init_status: false,
 	_worker: function (origin, cmd_name, args) {
 		if (origin == null) {
 			return;
-        }
-        
-        if(!PrivateMusicCollection._init_status) {
-            origin.channel.send("This module is not ready yet.");
-        }
-        
+		}
+
+		if (!PrivateMusicCollection._init_status) {
+			origin.channel.send("Module is not loaded yet.");
+			return;
+		}
+
 		PrivateMusicCollection[cmd_name](origin, args);
 	},
 	_import: function (dependency) {
@@ -113,20 +110,32 @@ var PrivateMusicCollection = {
 	},
 
 	pmc_view: async function (origin, args = []) {
+		if (args.length != 0) {
+			switch (args[0]) {
+				case "album":
+					PrivateMusicCollection.pmc_view_album(
+						origin,
+						args.slice(1)
+					);
+					return;
+			}
+		}
+
 		let al_listing = `Albums:\n\n`;
 
 		for (let i = 0; i < this.lib_index.album.length; i++) {
-			al_listing += `${i}. ${this.lib_index.album[i].name}\nBy: ${this.lib_index.album[i].artist}\n\n`;
+			al_listing += `${i + 1}. ${this.lib_index.album[i].name}`;
 		}
 
 		origin.channel.send(
-			new Discord.MessageEmebed()
+			new Discord.MessageEmbed()
 				.setTitle("Albums")
 				.setDescription(al_listing)
 				.setColor(
 					"#" + Math.floor(Math.random() * 16777215).toString(16)
 				)
 		);
+
 		// let item = idx.album[0].content.find((val) => {
 		// 	return val.name === "info.json";
 		// });
@@ -179,6 +188,10 @@ var PrivateMusicCollection = {
 		// 		.setDescription(album_desc)
 		// );
 	},
+
+	pmc_view_album: async function (origin, args = []) {
+        
+    },
 
 	pmc_play: async function (origin, args = []) {
 		let data = await this._module_dependency[

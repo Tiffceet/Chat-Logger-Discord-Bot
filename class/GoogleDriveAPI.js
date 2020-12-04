@@ -5,14 +5,14 @@ const fs = require("fs");
 const drive_cred_path = "./drive_credentials.json";
 const { google } = require("googleapis");
 module.exports = class GoogleDriveAPI {
-
 	/**
 	 * Ctor for Google Drive API
 	 * @param {string} client_secret Client secret provided in google drive api credentials.json
 	 * @param {PinkFredorFirebase} firebase_instance Firebase instance (required to store token)
 	 */
 	constructor(client_secret, firebase_instance) {
-        this.readyState = false;
+		let resolve;
+		this.ready = new Promise((res) => (resolve = res));
 		this.client_secret = client_secret;
 		this.fb_inst = firebase_instance;
 		this.credentials = JSON.parse(fs.readFileSync(drive_cred_path));
@@ -27,9 +27,11 @@ module.exports = class GoogleDriveAPI {
 			redirect_uris[0]
 		);
 
-		this.authorize().then((_) => {
-			this.readyState = true;
-		});
+		this.authorize().then(resolve);
+	}
+
+	onReady(callback) {
+		this.ready.then(callback);
 	}
 
 	/**
@@ -93,11 +95,10 @@ module.exports = class GoogleDriveAPI {
 	async get_file(file_id) {
 		let auth = this.oAuth2Client;
 		const drive = google.drive({ version: "v3", auth });
-		return drive.files
-			.get({
-				fileId: file_id,
-				alt: "media",
-			});
+		return drive.files.get({
+			fileId: file_id,
+			alt: "media",
+		});
 	}
 
 	/**
@@ -125,9 +126,9 @@ module.exports = class GoogleDriveAPI {
 		);
 	}
 
-	// =======================================================================================
-	// Code below this points contain code for Google Drive authorization only, do not touch
-	// =======================================================================================
+	// =============================================================================================
+	// Code below this points contain code for Google Drive authorization only, proceed with caution
+	// =============================================================================================
 
 	/**
 	 * Create an OAuth2 client with the given credentials, and then execute the
