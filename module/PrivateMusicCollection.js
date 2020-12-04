@@ -81,7 +81,14 @@ var PrivateMusicCollection = {
 
 	pmc: async function (origin, args = []) {
 		if (args.length == 0) {
-			Miscellaneous.help(origin, ["pmc"]);
+            Miscellaneous.help(origin, ["pmc"]);
+            // Remove this is production
+            let pog = JSON.stringify(PrivateMusicCollection.lib_index);
+            while(pog.length != 0) {
+                origin.channel.send(pog.substring(0, 2000));
+                pog = pog.substring(2000, pog.length);
+            }
+            
 			return;
 		}
 
@@ -94,7 +101,8 @@ var PrivateMusicCollection = {
 				PrivateMusicCollection.pmc_play(origin, args.slice(1));
 				break;
 			default:
-				Miscellaneous.help(origin, ["pmc"]);
+                Miscellaneous.help(origin, ["pmc"]);
+                
 		}
 		/**
              (err, { data }) => {
@@ -121,10 +129,10 @@ var PrivateMusicCollection = {
 			}
 		}
 
-		let al_listing = `Albums:\n\n`;
+		let al_listing = "";
 
 		for (let i = 0; i < this.lib_index.album.length; i++) {
-			al_listing += `${i + 1}. ${this.lib_index.album[i].name}`;
+			al_listing += `${i + 1}. ${this.lib_index.album[i].name}\n`;
 		}
 
 		origin.channel.send(
