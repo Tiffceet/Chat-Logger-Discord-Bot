@@ -4,6 +4,7 @@
 const fs = require("fs");
 const drive_cred_path = "./drive_credentials.json";
 const { google } = require("googleapis");
+const { reseller } = require("googleapis/build/src/apis/reseller");
 module.exports = class GoogleDriveAPI {
 	/**
 	 * Ctor for Google Drive API
@@ -35,76 +36,54 @@ module.exports = class GoogleDriveAPI {
 	}
 
 	/**
-	 * Return a list of albums with its content's files index
-	 * @return {object} music index
+	 * Get directory in google drive
+	 * @param {string} folder_id (optional) specific folder_id to get dir from
+	 * @return {Promise<object>|Promise<boolean>} Object returned by google.drive.list, if folder_id is invalid, returns false
 	 * @example
 	 * {
-	 *  album: [
-	 *      {
-	 *          folder_id: "5e6f7g"
-	 *          name: "yuanfen"
-	 *          content: [
-	 *              {
-	 *                  kind: "drive#file",
-	 *                  id: "1a2b3c",
-	 *                  name: "10.mp3"
-	 *                  mimeType: "audio/mpeg"
-	 *              },
-	 *              ...
-	 *          ]
-	 *      },
-	 *      ...
-	 *  ]
+	 *  config: {},
+	 *  data: {
+	 *      files: [
+	 *          {
+	 *              id: string,
+	 *              kind: string,
+	 *              mimeType: string,
+	 *              name: string
+	 *          },
+	 *          ...
+	 *      ]
+	 *  },
+	 *  headers: {}.
 	 * }
 	 */
-	async get_music_index() {
-		let index = {
-			album: [],
-		};
+	async dir(folder_id = undefined) {
 		let auth = this.oAuth2Client;
 		const drive = google.drive({ version: "v3", auth });
-		let res = await drive.files.list(
-			// Get folders in the "Music" Folder
-			{
-				q:
-					"'1DeuKTBAo7JzlobaApyynTPHbTuHce7lS' in parents and mimeType='application/vnd.google-apps.folder'",
+		let res;
+		if (typeof folder_id !== "undefined") {
+			try {
+				res = await drive.files.list({
+					q: `'${folder_id}' in parents`,
+				});
+			} catch (e) {
+				return false;
 			}
-		);
-
-		for (let i = 0; i < res.data.files.length; i++) {
-			index["album"].push({
-				folder_id: res.data.files[i].id,
-				name: res.data.files[i].name,
-				content: [],
-			});
+		} else {
+			res = await drive.files.list();
 		}
-
-		for (let i = 0; i < index.album.length; i++) {
-			let res2 = await drive.files.list(
-				// Get folders in the "Music" Folder
-				{
-					q: `'${index.album[i].folder_id}' in parents`,
-				}
-			);
-
-			index.album[i].content = res2.data.files;
-		}
-		return index;
-	}
-
-	async get_file(file_id) {
-		let auth = this.oAuth2Client;
-		const drive = google.drive({ version: "v3", auth });
-		return drive.files.get({
-			fileId: file_id,
-			alt: "media",
-		});
+		return res;
 	}
 
 	/**
 	 * Get File stream of a given file id
 	 * @param {string} file_id
 	 * @return {object} object returned by drive.files.get()
+	 * @example
+	 * {
+	 *      config: {},
+	 *      data: Gunzip object
+	 *      headers: {}
+	 * }
 	 */
 	async get_file_stream(file_id) {
 		let auth = this.oAuth2Client;
@@ -124,6 +103,46 @@ module.exports = class GoogleDriveAPI {
 			},
 			{ responseType: "stream" }
 		);
+	}
+
+	/**
+	 * Add a file to google drive
+	 * @param {string} file filename or the file id
+	 * @param {string} mimeType file type
+	 * @param {ReadableStream} body preferbly fs.createReadStream(file) - file data to upload
+	 * @param {boolean} isUpdate (optional) if set to true, assumes file id is passed in
+	 * @param {string} folder_id (optional) folder to add the file to
+	 */
+	async upload_file(
+		file,
+		mimeType,
+		body,
+		isUpdate = false,
+		folder_id = undefined
+	) {
+		let auth = this.oAuth2Client;
+		const drive = google.drive({ version: "v3", auth });
+
+		let media = {
+			mimeType: mimeType,
+			body: body,
+		};
+
+		if (isUpdate) {
+			await drive.files.update({
+				fileId: file,
+				media: media,
+			});
+		} else {
+			let resource = { name: file };
+			if (typeof folder_id !== "undefined") {
+				resource["parents"] = [folder_id];
+			}
+			await drive.files.create({
+				resource: resource,
+				media: media,
+			});
+		}
 	}
 
 	// =============================================================================================
