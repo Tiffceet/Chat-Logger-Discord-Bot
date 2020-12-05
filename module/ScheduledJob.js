@@ -8,7 +8,6 @@ const path = require("path");
 
 var rss_parser = new RssParser();
 
-
 var ScheduledJob = {
 	// =============================================================
 	// DEFAULT MODULE MEMBER
@@ -120,10 +119,10 @@ var ScheduledJob = {
 			"America/Los_Angeles"
 		),
 		new CronJob(
-            "* 0 */1 * * *",
-            // Clean the tmp directory
+			"* 0 */1 * * *",
+			// Clean the tmp directory
 			async function () {
-                // console.log("Attempted file cleaning");
+				// console.log("Attempted file cleaning");
 				const directory = "tmp";
 
 				fs.readdir(directory, (err, files) => {
@@ -131,8 +130,8 @@ var ScheduledJob = {
 
 					for (const file of files) {
 						fs.unlink(path.join(directory, file), (err) => {
-							if (err) throw err;
-                        });
+							console.log(err);
+						});
 					}
 				});
 			},

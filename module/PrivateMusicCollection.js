@@ -5,6 +5,7 @@
  */
 const { google } = require("googleapis");
 const Discord = require("discord.js");
+const ffmetadata = require("ffmetadata");
 const fs = require("fs");
 const Miscellaneous = require("./Miscellaneous");
 var PrivateMusicCollection = {
@@ -215,6 +216,44 @@ var PrivateMusicCollection = {
 		return index;
 	},
 
+	/**
+	 * This function downloads the file and attempt to parse its ffmetadata (expecting mp3 file)
+	 * @param {string} file_id
+	 * @return {Promise<object>}
+	 */
+	parseSongFFMetaData: async function (file_id) {
+		let filepath = `tmp/song${Date.now()}.mp3`;
+
+		await PrivateMusicCollection.download_file(file_id, filepath);
+
+		return await new Promise((resolve) => {
+			ffmetadata.read(filepath, function (err, data) {
+				resolve(data);
+			});
+		});
+	},
+
+	/**
+	 * Wait for user to response
+	 * @param {Discord.Message} origin message origin
+	 * @param {string} authorid who to wait for (expecting discord user id)
+	 * @param {string} timeout (optional) default is 1 minute
+	 * @return {Promise<string>} return user's response if any, throws error if user didnt response in time
+	 */
+	wait4Msg: async function (origin, author_id, timeout = 60000) {
+		let input = await origin.channel.awaitMessages(
+			(m) => m.author.id === author_id,
+			{
+				max: 1,
+				time: timeout,
+				errors: ["time"],
+			}
+		);
+
+		let response = input.get(input.keyArray()[0]).content;
+		return response;
+	},
+
 	// =============================================================
 	// Command Function
 	// =============================================================
@@ -362,15 +401,15 @@ var PrivateMusicCollection = {
 						name: "Release Year",
 						value: album_info.release_year || "Unknown",
 						inline: true,
-                    },
-                    {
+					},
+					{
 						name: "Description",
 						value: album_info.looz_desc || "Unknown",
-                    },
-                    {
+					},
+					{
 						name: "Tracks",
 						value: album_desc || "Unknown",
-                    },
+					}
 				)
 				.setColor(album_info.album_color)
 		);
@@ -487,29 +526,35 @@ var PrivateMusicCollection = {
 				},
 				{
 					name: "track",
-					value: "Still thinking how to do this",
+					value:
+						Object.keys(editing_info_json.track)
+							.map(
+								(e) =>
+									e +
+									". " +
+									editing_info_json.track[e].title +
+									" - " +
+									editing_info_json.track[e].artist +
+									"\n" +
+									editing_info_json.track[e].looz_desc
+							)
+							.join("\n") || "No tracks ",
 				}
 			);
 			origin.channel.send(dc_eb);
 		};
 
-		let input = "",
-			response = "";
+		let response = "";
 		while (true) {
 			send_editing_info_json_to_channel();
 			origin.channel.send(
 				"Enter field to edit (UPDATE to update info, EXIT to stop)"
 			);
-			input = await origin.channel.awaitMessages(
-				(m) => m.author.id === origin.author.id,
-				{
-					max: 1,
-					time: 30000,
-					errors: ["time"],
-				}
-			);
 
-			response = input.get(input.keyArray()[0]).content;
+			response = await PrivateMusicCollection.wait4Msg(
+				origin,
+				origin.author.id
+			);
 
 			if (response == "EXIT") {
 				origin.channel.send("Changes have been discarded.");
@@ -536,21 +581,126 @@ var PrivateMusicCollection = {
 			}
 
 			if (editing_info_json.hasOwnProperty(response)) {
-				origin.channel.send(
-					`Editing "${response}"...\nOld value:\n\`\`\`${editing_info_json["response"]}\`\`\`\nEnter new value: `
-				);
-				input = await origin.channel.awaitMessages(
-					(m) => m.author.id === origin.author.id,
-					{
-						max: 1,
-						time: 30000,
-						errors: ["time"],
-					}
-				);
+				if (response == "track") {
+					origin.channel.send(
+						"Enter Action (ADD, EDIT, REMOVE, REARRANGE, IMPORT_METADATA)"
+					);
 
-				editing_info_json[response] = input.get(
-					input.keyArray()[0]
-				).content;
+					response = await PrivateMusicCollection.wait4Msg(
+						origin,
+						origin.author.id
+                    );
+                    let res = "";
+					switch (response.split(" ")[0]) {
+                        case "ADD":                          
+                            origin.channel.send("\`.pmc IGNORE\`to ignore\ntrack_no:");
+                            let new_t_no = await PrivateMusicCollection.wait4Msg(origin, origin.author.id);
+                            editing_info_json["track"][new_t_no] = {
+                                title: "",
+                                artist: "",
+                                looz_desc: ""
+                            };
+                            origin.channel.send("title:");
+                            
+                            res = await PrivateMusicCollection.wait4Msg(origin, origin.author.id);
+                            if(res != ".pmc IGNORE") {
+                                editing_info_json["track"][new_t_no]["title"] = res;
+                            }
+                            origin.channel.send("artist:");
+                            
+                            res = await PrivateMusicCollection.wait4Msg(origin, origin.author.id);
+                            if(res != ".pmc IGNORE") {
+                                editing_info_json["track"][new_t_no]["artist"] = res;
+                            }
+                            origin.channel.send("looz_desc:");
+                            
+                            res = await PrivateMusicCollection.wait4Msg(origin, origin.author.id);
+                            if(res != ".pmc IGNORE") {
+                                editing_info_json["track"][new_t_no]["looz_desc"] = res;
+                            }
+                            origin.channel.send(`Added ${new_t_no}. ${editing_info_json["track"][new_t_no]["title"]} - ${editing_info_json["track"][new_t_no]["artist"]}`);
+							break;
+						case "EDIT":
+                            let t_no = response.split(" ")[1];
+                            origin.channel.send(`\`.pmc IGNORE\`to ignore\nold_title: ${editing_info_json["track"][t_no].title}`);
+                            res = await PrivateMusicCollection.wait4Msg(origin, origin.author.id);
+                            if(res != ".pmc IGNORE") {
+                                editing_info_json["track"][t_no].title = res;
+                            }
+                            origin.channel.send(`old_artist: ${editing_info_json["track"][t_no].artist}`);
+                            res = await PrivateMusicCollection.wait4Msg(origin, origin.author.id);
+                            if(res != ".pmc IGNORE") {
+                                editing_info_json["track"][t_no].artist = res;
+                            }
+                            origin.channel.send(`old_looz_desc: ${editing_info_json["track"][t_no].looz_desc}`);
+                            res = await PrivateMusicCollection.wait4Msg(origin, origin.author.id);
+                            if(res != ".pmc IGNORE") {
+                                editing_info_json["track"][t_no].looz_desc = res;
+                            }
+                            origin.channel.send(`Edited ${t_no}. ${editing_info_json["track"][t_no]["title"]} - ${editing_info_json["track"][t_no]["artist"]}`);
+							break;
+						case "REMOVE":
+							let r_t_no = response.split(" ")[1];
+							origin.channel.send(
+								`${r_t_no}. ${editing_info_json["track"][r_t_no].title} - ${editing_info_json["track"][r_t_no].artist} will be removed.`
+							);
+							delete editing_info_json["track"][r_t_no];
+							break;
+						case "REARRANGE":
+                            let kunci = Object.keys(editing_info_json["track"]);
+                            let new_track = {};
+							for (let k = 0; k < kunci.length; k++) {
+                                origin.channel.send(`${editing_info_json["track"][kunci[k]].title} - ${editing_info_json["track"][kunci[k]].artist}\nTrack number:`);
+                                let new_t_no = await PrivateMusicCollection.wait4Msg(origin, origin.author.id);
+                                new_track[new_t_no] = editing_info_json.track[kunci[k]];
+                            }
+                            editing_info_json.track = new_track;
+                            origin.channel.send("Finished rearranging track");
+							break;
+						case "IMPORT_METADATA":
+							origin.channel.send(
+								"I will now download the tracks and attempt to read their metadata tags"
+							);
+							let track_list = album_dir.data.files.filter(
+								(e) => e.mimeType == "audio/mpeg"
+							);
+
+							for (let j = 0; j < track_list.length; j++) {
+								origin.channel.send(
+									`Downloading Track ${j + 1}...`
+								);
+								let ret = await PrivateMusicCollection.parseSongFFMetaData(
+									track_list[j].id
+								);
+								origin.channel.send(
+									`Parsed Info:\nTitle: ${
+										ret.title || "Unknown"
+									}\nArtist: ${ret.artist || "Unknown"}`
+								);
+								editing_info_json["track"][j] = {
+									title: ret.title || "Unknown",
+									artist: ret.artist || "Unknown",
+									looz_desc: "",
+								};
+							}
+							origin.channel.send("Finished parsing metadata !");
+							break;
+						default:
+							origin.channel.send(
+								"You might want to try that again "
+							);
+					}
+					continue;
+				}
+				origin.channel.send(
+					`Editing "${response}"...\nOld value:\n\`\`\`${editing_info_json[response]}\`\`\`\nEnter new value: `
+				);
+				editing_info_json[
+					response
+				] = await PrivateMusicCollection.wait4Msg(
+					origin,
+					origin.author.id
+				);
 				continue;
 			} else {
 				origin.channel.send(`Field "${response}" do not exist.`);
