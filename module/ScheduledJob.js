@@ -3,7 +3,11 @@ const fetch = require("node-fetch");
 const cheerio = require("cheerio");
 var RssParser = require("rss-parser");
 const Discord = require("discord.js");
+const fs = require("fs");
+const path = require("path");
+
 var rss_parser = new RssParser();
+
 
 var ScheduledJob = {
 	// =============================================================
@@ -46,16 +50,16 @@ var ScheduledJob = {
 
 	bot: null,
 	last_notification: null,
-    channels_notify_able: ["713527791932670003"],
-    nico_user_ids: [18874531],
+	channels_notify_able: ["713527791932670003"],
+	nico_user_ids: [18874531],
 
 	// =============================================================
 	// =============================================================
 
 	// =============================================================
 	// Custom Function
-    // =============================================================
-    
+	// =============================================================
+
 	jobs: [
 		new CronJob(
 			"* 0 */1 * * *",
@@ -86,15 +90,17 @@ var ScheduledJob = {
 				// Notify channel
 				let channel = ScheduledJob.bot.channels.cache.get(
 					ScheduledJob.channels_notify_able[0]
-                );
-                channel.send(`<Pinkfredor Debug:>`);
-                channel.send(`<@246239361195048960>, mafumafu had a new upload !`);
+				);
+				channel.send(`<Pinkfredor Debug:>`);
+				channel.send(
+					`<@246239361195048960>, mafumafu had a new upload !`
+				);
 				channel.send(
 					new Discord.MessageEmbed()
 						.setTitle(feed.items[0].title)
 						.setURL(feed.items[0].link)
-                        .setImage(thumbnail_url)
-                        .setDescription(feed.items[0].contentSnippet)
+						.setImage(thumbnail_url)
+						.setDescription(feed.items[0].contentSnippet)
 				);
 
 				// Update firebase
@@ -108,6 +114,27 @@ var ScheduledJob = {
 				ScheduledJob.last_notification = await ScheduledJob._module_dependency[
 					"PinkFredorFirebase"
 				].retrieve_collection("notification");
+			},
+			null,
+			true,
+			"America/Los_Angeles"
+		),
+		new CronJob(
+            "* 0 */1 * * *",
+            // Clean the tmp directory
+			async function () {
+                // console.log("Attempted file cleaning");
+				const directory = "tmp";
+
+				fs.readdir(directory, (err, files) => {
+					if (err) throw err;
+
+					for (const file of files) {
+						fs.unlink(path.join(directory, file), (err) => {
+							if (err) throw err;
+                        });
+					}
+				});
 			},
 			null,
 			true,
