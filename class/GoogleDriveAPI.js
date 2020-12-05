@@ -112,6 +112,8 @@ module.exports = class GoogleDriveAPI {
 	 * @param {ReadableStream} body preferbly fs.createReadStream(file) - file data to upload
 	 * @param {boolean} isUpdate (optional) if set to true, assumes file id is passed in
 	 * @param {string} folder_id (optional) folder to add the file to
+     * @return {Promise<object>} return object if its file creation (isUpdate = false)
+     * @example
 	 */
 	async upload_file(
 		file,
@@ -138,9 +140,10 @@ module.exports = class GoogleDriveAPI {
 			if (typeof folder_id !== "undefined") {
 				resource["parents"] = [folder_id];
 			}
-			await drive.files.create({
+			return await drive.files.create({
 				resource: resource,
-				media: media,
+                media: media,
+                fields: 'id'
 			});
 		}
 	}

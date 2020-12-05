@@ -105,6 +105,21 @@ var PrivateMusicCollection = {
 	 */
 	lib_index: {},
 
+	info_json_template: {
+		name: "",
+		artist: "",
+		looz_desc: "",
+		release_year: "",
+		album_color: "",
+		track: {},
+	},
+
+	info_json_track_template: {
+		title: "",
+		artist: "",
+		looz_desc: "",
+	},
+
 	// =============================================================
 	// =============================================================
 
@@ -119,16 +134,16 @@ var PrivateMusicCollection = {
 	 * @return {Promise<boolean>} true if file_id is valid
 	 */
 	download_file: async function (file_id, destination) {
-        let data;
-        try {
+		let data;
+		try {
 			data = await this._module_dependency[
 				"GoogleDriveAPI"
-            ].get_file_stream(file_id);
-            data = data.data;
+			].get_file_stream(file_id);
+			data = data.data;
 		} catch (e) {
 			return false;
 		}
-        
+
 		let dest = fs.createWriteStream(destination);
 		data.pipe(dest);
 		await new Promise((resolve) => {
@@ -228,6 +243,9 @@ var PrivateMusicCollection = {
 			case "reload":
 				PrivateMusicCollection.pmc_reload(origin, args.slice(1));
 				break;
+			case "config":
+				PrivateMusicCollection.pmc_config(origin, args.slice(1));
+				break;
 			default:
 				Miscellaneous.help(origin, ["pmc"]);
 		}
@@ -270,58 +288,6 @@ var PrivateMusicCollection = {
 					"#" + Math.floor(Math.random() * 16777215).toString(16)
 				)
 		);
-
-		// let item = idx.album[0].content.find((val) => {
-		// 	return val.name === "info.json";
-		// });
-
-		// let item2 = idx.album[0].content.find((val) => {
-		// 	return val.name === "cover.jpg";
-		// });
-
-		// let item_stream = await this._module_dependency[
-		// 	"GoogleDriveAPI"
-		// ].get_file_stream(item.id);
-
-		// let item_stream2 = await this._module_dependency[
-		// 	"GoogleDriveAPI"
-		// ].get_file_stream(item2.id);
-
-		// let tmp_filename = `./tmp/info${Date.now()}.json`;
-		// let tmp_filename2 = `./tmp/cover${Date.now()}.jpg`;
-
-		// let dest = fs.createWriteStream(tmp_filename);
-		// item_stream.data.pipe(dest);
-		// await new Promise((resolve) => {
-		// 	dest.on("finish", (_) => {
-		// 		resolve("");
-		// 	});
-		// });
-
-		// let dest2 = fs.createWriteStream(tmp_filename2);
-		// item_stream2.data.pipe(dest2);
-		// await new Promise((resolve) => {
-		// 	dest2.on("finish", (_) => {
-		// 		resolve("");
-		// 	});
-		// });
-
-		// let album_info = JSON.parse(fs.readFileSync(tmp_filename));
-
-		// console.log(JSON.stringify(idx));
-
-		// let album_desc = `Tracks:\n\n`;
-		// for (let i = 0; i < Object.keys(album_info.track).length; i++) {
-		// 	album_desc += `${i + 1}. ${album_info.track[`${i + 1}`].title}\n`;
-		// }
-
-		// origin.channel.send(
-		// 	new Discord.MessageEmbed()
-		// 		.setTitle(album_info.name)
-		// 		.attachFiles([tmp_filename2])
-		// 		.setThumbnail(`attachment://${tmp_filename2.slice(6)}`)
-		// 		.setDescription(album_desc)
-		// );
 	},
 
 	pmc_view_album: async function (origin, args = []) {
@@ -348,6 +314,11 @@ var PrivateMusicCollection = {
 		let info_file = data.files.find((val) => val.name == "info.json");
 		let album_art_file = data.files.find((val) => val.name == "cover.jpg");
 
+		if (typeof info_file === "undefined") {
+			origin.channel.send("Missing album info, ask Looz to fill up");
+			return;
+		}
+
 		let filename = `tmp/info${Date.now()}.json`;
 		let albumartfilename = `tmp/cover${Date.now()}.jpg`;
 
@@ -370,9 +341,10 @@ var PrivateMusicCollection = {
 
 		let album_info = JSON.parse(fs.readFileSync(filename));
 
-		let album_desc = `Tracks:\n\n`;
-		for (let i = 0; i < Object.keys(album_info.track).length; i++) {
-			album_desc += `${i + 1}. ${album_info.track[`${i + 1}`].title}\n`;
+		let album_desc = "";
+		let keys = Object.keys(album_info.track);
+		for (let i = 0; i < keys.length; i++) {
+			album_desc += `${keys[i]}. ${album_info.track[keys[i]].title}\n`;
 		}
 
 		origin.channel.send(
@@ -380,7 +352,27 @@ var PrivateMusicCollection = {
 				.setTitle(album_info.name)
 				.attachFiles([albumartfilename])
 				.setThumbnail(`attachment://${albumartfilename.slice(4)}`)
-				.setDescription(album_desc)
+				.addFields(
+					{
+						name: "Artist",
+						value: album_info.artist || "Unknown",
+						inline: true,
+					},
+					{
+						name: "Release Year",
+						value: album_info.release_year || "Unknown",
+						inline: true,
+                    },
+                    {
+						name: "Description",
+						value: album_info.looz_desc || "Unknown",
+                    },
+                    {
+						name: "Tracks",
+						value: album_desc || "Unknown",
+                    },
+				)
+				.setColor(album_info.album_color)
 		);
 	},
 
@@ -398,6 +390,173 @@ var PrivateMusicCollection = {
 				disp.setVolume(0.1);
 			})
 			.catch((err) => console.log(err));
+	},
+
+	pmc_config: async function (origin, args = []) {
+		if (origin.author.id != 246239361195048960) {
+			origin.channel.send("This is limited to Looz for now.");
+			return;
+		}
+		switch (args[0]) {
+			case "albuminfo":
+				PrivateMusicCollection.pmc_config_albuminfo(
+					origin,
+					args.slice(1)
+				);
+				break;
+		}
+	},
+
+	/**
+	 * A very poorly written function for looz to update album info
+	 * @param {Discord.MessageEmbed} origin
+	 * @param {Array} args
+	 */
+	pmc_config_albuminfo: async function (origin, args = []) {
+		let idx = args[0] - 1;
+		let album_folder_id = this.lib_index.album[idx].folder_id;
+		// Attempt to download info.json
+		let album_dir = await PrivateMusicCollection._module_dependency[
+			"GoogleDriveAPI"
+		].dir(album_folder_id);
+		let info_file_details = album_dir.data.files.find(
+			(val) => val.name == "info.json"
+		);
+
+		let tmp_info_filepath = `tmp/info${Date.now()}.json`;
+		let info_json_file_id = "";
+
+		// If info.json is not found, create one on drive
+		if (typeof info_file_details === "undefined") {
+			origin.channel.send(
+				"info.json not found in album folder.\nCreating..."
+			);
+
+			fs.writeFileSync(
+				tmp_info_filepath,
+				JSON.stringify(PrivateMusicCollection.info_json_template)
+			);
+			info_json_file_id = await PrivateMusicCollection._module_dependency[
+				"GoogleDriveAPI"
+			].upload_file(
+				"info.json",
+				"application/json",
+				fs.createReadStream(tmp_info_filepath),
+				false,
+				album_folder_id
+			);
+			info_json_file_id = info_json_file_id.data.id;
+			origin.channel.send("File info.json created !");
+		} else {
+			info_json_file_id = info_file_details.id;
+			await PrivateMusicCollection.download_file(
+				info_json_file_id,
+				tmp_info_filepath
+			);
+		}
+
+		let editing_info_json = JSON.parse(fs.readFileSync(tmp_info_filepath));
+
+		const send_editing_info_json_to_channel = function () {
+			let dc_eb = new Discord.MessageEmbed();
+			dc_eb.setTitle(PrivateMusicCollection.lib_index.album[idx].name);
+			dc_eb.addFields(
+				{
+					name: "name",
+					value: editing_info_json.name || "null",
+					inline: true,
+				},
+				{
+					name: "artist",
+					value: editing_info_json.artist || "null",
+					inline: true,
+				},
+				{
+					name: "release_year",
+					value: editing_info_json.release_year || "null",
+					inline: true,
+				},
+				{
+					name: "album_color",
+					value: editing_info_json.album_color || "null",
+					inline: true,
+				},
+				{
+					name: "looz_desc",
+					value: editing_info_json.looz_desc || "null",
+				},
+				{
+					name: "track",
+					value: "Still thinking how to do this",
+				}
+			);
+			origin.channel.send(dc_eb);
+		};
+
+		let input = "",
+			response = "";
+		while (true) {
+			send_editing_info_json_to_channel();
+			origin.channel.send(
+				"Enter field to edit (UPDATE to update info, EXIT to stop)"
+			);
+			input = await origin.channel.awaitMessages(
+				(m) => m.author.id === origin.author.id,
+				{
+					max: 1,
+					time: 30000,
+					errors: ["time"],
+				}
+			);
+
+			response = input.get(input.keyArray()[0]).content;
+
+			if (response == "EXIT") {
+				origin.channel.send("Changes have been discarded.");
+				break;
+			}
+
+			if (response == "UPDATE") {
+				origin.channel.send("Updating info.json...");
+				fs.writeFileSync(
+					tmp_info_filepath,
+					JSON.stringify(editing_info_json)
+				);
+				await PrivateMusicCollection._module_dependency[
+					"GoogleDriveAPI"
+				].upload_file(
+					info_json_file_id,
+					"application/json",
+					fs.createReadStream(tmp_info_filepath),
+					true,
+					album_folder_id
+				);
+				origin.channel.send("Album info updated !");
+				break;
+			}
+
+			if (editing_info_json.hasOwnProperty(response)) {
+				origin.channel.send(
+					`Editing "${response}"...\nOld value:\n\`\`\`${editing_info_json["response"]}\`\`\`\nEnter new value: `
+				);
+				input = await origin.channel.awaitMessages(
+					(m) => m.author.id === origin.author.id,
+					{
+						max: 1,
+						time: 30000,
+						errors: ["time"],
+					}
+				);
+
+				editing_info_json[response] = input.get(
+					input.keyArray()[0]
+				).content;
+				continue;
+			} else {
+				origin.channel.send(`Field "${response}" do not exist.`);
+				continue;
+			}
+		}
 	},
 
 	pmc_reload: async function (origin, args = []) {
