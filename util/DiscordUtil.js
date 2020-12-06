@@ -28,37 +28,41 @@ module.exports = class DiscordUtil {
 	 * Function to send paginated content
 	 * @param {Discord.Message} origin
 	 * @param {Array} pages page of content to send
+	 * @param {number} page_count amount of pages
 	 * @param {number} start_page (optional) which page to display on call. Default to first page
 	 * @param {string} footer (optional) Default to "Page {n} of {max}", only display if page is a Discord.MessageEmbed, set to null to prevent this function overwritting existing footer
 	 * @param {Array} emojiList (optional) default to ["⏮️", "⬅️", "➡️", "⏭️"]
 	 * @param {number} timeout (optional) default to 10 minute
+	 * @return {Promise<Function>} returns a function that can be used to modify the pages passed in
+	 * @example
+	 * function(new_page)
 	 */
 	static async paginated(
 		origin,
 		pages,
+		page_count,
 		start_page = 1,
 		footer = "Page {n} of {max}",
 		emojiList = ["⏮️", "⬅️", "➡️", "⏭️"],
 		timeout = 600000
 	) {
-		if (pages.length == 0) {
+		if (page_count == 0) {
 			throw new Error("No pages to display");
 		}
-		if (typeof pages[start_page-1] === "undefined") {
+		if (typeof pages[start_page - 1] === "undefined") {
 			start_page = 1;
 		}
 
-		// Handle footer
-		if (footer) {
-			for (let i = 0; i < pages.length; i++) {
-				if (!(pages[i] instanceof Discord.MessageEmbed)) continue;
-				pages[i].setFooter(
-					footer.replace("{n}", i + 1).replace("{max}", pages.length)
+        const applyFooter = (item, cur, max) => {
+			if (footer) {
+				item.setFooter(
+					footer.replace("{n}", cur).replace("{max}", max)
 				);
 			}
-        }
-        
-        let sent_msg = await origin.channel.send(pages[start_page - 1]);
+		};
+
+        applyFooter(pages[start_page-1], start_page, page_count);
+		let sent_msg = await origin.channel.send(pages[start_page - 1]);
 
 		let page_num = start_page;
 
@@ -102,13 +106,15 @@ module.exports = class DiscordUtil {
 			nextALL.resetTimer();
 		};
 
+
 		prevALL.on("collect", async (r, u) => {
-			resetAllTimer();
+            resetAllTimer();
 			r.users.remove(u.id);
 			if (page_num == 1) {
 				return;
 			}
-			page_num = 1;
+            page_num = 1;
+            applyFooter(pages[0], 1, page_count);
 			sent_msg.edit(pages[0]);
 		});
 
@@ -117,26 +123,32 @@ module.exports = class DiscordUtil {
 			r.users.remove(u.id);
 			if (page_num <= 1) {
 				return;
-			}
-			sent_msg.edit(pages[--page_num - 1]);
+            }
+            applyFooter(pages[--page_num - 1], page_num, page_count);
+			sent_msg.edit(pages[page_num - 1]);
 		});
 
 		next.on("collect", async (r, u) => {
 			resetAllTimer();
 			r.users.remove(u.id);
-			if (page_num >= pages.length) {
+			if (page_num >= page_count) {
 				return;
-			}
-			sent_msg.edit(pages[++page_num - 1]);
+            }
+            applyFooter(pages[++page_num - 1], page_num, page_count);
+			sent_msg.edit(pages[page_num - 1]);
 		});
 		nextALL.on("collect", async (r, u) => {
 			resetAllTimer();
 			r.users.remove(u.id);
-			if (page_num >= pages.length) {
+			if (page_num >= page_count) {
 				return;
 			}
-			page_num = pages.length;
+            page_num = page_count;
+            applyFooter(pages[page_num - 1], page_count, page_count);
 			sent_msg.edit(pages[page_num - 1]);
 		});
+		return function (new_page) {
+			pages = new_page;
+		};
 	}
 };

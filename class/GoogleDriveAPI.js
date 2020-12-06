@@ -72,16 +72,16 @@ module.exports = class GoogleDriveAPI {
 			res = await drive.files.list();
 		}
 		return res;
-    }
-    
-    /**
-     * Get file metadata
-     * @param {string} file_id drive file id
-     * @param {string} metadata_fields fields seperated by comma as expected from https://developers.google.com/drive/api/v3/reference/files#resource https://developers.google.com/drive/api/v3/fields-parametera
-     * @return {Promise<Promise>} Promise returned by drive.files.get()
-     */
-    async get_file_metadata (file_id, metadata_fields) {
-        let auth = this.oAuth2Client;
+	}
+
+	/**
+	 * Get file metadata
+	 * @param {string} file_id drive file id
+	 * @param {string} metadata_fields fields seperated by comma as expected from https://developers.google.com/drive/api/v3/reference/files#resource https://developers.google.com/drive/api/v3/fields-parametera
+	 * @return {Promise<Promise>} Promise returned by drive.files.get()
+	 */
+	async get_file_metadata(file_id, metadata_fields) {
+		let auth = this.oAuth2Client;
 		const drive = google.drive({ version: "v3", auth });
 		// drive.files.get(
 		// 	{
@@ -91,13 +91,11 @@ module.exports = class GoogleDriveAPI {
 		// 	{ responseType: "stream" },
 		// 	callback
 		// );
-		return drive.files.get(
-			{
-                fileId: file_id,
-                fields: metadata_fields
-			}
-		);
-    }
+		return drive.files.get({
+			fileId: file_id,
+			fields: metadata_fields,
+		});
+	}
 
 	/**
 	 * Get File stream of a given file id
@@ -131,14 +129,32 @@ module.exports = class GoogleDriveAPI {
 	}
 
 	/**
+	 * Search for a file in google drive
+	 * @param {string} query query as of https://developers.google.com/drive/api/v3/ref-search-terms
+	 * @param {string} metadata_fields fields seperated by comma as expected from https://developers.google.com/drive/api/v3/reference/files#resource https://developers.google.com/drive/api/v3/fields-parameter
+	 * @return {Promise<Promise>} promise returned by drive.files.get()
+	 */
+	async search_file(query, metadata_fields = undefined) {
+		let auth = this.oAuth2Client;
+		const drive = google.drive({ version: "v3", auth });
+
+		let obj = { q: query };
+		if (typeof metadata_fields !== "undefined") {
+			obj.fields = metadata_fields;
+		}
+
+		return drive.files.list(obj);
+	}
+
+	/**
 	 * Add a file to google drive
 	 * @param {string} file filename or the file id
 	 * @param {string} mimeType file type
 	 * @param {ReadableStream} body preferbly fs.createReadStream(file) - file data to upload
 	 * @param {boolean} isUpdate (optional) if set to true, assumes file id is passed in
 	 * @param {string} folder_id (optional) folder to add the file to
-     * @return {Promise<object>} return object if its file creation (isUpdate = false)
-     * @example
+	 * @return {Promise<object>} return object if its file creation (isUpdate = false)
+	 * @example
 	 */
 	async upload_file(
 		file,
@@ -167,8 +183,8 @@ module.exports = class GoogleDriveAPI {
 			}
 			return await drive.files.create({
 				resource: resource,
-                media: media,
-                fields: 'id'
+				media: media,
+				fields: "id",
 			});
 		}
 	}

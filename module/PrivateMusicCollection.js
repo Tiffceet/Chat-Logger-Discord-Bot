@@ -9,6 +9,7 @@ const ffmetadata = require("ffmetadata");
 const fs = require("fs");
 const Miscellaneous = require("./Miscellaneous");
 const DiscordUtil = require("../util/DiscordUtil.js");
+const { info } = require("console");
 var PrivateMusicCollection = {
 	// =============================================================
 	// DEFAULT MODULE MEMBER
@@ -24,21 +25,22 @@ var PrivateMusicCollection = {
 			return new Promise((resolve) => {
 				PrivateMusicCollection._module_dependency[
 					"GoogleDriveAPI"
-				].onReady((_) => {
-					PrivateMusicCollection.get_music_index().then((idx) => {
-						PrivateMusicCollection.lib_index = idx;
-						resolve();
-					});
+				].onReady(async (_) => {
+					let idx = await PrivateMusicCollection.get_music_index();
+					PrivateMusicCollection.lib_index = idx;
+					await PrivateMusicCollection.get_album_index();
+					PrivateMusicCollection._init_status = true;
+					resolve();
 				});
 			});
 		}
 
 		PrivateMusicCollection._module_dependency["GoogleDriveAPI"].onReady(
-			(_) => {
-				PrivateMusicCollection.get_music_index().then((idx) => {
-					PrivateMusicCollection.lib_index = idx;
-					PrivateMusicCollection._init_status = true;
-				});
+			async (_) => {
+				let idx = await PrivateMusicCollection.get_music_index();
+				PrivateMusicCollection.lib_index = idx;
+				await PrivateMusicCollection.get_album_index();
+				PrivateMusicCollection._init_status = true;
 			}
 		);
 	},
@@ -90,7 +92,8 @@ var PrivateMusicCollection = {
 	 *  album: [
 	 *      {
 	 *          folder_id: "5e6f7g"
-	 *          name: "yuanfen"
+	 *          name: "yuanfen",
+	 *          info_json: {},
 	 *          content: [
 	 *              {
 	 *                  kind: "drive#file",
@@ -117,6 +120,7 @@ var PrivateMusicCollection = {
 	},
 
 	info_json_track_template: {
+		file_id: "",
 		title: "",
 		artist: "",
 		looz_desc: "",
@@ -218,6 +222,32 @@ var PrivateMusicCollection = {
 	},
 
 	/**
+	 * Attempt to fetch all album's info.json
+	 */
+	get_album_index: async function () {
+		for (
+			let i = 0;
+			i < PrivateMusicCollection.lib_index.album.length;
+			i++
+		) {
+			let album = PrivateMusicCollection.lib_index.album[i];
+			let directory = await PrivateMusicCollection._module_dependency[
+				"GoogleDriveAPI"
+			].dir(album.folder_id);
+			let info_file = directory.data.files.find(
+				(e) => e.name == "info.json"
+			);
+			if (typeof info_file === "undefined") {
+				continue;
+			}
+			let filename = `tmp/${Date.now()}`;
+			await PrivateMusicCollection.download_file(info_file.id, filename);
+			let info_json = JSON.parse(fs.readFileSync(filename));
+			PrivateMusicCollection.lib_index.album[i].info_json = info_json;
+		}
+	},
+
+	/**
 	 * This function downloads the file and attempt to parse its ffmetadata (expecting mp3 file)
 	 * @param {string} file_id
 	 * @return {Promise<object>}
@@ -237,6 +267,7 @@ var PrivateMusicCollection = {
 	/**
 	 * Prepare album embed
 	 * @param {string} folder_id drive folder id
+	 * @param {string} cover_image_url (optional) album art if available
 	 * @return {Promise<Discord.MessageEmbed> | Promise<object>} Returns album embed if successful, returns status object if failed
 	 * @example
 	 * {
@@ -244,51 +275,43 @@ var PrivateMusicCollection = {
 	 *      err: "Can not find info.json from folder_id"
 	 * }
 	 */
-	prepare_album_embed: async function (folder_id) {
-		let { data } = await PrivateMusicCollection._module_dependency[
-			"GoogleDriveAPI"
-		].dir(folder_id);
+	prepare_album_embed: async function (
+		folder_id,
+		cover_image_url = undefined
+	) {
+		// let { data } = await PrivateMusicCollection._module_dependency[
+		// 	"GoogleDriveAPI"
+		// ].dir(folder_id);
 
-		let info_file = data.files.find((val) => val.name == "info.json");
-		let album_art_file = data.files.find((val) => val.name == "cover.jpg");
+		// let album_art_file = data.files.find((val) => val.name == "cover.jpg");
 
-		if (typeof info_file === "undefined") {
-			// Missing info.json
-			return {
-				status: false,
-				err: "Can not find info.json from folder_id",
-			};
-		}
+		// let albumartfilename = `tmp/cover${Date.now()}.jpg`;
 
-		let filename = `tmp/info${Date.now()}.json`;
-		let albumartfilename = `tmp/cover${Date.now()}.jpg`;
+		// let attach_album_art = false;
+		// let album_art_url = "";
+		// if (typeof album_art_file !== "undefined") {
+		// 	try {
+		// 		album_art_url = await PrivateMusicCollection._module_dependency[
+		// 			"GoogleDriveAPI"
+		// 		].get_file_metadata(album_art_file.id, "thumbnailLink");
+		// 		album_art_url = album_art_url.data.thumbnailLink;
+		// 		attach_album_art = true;
+		// 	} catch (e) {
+		// 		console.log(e);
+		// 	}
+		// }
 
-		let dl_file_status = await PrivateMusicCollection.download_file(
-			info_file.id,
-			filename
+		let album_info = PrivateMusicCollection.lib_index.album.find(
+			(val) => val.folder_id == folder_id
 		);
-		if (!dl_file_status) {
+
+		if (typeof album_info.info_json === "undefined") {
 			return {
 				status: false,
-				err: "Failed to download info.json",
+				err: "Missing info_json",
 			};
 		}
-
-		let attach_album_art = false;
-		let album_art_url = "";
-		if (typeof album_art_file !== "undefined") {
-			try {
-				album_art_url = await PrivateMusicCollection._module_dependency[
-					"GoogleDriveAPI"
-				].get_file_metadata(album_art_file.id, "thumbnailLink");
-				album_art_url = album_art_url.data.thumbnailLink;
-				attach_album_art = true;
-			} catch (e) {
-				console.log(e);
-			}
-		}
-
-		let album_info = JSON.parse(fs.readFileSync(filename));
+		album_info = album_info.info_json;
 
 		let album_desc = "";
 		let keys = Object.keys(album_info.track);
@@ -320,8 +343,8 @@ var PrivateMusicCollection = {
 			)
 			.setColor(album_info.album_color);
 
-		if (attach_album_art) {
-			embed.setThumbnail(album_art_url);
+		if (typeof cover_image_url !== "undefined") {
+			embed.setThumbnail(cover_image_url);
 		}
 
 		return embed;
@@ -383,29 +406,37 @@ var PrivateMusicCollection = {
 			}
 		}
 
-		origin.channel.send("Indexing album...");
-
 		let pages = [];
-		// View paged embed
+
+		let album_art = await PrivateMusicCollection._module_dependency[
+			"GoogleDriveAPI"
+		].search_file("name='cover.jpg'", "files(id,parents,thumbnailLink)");
+
+		// Prepare the page
 		for (
 			let i = 0;
 			i < PrivateMusicCollection.lib_index.album.length;
 			i++
 		) {
 			let ab = PrivateMusicCollection.lib_index.album[i];
-			let embed = await PrivateMusicCollection.prepare_album_embed(
-				ab.folder_id
+			let ab_art_link = album_art.data.files.find(
+				(val) => val.parents[0] == ab.folder_id
 			);
-			if (embed instanceof Discord.MessageEmbed) {
-				pages.push(embed);
-			} else {
-				console.log(embed.err);
-			}
+
+			ab_art_link = ab_art_link.thumbnailLink;
+
+			let embed = await PrivateMusicCollection.prepare_album_embed(
+				ab.folder_id,
+				ab_art_link
+			);
+			pages[i] = embed;
 		}
 
+		// Show the page
 		DiscordUtil.paginated(
 			origin,
 			pages,
+			PrivateMusicCollection.lib_index.album.length,
 			args[0] || 1,
 			"Album {n} of {max}"
 		);
@@ -425,92 +456,6 @@ var PrivateMusicCollection = {
 				.setColor(
 					"#" + Math.floor(Math.random() * 16777215).toString(16)
 				)
-		);
-	},
-
-	pmc_view_album: async function (origin, args = []) {
-		let idx = args[0];
-		if (isNaN(idx)) {
-			origin.channel.send(
-				"PMC now do not support view album by name, please use numbers for now"
-			);
-			return;
-		}
-
-		let { album } = PrivateMusicCollection.lib_index;
-		if (idx > album.length || idx < 1) {
-			origin.channel.send("Invalid index");
-			return;
-		}
-
-		album = album[idx - 1];
-
-		let { data } = await PrivateMusicCollection._module_dependency[
-			"GoogleDriveAPI"
-		].dir(album.folder_id);
-
-		let info_file = data.files.find((val) => val.name == "info.json");
-		let album_art_file = data.files.find((val) => val.name == "cover.jpg");
-
-		if (typeof info_file === "undefined") {
-			origin.channel.send("Missing album info, ask Looz to fill up");
-			return;
-		}
-
-		let filename = `tmp/info${Date.now()}.json`;
-		let albumartfilename = `tmp/cover${Date.now()}.jpg`;
-
-		let dl_file_status = await PrivateMusicCollection.download_file(
-			info_file.id,
-			filename
-		);
-		let dl_file_status2 = await PrivateMusicCollection.download_file(
-			album_art_file.id,
-			albumartfilename
-		);
-		if (!dl_file_status) {
-			origin.channel.send("Missing album info. Inform Looz");
-			return;
-		}
-		if (!dl_file_status2) {
-			origin.channel.send("Missing album art. Inform Looz");
-			return;
-		}
-
-		let album_info = JSON.parse(fs.readFileSync(filename));
-
-		let album_desc = "";
-		let keys = Object.keys(album_info.track);
-		for (let i = 0; i < keys.length; i++) {
-			album_desc += `${keys[i]}. ${album_info.track[keys[i]].title}\n`;
-		}
-
-		origin.channel.send(
-			new Discord.MessageEmbed()
-				.setTitle(album_info.name)
-				.attachFiles([albumartfilename])
-				.setThumbnail(`attachment://${albumartfilename.slice(4)}`)
-				.addFields(
-					{
-						name: "Artist",
-						value: album_info.artist || "Unknown",
-						inline: true,
-					},
-					{
-						name: "Release Year",
-						value: album_info.release_year || "Unknown",
-						inline: true,
-					},
-					{
-						name: "Description",
-						value: album_info.looz_desc || "Unknown",
-					},
-					{
-						name: "Tracks",
-						value: album_desc || "Unknown",
-					}
-				)
-				.setColor(album_info.album_color)
 		);
 	},
 
@@ -838,6 +783,7 @@ var PrivateMusicCollection = {
 									}\nArtist: ${ret.artist || "Unknown"}`
 								);
 								editing_info_json["track"][j] = {
+									file_id: track_list[j].id,
 									title: ret.title || "Unknown",
 									artist: ret.artist || "Unknown",
 									looz_desc: "",
