@@ -8,6 +8,7 @@ const Discord = require("discord.js");
 const ffmetadata = require("ffmetadata");
 const fs = require("fs");
 const Miscellaneous = require("./Miscellaneous");
+const DiscordUtil = require("../util/DiscordUtil.js");
 var PrivateMusicCollection = {
 	// =============================================================
 	// DEFAULT MODULE MEMBER
@@ -233,27 +234,6 @@ var PrivateMusicCollection = {
 		});
 	},
 
-	/**
-	 * Wait for user to response
-	 * @param {Discord.Message} origin message origin
-	 * @param {string} authorid who to wait for (expecting discord user id)
-	 * @param {string} timeout (optional) default is 1 minute
-	 * @return {Promise<string>} return user's response if any, throws error if user didnt response in time
-	 */
-	wait4Msg: async function (origin, author_id, timeout = 60000) {
-		let input = await origin.channel.awaitMessages(
-			(m) => m.author.id === author_id,
-			{
-				max: 1,
-				time: timeout,
-				errors: ["time"],
-			}
-		);
-
-		let response = input.get(input.keyArray()[0]).content;
-		return response;
-	},
-
 	// =============================================================
 	// Command Function
 	// =============================================================
@@ -262,12 +242,12 @@ var PrivateMusicCollection = {
 		if (args.length == 0) {
 			Miscellaneous.help(origin, ["pmc"]);
 			// Remove this is production
-			let pog = JSON.stringify(PrivateMusicCollection.lib_index);
-			while (pog.length != 0) {
-				origin.channel.send(pog.substring(0, 2000));
-				pog = pog.substring(2000, pog.length);
-			}
-
+			// let pog = JSON.stringify(PrivateMusicCollection.lib_index);
+			// while (pog.length != 0) {
+			// 	origin.channel.send(pog.substring(0, 2000));
+			// 	pog = pog.substring(2000, pog.length);
+            // }
+            // remove end here
 			return;
 		}
 
@@ -550,11 +530,7 @@ var PrivateMusicCollection = {
 			origin.channel.send(
 				"Enter field to edit (UPDATE to update info, EXIT to stop)"
 			);
-
-			response = await PrivateMusicCollection.wait4Msg(
-				origin,
-				origin.author.id
-			);
+			response = await DiscordUtil.wait4Msg(origin, origin.author.id);
 
 			if (response == "EXIT") {
 				origin.channel.send("Changes have been discarded.");
@@ -586,58 +562,99 @@ var PrivateMusicCollection = {
 						"Enter Action (ADD, EDIT, REMOVE, REARRANGE, IMPORT_METADATA)"
 					);
 
-					response = await PrivateMusicCollection.wait4Msg(
+					response = await DiscordUtil.wait4Msg(
 						origin,
 						origin.author.id
-                    );
-                    let res = "";
+					);
+					let res = "";
 					switch (response.split(" ")[0]) {
-                        case "ADD":                          
-                            origin.channel.send("\`.pmc IGNORE\`to ignore\ntrack_no:");
-                            let new_t_no = await PrivateMusicCollection.wait4Msg(origin, origin.author.id);
-                            editing_info_json["track"][new_t_no] = {
-                                title: "",
-                                artist: "",
-                                looz_desc: ""
-                            };
-                            origin.channel.send("title:");
-                            
-                            res = await PrivateMusicCollection.wait4Msg(origin, origin.author.id);
-                            if(res != ".pmc IGNORE") {
-                                editing_info_json["track"][new_t_no]["title"] = res;
-                            }
-                            origin.channel.send("artist:");
-                            
-                            res = await PrivateMusicCollection.wait4Msg(origin, origin.author.id);
-                            if(res != ".pmc IGNORE") {
-                                editing_info_json["track"][new_t_no]["artist"] = res;
-                            }
-                            origin.channel.send("looz_desc:");
-                            
-                            res = await PrivateMusicCollection.wait4Msg(origin, origin.author.id);
-                            if(res != ".pmc IGNORE") {
-                                editing_info_json["track"][new_t_no]["looz_desc"] = res;
-                            }
-                            origin.channel.send(`Added ${new_t_no}. ${editing_info_json["track"][new_t_no]["title"]} - ${editing_info_json["track"][new_t_no]["artist"]}`);
+						case "ADD":
+							origin.channel.send(
+								"`.pmc IGNORE`to ignore\ntrack_no:"
+							);
+							let new_t_no = await DiscordUtil.wait4Msg(
+								origin,
+								origin.author.id
+							);
+							editing_info_json["track"][new_t_no] = {
+								title: "",
+								artist: "",
+								looz_desc: "",
+							};
+							origin.channel.send("title:");
+
+							res = await DiscordUtil.wait4Msg(
+								origin,
+								origin.author.id
+							);
+							if (res != ".pmc IGNORE") {
+								editing_info_json["track"][new_t_no][
+									"title"
+								] = res;
+							}
+							origin.channel.send("artist:");
+
+							res = await DiscordUtil.wait4Msg(
+								origin,
+								origin.author.id
+							);
+							if (res != ".pmc IGNORE") {
+								editing_info_json["track"][new_t_no][
+									"artist"
+								] = res;
+							}
+							origin.channel.send("looz_desc:");
+
+							res = await DiscordUtil.wait4Msg(
+								origin,
+								origin.author.id
+							);
+							if (res != ".pmc IGNORE") {
+								editing_info_json["track"][new_t_no][
+									"looz_desc"
+								] = res;
+							}
+							origin.channel.send(
+								`Added ${new_t_no}. ${editing_info_json["track"][new_t_no]["title"]} - ${editing_info_json["track"][new_t_no]["artist"]}`
+							);
 							break;
 						case "EDIT":
-                            let t_no = response.split(" ")[1];
-                            origin.channel.send(`\`.pmc IGNORE\`to ignore\nold_title: ${editing_info_json["track"][t_no].title}`);
-                            res = await PrivateMusicCollection.wait4Msg(origin, origin.author.id);
-                            if(res != ".pmc IGNORE") {
-                                editing_info_json["track"][t_no].title = res;
-                            }
-                            origin.channel.send(`old_artist: ${editing_info_json["track"][t_no].artist}`);
-                            res = await PrivateMusicCollection.wait4Msg(origin, origin.author.id);
-                            if(res != ".pmc IGNORE") {
-                                editing_info_json["track"][t_no].artist = res;
-                            }
-                            origin.channel.send(`old_looz_desc: ${editing_info_json["track"][t_no].looz_desc}`);
-                            res = await PrivateMusicCollection.wait4Msg(origin, origin.author.id);
-                            if(res != ".pmc IGNORE") {
-                                editing_info_json["track"][t_no].looz_desc = res;
-                            }
-                            origin.channel.send(`Edited ${t_no}. ${editing_info_json["track"][t_no]["title"]} - ${editing_info_json["track"][t_no]["artist"]}`);
+							let t_no = response.split(" ")[1];
+							origin.channel.send(
+								`\`.pmc IGNORE\`to ignore\nold_title: ${editing_info_json["track"][t_no].title}`
+							);
+							res = await DiscordUtil.wait4Msg(
+								origin,
+								origin.author.id
+							);
+							if (res != ".pmc IGNORE") {
+								editing_info_json["track"][t_no].title = res;
+							}
+							origin.channel.send(
+								`old_artist: ${editing_info_json["track"][t_no].artist}`
+							);
+							res = await DiscordUtil.wait4Msg(
+								origin,
+								origin.author.id
+							);
+							if (res != ".pmc IGNORE") {
+								editing_info_json["track"][t_no].artist = res;
+							}
+							origin.channel.send(
+								`old_looz_desc: ${editing_info_json["track"][t_no].looz_desc}`
+							);
+							res = await DiscordUtil.wait4Msg(
+								origin,
+								origin.author.id
+							);
+							if (res != ".pmc IGNORE") {
+								editing_info_json["track"][
+									t_no
+								].looz_desc = res;
+							}
+							origin.channel.send(
+								`Edited ${t_no}. ${editing_info_json["track"][t_no]["title"]} - ${editing_info_json["track"][t_no]["artist"]}`
+							);
 							break;
 						case "REMOVE":
 							let r_t_no = response.split(" ")[1];
@@ -647,15 +664,27 @@ var PrivateMusicCollection = {
 							delete editing_info_json["track"][r_t_no];
 							break;
 						case "REARRANGE":
-                            let kunci = Object.keys(editing_info_json["track"]);
-                            let new_track = {};
+							let kunci = Object.keys(editing_info_json["track"]);
+							let new_track = {};
 							for (let k = 0; k < kunci.length; k++) {
-                                origin.channel.send(`${editing_info_json["track"][kunci[k]].title} - ${editing_info_json["track"][kunci[k]].artist}\nTrack number:`);
-                                let new_t_no = await PrivateMusicCollection.wait4Msg(origin, origin.author.id);
-                                new_track[new_t_no] = editing_info_json.track[kunci[k]];
-                            }
-                            editing_info_json.track = new_track;
-                            origin.channel.send("Finished rearranging track");
+								origin.channel.send(
+									`${
+										editing_info_json["track"][kunci[k]]
+											.title
+									} - ${
+										editing_info_json["track"][kunci[k]]
+											.artist
+									}\nTrack number:`
+								);
+								let new_t_no = await DiscordUtil.wait4Msg(
+									origin,
+									origin.author.id
+								);
+								new_track[new_t_no] =
+									editing_info_json.track[kunci[k]];
+							}
+							editing_info_json.track = new_track;
+							origin.channel.send("Finished rearranging track");
 							break;
 						case "IMPORT_METADATA":
 							origin.channel.send(
@@ -693,14 +722,11 @@ var PrivateMusicCollection = {
 					continue;
 				}
 				origin.channel.send(
-					`Editing "${response}"...\nOld value:\n\`\`\`${editing_info_json[response]}\`\`\`\nEnter new value: `
+					`\`.pmc IGNORE\` to leave empty\nEditing "${response}"...\nOld value:\n\`\`\`${editing_info_json[response]}\`\`\`\nEnter new value: `
 				);
-				editing_info_json[
-					response
-				] = await PrivateMusicCollection.wait4Msg(
-					origin,
-					origin.author.id
-				);
+				res = await DiscordUtil.wait4Msg(origin, origin.author.id);
+				if (res != ".pmc IGNORE") editing_info_json[response] = res;
+				else editing_info_json[response] = "";
 				continue;
 			} else {
 				origin.channel.send(`Field "${response}" do not exist.`);
