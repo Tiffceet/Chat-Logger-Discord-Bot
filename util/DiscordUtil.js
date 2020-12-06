@@ -31,7 +31,7 @@ module.exports = class DiscordUtil {
 	 * @param {number} start_page (optional) which page to display on call. Default to first page
 	 * @param {string} footer (optional) Default to "Page {n} of {max}", only display if page is a Discord.MessageEmbed, set to null to prevent this function overwritting existing footer
 	 * @param {Array} emojiList (optional) default to ["⏮️", "⬅️", "➡️", "⏭️"]
-	 * @param {number} timeout (optional) default to 1 minute
+	 * @param {number} timeout (optional) default to 10 minute
 	 */
 	static async paginated(
 		origin,
@@ -39,17 +39,14 @@ module.exports = class DiscordUtil {
 		start_page = 1,
 		footer = "Page {n} of {max}",
 		emojiList = ["⏮️", "⬅️", "➡️", "⏭️"],
-		timeout = 60000
+		timeout = 600000
 	) {
 		if (pages.length == 0) {
 			throw new Error("No pages to display");
 		}
-		if (typeof pages[start_page] === "undefined") {
+		if (typeof pages[start_page-1] === "undefined") {
 			start_page = 1;
 		}
-		let sent_msg = await origin.channel.send(pages[start_page - 1]);
-
-		let page_num = start_page;
 
 		// Handle footer
 		if (footer) {
@@ -59,7 +56,11 @@ module.exports = class DiscordUtil {
 					footer.replace("{n}", i + 1).replace("{max}", pages.length)
 				);
 			}
-		}
+        }
+        
+        let sent_msg = await origin.channel.send(pages[start_page - 1]);
+
+		let page_num = start_page;
 
 		for (let i = 0; i < emojiList.length; i++) {
 			await sent_msg.react(emojiList[i]);

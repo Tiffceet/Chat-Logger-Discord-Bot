@@ -234,6 +234,99 @@ var PrivateMusicCollection = {
 		});
 	},
 
+	/**
+	 * Prepare album embed
+	 * @param {string} folder_id drive folder id
+	 * @return {Promise<Discord.MessageEmbed> | Promise<object>} Returns album embed if successful, returns status object if failed
+	 * @example
+	 * {
+	 *      status: false,
+	 *      err: "Can not find info.json from folder_id"
+	 * }
+	 */
+	prepare_album_embed: async function (folder_id) {
+		let { data } = await PrivateMusicCollection._module_dependency[
+			"GoogleDriveAPI"
+		].dir(folder_id);
+
+		let info_file = data.files.find((val) => val.name == "info.json");
+		let album_art_file = data.files.find((val) => val.name == "cover.jpg");
+
+		if (typeof info_file === "undefined") {
+			// Missing info.json
+			return {
+				status: false,
+				err: "Can not find info.json from folder_id",
+			};
+		}
+
+		let filename = `tmp/info${Date.now()}.json`;
+		let albumartfilename = `tmp/cover${Date.now()}.jpg`;
+
+		let dl_file_status = await PrivateMusicCollection.download_file(
+			info_file.id,
+			filename
+		);
+		if (!dl_file_status) {
+			return {
+				status: false,
+				err: "Failed to download info.json",
+			};
+		}
+
+		let attach_album_art = false;
+		let album_art_url = "";
+		if (typeof album_art_file !== "undefined") {
+			try {
+				album_art_url = await PrivateMusicCollection._module_dependency[
+					"GoogleDriveAPI"
+				].get_file_metadata(album_art_file.id, "thumbnailLink");
+				album_art_url = album_art_url.data.thumbnailLink;
+				attach_album_art = true;
+			} catch (e) {
+				console.log(e);
+			}
+		}
+
+		let album_info = JSON.parse(fs.readFileSync(filename));
+
+		let album_desc = "";
+		let keys = Object.keys(album_info.track);
+		for (let i = 0; i < keys.length; i++) {
+			album_desc += `${keys[i]}. ${album_info.track[keys[i]].title}\n`;
+		}
+
+		let embed = new Discord.MessageEmbed()
+			.setTitle(album_info.name)
+			.addFields(
+				{
+					name: "Artist",
+					value: album_info.artist || "Unknown",
+					inline: true,
+				},
+				{
+					name: "Release Year",
+					value: album_info.release_year || "Unknown",
+					inline: true,
+				},
+				{
+					name: "Description",
+					value: album_info.looz_desc || "Unknown",
+				},
+				{
+					name: "Tracks",
+					value: album_desc || "Unknown",
+				}
+			)
+			.setColor(album_info.album_color);
+
+		if (attach_album_art) {
+			embed.setThumbnail(album_art_url);
+		}
+
+		return embed;
+	},
+
 	// =============================================================
 	// Command Function
 	// =============================================================
@@ -246,8 +339,8 @@ var PrivateMusicCollection = {
 			// while (pog.length != 0) {
 			// 	origin.channel.send(pog.substring(0, 2000));
 			// 	pog = pog.substring(2000, pog.length);
-            // }
-            // remove end here
+			// }
+			// remove end here
 			return;
 		}
 
@@ -284,15 +377,41 @@ var PrivateMusicCollection = {
 	pmc_view: async function (origin, args = []) {
 		if (args.length != 0) {
 			switch (args[0]) {
-				case "album":
-					PrivateMusicCollection.pmc_view_album(
-						origin,
-						args.slice(1)
-					);
+				case "list":
+					PrivateMusicCollection.pmc_view_list(origin, args.slice(1));
 					return;
 			}
 		}
 
+		origin.channel.send("Indexing album...");
+
+		let pages = [];
+		// View paged embed
+		for (
+			let i = 0;
+			i < PrivateMusicCollection.lib_index.album.length;
+			i++
+		) {
+			let ab = PrivateMusicCollection.lib_index.album[i];
+			let embed = await PrivateMusicCollection.prepare_album_embed(
+				ab.folder_id
+			);
+			if (embed instanceof Discord.MessageEmbed) {
+				pages.push(embed);
+			} else {
+				console.log(embed.err);
+			}
+		}
+
+		DiscordUtil.paginated(
+			origin,
+			pages,
+			args[0] || 1,
+			"Album {n} of {max}"
+		);
+	},
+
+	pmc_view_list: async function (origin, args = []) {
 		let al_listing = "";
 
 		for (let i = 0; i < this.lib_index.album.length; i++) {
@@ -528,13 +647,25 @@ var PrivateMusicCollection = {
 		while (true) {
 			send_editing_info_json_to_channel();
 			origin.channel.send(
-				"Enter field to edit (UPDATE to update info, EXIT to stop)"
+				"Enter field to edit (UPDATE to update info, REVERT to discard changes, EXIT to stop)"
 			);
 			response = await DiscordUtil.wait4Msg(origin, origin.author.id);
 
 			if (response == "EXIT") {
-				origin.channel.send("Changes have been discarded.");
+				origin.channel.send("Stopped album info config");
 				break;
+			}
+
+			if (response == "REVERT") {
+				origin.channel.send("Reverting changes...");
+				try {
+					editing_info_json = JSON.parse(
+						fs.readFileSync(tmp_info_filepath)
+					);
+				} catch (e) {
+					origin.channel.send("Failed. Please EXIT");
+				}
+				continue;
 			}
 
 			if (response == "UPDATE") {
@@ -553,7 +684,7 @@ var PrivateMusicCollection = {
 					album_folder_id
 				);
 				origin.channel.send("Album info updated !");
-				break;
+				continue;
 			}
 
 			if (editing_info_json.hasOwnProperty(response)) {

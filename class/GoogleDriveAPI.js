@@ -72,7 +72,32 @@ module.exports = class GoogleDriveAPI {
 			res = await drive.files.list();
 		}
 		return res;
-	}
+    }
+    
+    /**
+     * Get file metadata
+     * @param {string} file_id drive file id
+     * @param {string} metadata_fields fields seperated by comma as expected from https://developers.google.com/drive/api/v3/reference/files#resource https://developers.google.com/drive/api/v3/fields-parametera
+     * @return {Promise<Promise>} Promise returned by drive.files.get()
+     */
+    async get_file_metadata (file_id, metadata_fields) {
+        let auth = this.oAuth2Client;
+		const drive = google.drive({ version: "v3", auth });
+		// drive.files.get(
+		// 	{
+		// 		fileId: file_id,
+		// 		alt: "media",
+		// 	},
+		// 	{ responseType: "stream" },
+		// 	callback
+		// );
+		return drive.files.get(
+			{
+                fileId: file_id,
+                fields: metadata_fields
+			}
+		);
+    }
 
 	/**
 	 * Get File stream of a given file id
