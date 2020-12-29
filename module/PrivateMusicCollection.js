@@ -414,7 +414,10 @@ var PrivateMusicCollection = {
 				break;
 			case "config":
 				PrivateMusicCollection.pmc_config(origin, args.slice(1));
-				break;
+                break;
+            case "skip":
+                PrivateMusicCollection.pmc_skip(origin, args.slice(1));
+                break;
 			default:
 				Miscellaneous.help(origin, ["pmc"]);
 		}
@@ -540,7 +543,19 @@ var PrivateMusicCollection = {
             PrivateMusicCollection.play_music(origin, PrivateMusicCollection.song_queue[origin.guild.id].shift());
         }
 
-	},
+    },
+    
+    pmc_skip: async function(origin, args = []) {
+        if(!origin.member.voice.channel) {
+            origin.channel.send("Sir, you have to be with the people to skip.\nYou wouldn't want a stranger skip your song isnt it.");
+        }
+        let playthis = PrivateMusicCollection.song_queue[origin.guild.id].shift();
+        if(playthis) {
+            PrivateMusicCollection.play_music(origin, playthis);
+        } else {
+            origin.member.voice.channel.leave();
+        }
+    },
 
 	pmc_config: async function (origin, args = []) {
 		if (origin.author.id != 246239361195048960) {
