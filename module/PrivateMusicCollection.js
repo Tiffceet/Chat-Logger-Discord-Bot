@@ -10,6 +10,8 @@ const fs = require("fs");
 const Miscellaneous = require("./Miscellaneous");
 const DiscordUtil = require("../util/DiscordUtil.js");
 const { info } = require("console");
+const { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } = require("constants");
+const { file } = require("googleapis/build/src/apis/file");
 var PrivateMusicCollection = {
 	// =============================================================
 	// DEFAULT MODULE MEMBER
@@ -460,9 +462,42 @@ var PrivateMusicCollection = {
 	},
 
 	pmc_play: async function (origin, args = []) {
+		let query = args.join(" ");
+
+		if (!origin.member.voice.channel) {
+			origin.channel.send(
+				"Please enter a voice channel before using this"
+			);
+			return;
+		}
+
+		let music_title_library = [];
+		for (
+			let i = 0;
+			i < PrivateMusicCollection.lib_index.album.length;
+			i++
+		) {
+			let album = PrivateMusicCollection.lib_index.album[i];
+			try {
+				let track_keys = Object.keys(album.info_json.track);
+				for (let j = 0; j < track_keys.length; j++) {
+					music_title_library.push(album.info_json.track[track_keys[j]]);
+				}
+			} catch (e) {}
+        }
+        
+        let file_id_to_play = music_title_library.find(v=>{return v.title === query}); 
+
+        if(typeof file_id_to_play === "undefined") {
+            origin.channel.send("Sorry but I dont think I know what was that...");
+            return;
+        }
+
+        file_id_to_play = file_id_to_play.file_id;
+
 		let data = await this._module_dependency[
 			"GoogleDriveAPI"
-		].get_file_stream(args[0]);
+		].get_file_stream(file_id_to_play);
 		data = data.data;
 
 		origin.member.voice.channel
@@ -470,7 +505,7 @@ var PrivateMusicCollection = {
 			.then((connection) => {
 				connection.play(data);
 				let disp = connection.dispatcher;
-				disp.setVolume(0.1);
+				disp.setVolume(0.5);
 			})
 			.catch((err) => console.log(err));
 	},
@@ -782,7 +817,7 @@ var PrivateMusicCollection = {
 										ret.title || "Unknown"
 									}\nArtist: ${ret.artist || "Unknown"}`
 								);
-								editing_info_json["track"][j] = {
+								editing_info_json["track"][j + 1] = {
 									file_id: track_list[j].id,
 									title: ret.title || "Unknown",
 									artist: ret.artist || "Unknown",
