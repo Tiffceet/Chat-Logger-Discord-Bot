@@ -350,7 +350,39 @@ var PrivateMusicCollection = {
 		}
 
 		return embed;
-	},
+    },
+    
+    /**
+     * Play music into origin's channe;
+     * @param {Discord.Message} origin 
+     * @param {object} queue_item 
+     * @example
+     * {
+     *     song_title: "Barin-ko",
+     *     song_artist: "Kano",
+     *     album_art_drive_file_id: "1A2B3C_4D5F",
+     *     google_drive_file_id: "1A2B3C_4D5F"
+     *     data_stream: DATASTREAM // If this is possible at all
+     * },
+     */
+    play_music: async function(origin, queue_item) {        
+        origin.member.voice.channel
+			.join()
+			.then((connection) => {
+				connection.play(queue_item.data_stream).on("finish", () => {
+                    let next_item = PrivateMusicCollection.song_queue[origin.guild.id].shift();
+                    if(next_item) {
+                        PrivateMusicCollection.play_music(origin, next_item);
+                    } else {
+                        delete PrivateMusicCollection.song_queue[origin.guild.id];
+                        origin.member.voice.channel.leave();
+                    }
+                });
+				let disp = connection.dispatcher;
+				disp.setVolume(0.5);
+			})
+			.catch((err) => console.log(err));
+    },
 
 	// =============================================================
 	// Command Function
@@ -500,14 +532,14 @@ var PrivateMusicCollection = {
 		].get_file_stream(file_id_to_play);
 		data = data.data;
 
-		origin.member.voice.channel
-			.join()
-			.then((connection) => {
-				connection.play(data);
-				let disp = connection.dispatcher;
-				disp.setVolume(0.5);
-			})
-			.catch((err) => console.log(err));
+        let queue_item = {data_stream: data};
+        if(typeof PrivateMusicCollection.song_queue[origin.guild.id] !== "undefined") {
+            PrivateMusicCollection.song_queue[origin.guild.id].push(queue_item);
+        } else {
+            PrivateMusicCollection.song_queue[origin.guild.id] = [queue_item];
+            PrivateMusicCollection.play_music(origin, PrivateMusicCollection.song_queue[origin.guild.id].shift());
+        }
+
 	},
 
 	pmc_config: async function (origin, args = []) {
