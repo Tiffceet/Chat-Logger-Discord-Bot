@@ -1,5 +1,5 @@
 /**
- * Here is why I lived
+ * Private Music Collection where everything is stored in google drive
  * @author Looz
  * @version ∞.∞
  */
@@ -9,9 +9,6 @@ const ffmetadata = require("ffmetadata");
 const fs = require("fs");
 const Miscellaneous = require("./Miscellaneous");
 const DiscordUtil = require("../util/DiscordUtil.js");
-const { info } = require("console");
-const { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } = require("constants");
-const { file } = require("googleapis/build/src/apis/file");
 var PrivateMusicCollection = {
 	// =============================================================
 	// DEFAULT MODULE MEMBER
@@ -350,39 +347,43 @@ var PrivateMusicCollection = {
 		}
 
 		return embed;
-    },
-    
-    /**
-     * Play music into origin's channe;
-     * @param {Discord.Message} origin 
-     * @param {object} queue_item 
-     * @example
-     * {
-     *     song_title: "Barin-ko",
-     *     song_artist: "Kano",
-     *     album_art_drive_file_id: "1A2B3C_4D5F",
-     *     google_drive_file_id: "1A2B3C_4D5F"
-     *     data_stream: DATASTREAM // If this is possible at all
-     * },
-     */
-    play_music: async function(origin, queue_item) {        
-        origin.member.voice.channel
+	},
+
+	/**
+	 * Play music into origin's channe;
+	 * @param {Discord.Message} origin
+	 * @param {object} queue_item
+	 * @example
+	 * {
+	 *     song_title: "Barin-ko",
+	 *     song_artist: "Kano",
+	 *     album_art_drive_file_id: "1A2B3C_4D5F",
+	 *     google_drive_file_id: "1A2B3C_4D5F"
+	 *     data_stream: DATASTREAM // If this is possible at all
+	 * },
+	 */
+	play_music: async function (origin, queue_item) {
+		origin.member.voice.channel
 			.join()
 			.then((connection) => {
 				connection.play(queue_item.data_stream).on("finish", () => {
-                    let next_item = PrivateMusicCollection.song_queue[origin.guild.id].shift();
-                    if(next_item) {
-                        PrivateMusicCollection.play_music(origin, next_item);
-                    } else {
-                        delete PrivateMusicCollection.song_queue[origin.guild.id];
-                        origin.member.voice.channel.leave();
-                    }
-                });
+					let next_item = PrivateMusicCollection.song_queue[
+						origin.guild.id
+					].shift();
+					if (next_item) {
+						PrivateMusicCollection.play_music(origin, next_item);
+					} else {
+						delete PrivateMusicCollection.song_queue[
+							origin.guild.id
+						];
+						origin.member.voice.channel.leave();
+					}
+				});
 				let disp = connection.dispatcher;
 				disp.setVolume(0.5);
 			})
 			.catch((err) => console.log(err));
-    },
+	},
 
 	// =============================================================
 	// Command Function
@@ -414,10 +415,10 @@ var PrivateMusicCollection = {
 				break;
 			case "config":
 				PrivateMusicCollection.pmc_config(origin, args.slice(1));
-                break;
-            case "skip":
-                PrivateMusicCollection.pmc_skip(origin, args.slice(1));
-                break;
+				break;
+			case "skip":
+				PrivateMusicCollection.pmc_skip(origin, args.slice(1));
+				break;
 			default:
 				Miscellaneous.help(origin, ["pmc"]);
 		}
@@ -466,7 +467,14 @@ var PrivateMusicCollection = {
 				ab.folder_id,
 				ab_art_link
 			);
-			pages[i] = embed;
+
+			if (embed instanceof Discord.MessageEmbed) {
+				pages[i] = embed;
+			} else {
+				pages[i] = new Discord.MessageEmbed().setDescription(
+					"Album info not ready for " + ab.name
+				);
+			}
 		}
 
 		// Show the page
@@ -516,46 +524,61 @@ var PrivateMusicCollection = {
 			try {
 				let track_keys = Object.keys(album.info_json.track);
 				for (let j = 0; j < track_keys.length; j++) {
-					music_title_library.push(album.info_json.track[track_keys[j]]);
+					music_title_library.push(
+						album.info_json.track[track_keys[j]]
+					);
 				}
 			} catch (e) {}
-        }
-        
-        let file_id_to_play = music_title_library.find(v=>{return v.title === query}); 
+		}
 
-        if(typeof file_id_to_play === "undefined") {
-            origin.channel.send("Sorry but I dont think I know what was that...");
-            return;
-        }
+		let file_id_to_play = music_title_library.find((v) => {
+			return v.title === query;
+		});
 
-        file_id_to_play = file_id_to_play.file_id;
+		if (typeof file_id_to_play === "undefined") {
+			origin.channel.send(
+				"Sorry but I dont think I know what was that..."
+			);
+			return;
+		}
+
+		file_id_to_play = file_id_to_play.file_id;
 
 		let data = await this._module_dependency[
 			"GoogleDriveAPI"
 		].get_file_stream(file_id_to_play);
 		data = data.data;
 
-        let queue_item = {data_stream: data};
-        if(typeof PrivateMusicCollection.song_queue[origin.guild.id] !== "undefined") {
-            PrivateMusicCollection.song_queue[origin.guild.id].push(queue_item);
-        } else {
-            PrivateMusicCollection.song_queue[origin.guild.id] = [queue_item];
-            PrivateMusicCollection.play_music(origin, PrivateMusicCollection.song_queue[origin.guild.id].shift());
-        }
+		let queue_item = { data_stream: data };
+		if (
+			typeof PrivateMusicCollection.song_queue[origin.guild.id] !==
+			"undefined"
+		) {
+			PrivateMusicCollection.song_queue[origin.guild.id].push(queue_item);
+		} else {
+			PrivateMusicCollection.song_queue[origin.guild.id] = [queue_item];
+			PrivateMusicCollection.play_music(
+				origin,
+				PrivateMusicCollection.song_queue[origin.guild.id].shift()
+			);
+		}
+	},
 
-    },
-    
-    pmc_skip: async function(origin, args = []) {
-        if(!origin.member.voice.channel) {
-            origin.channel.send("Sir, you have to be with the people to skip.\nYou wouldn't want a stranger skip your song isnt it.");
-        }
-        let playthis = PrivateMusicCollection.song_queue[origin.guild.id].shift();
-        if(playthis) {
-            PrivateMusicCollection.play_music(origin, playthis);
-        } else {
-            origin.member.voice.channel.leave();
-        }
-    },
+	pmc_skip: async function (origin, args = []) {
+		if (!origin.member.voice.channel) {
+			origin.channel.send(
+				"Sir, you have to be with the people to skip.\nYou wouldn't want a stranger skip your song isnt it."
+			);
+		}
+		let playthis = PrivateMusicCollection.song_queue[
+			origin.guild.id
+		].shift();
+		if (playthis) {
+			PrivateMusicCollection.play_music(origin, playthis);
+		} else {
+			origin.member.voice.channel.leave();
+		}
+	},
 
 	pmc_config: async function (origin, args = []) {
 		if (origin.author.id != 246239361195048960) {
@@ -668,7 +691,25 @@ var PrivateMusicCollection = {
 				}
 			);
 			origin.channel.send(dc_eb);
-		};
+        };
+        
+        const update_and_upload_info_json = async () => {
+            origin.channel.send("Updating info.json...");
+            fs.writeFileSync(
+                tmp_info_filepath,
+                JSON.stringify(editing_info_json)
+            );
+            await PrivateMusicCollection._module_dependency[
+                "GoogleDriveAPI"
+            ].upload_file(
+                info_json_file_id,
+                "application/json",
+                fs.createReadStream(tmp_info_filepath),
+                true,
+                album_folder_id
+            );
+            origin.channel.send("Album info updated !");
+        };
 
 		let response = "";
 		while (true) {
@@ -696,21 +737,7 @@ var PrivateMusicCollection = {
 			}
 
 			if (response == "UPDATE") {
-				origin.channel.send("Updating info.json...");
-				fs.writeFileSync(
-					tmp_info_filepath,
-					JSON.stringify(editing_info_json)
-				);
-				await PrivateMusicCollection._module_dependency[
-					"GoogleDriveAPI"
-				].upload_file(
-					info_json_file_id,
-					"application/json",
-					fs.createReadStream(tmp_info_filepath),
-					true,
-					album_folder_id
-				);
-				origin.channel.send("Album info updated !");
+				update_and_upload_info_json();
 				continue;
 			}
 
@@ -871,7 +898,8 @@ var PrivateMusicCollection = {
 									looz_desc: "",
 								};
 							}
-							origin.channel.send("Finished parsing metadata !");
+                            origin.channel.send("Finished parsing metadata !");
+                            update_and_upload_info_json();
 							break;
 						default:
 							origin.channel.send(
