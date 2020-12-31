@@ -1,49 +1,28 @@
-/**
- * Handle all commands that request reddit post
- * @author Looz
- * @version 1.0
- */
-const Discord = require("discord.js");
+import * as Discord from "discord.js";
+import { ModuleInterface } from "./ModuleInterface";
 const fetch = require("node-fetch");
-var Reddit = {
-	// =============================================================
-	// DEFAULT MODULE MEMBER
-	// _module_dependency: store the class instances to be used
-	// _init: To initalise this module
-	// _init_status: Is this module initialised?
-	// _worker: to be executed when a command comes in
-	// _import: to load the class instances needed by this module
-	// =============================================================
-	_module_dependency: {},
-	_init: async function () {
-		Reddit._init_status = true;
-	},
-	_init_status: false,
-	_worker: function (origin, cmd_name, args) {
-		if (origin == null) {
+export class Reddit implements ModuleInterface {
+    constructor() {
+        this._init_status = true;
+    }
+    _init_status: boolean = false;
+    _worker (origin: Discord.Message, cmd_name: string, args: string[]) {
+        if (origin == null) {
 			return;
 		}
-		let reddit_name = Reddit.command_reddit[cmd_name];
+		let reddit_name = this.command_reddit[cmd_name];
 		if (typeof reddit_name === "undefined") {
 			return;
 		}
-		Reddit.send_reddit_post(origin, reddit_name, args);
-	},
-	_import: function (dependency) {
-		Reddit._module_dependency = dependency;
-	},
-	// =============================================================
-	// =============================================================
+		this.send_reddit_post(origin, reddit_name);
+    }
 
-	// =============================================================
-	// Module Variables
-	// =============================================================
-	command_reddit: {
+    command_reddit: Record<string, string> = {
 		tellajoke: "ShortCleanFunny",
 		scareme: "TwoSentenceHorror",
 		cursedfood: "cursedfoods",
 		food: "Food",
-	},
+	}
 
 	// =============================================================
 	// Other Functions
@@ -54,9 +33,9 @@ var Reddit = {
 	 * @param {string} reddit_name reddit to fetch post from
 	 * @param {boolean} include_image (optional) will send image if true
 	 */
-	send_reddit_post: async function (
-		origin,
-		reddit_name,
+	async send_reddit_post (
+		origin:Discord.Message,
+		reddit_name:string,
 		include_image = false
 	) {
 		let url = `https://www.reddit.com/r/${reddit_name}/.json?sort=hot&t=week&limit=300`;
@@ -84,9 +63,7 @@ var Reddit = {
 				`Error getting post from r/${reddit_name}, contact Looz !`
 			);
 		}
-	},
+	}
 	// =============================================================
 	// =============================================================
-};
-
-module.exports = Reddit;
+}

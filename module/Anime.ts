@@ -1,43 +1,30 @@
-/**
- * Handles all command related to anime
- */
-const Miscellaneous = require("./Miscellaneous");
+import * as Discord from "discord.js";
+import { ModuleInterface } from "./ModuleInterface";
+import {Miscellaneous} from "./Miscellaneous";
+import { MAL } from "../class/MAL";
 const { API } = require("nhentai-api");
 const nhentaiAPI = new API();
-const Discord = require("discord.js");
-var Anime = {
-	// =============================================================
-	// DEFAULT MODULE MEMBER
-	// _module_dependency: store the class instances to be used
-	// _init: To initalise this module
-	// _init_status: Is this module initialised?
-	// _worker: to be executed when a command comes in
-	// _import: to load the class instances needed by this module
-	// =============================================================
-	_module_dependency: {},
-	_init: async function () {
-		Anime._init_status = true;
-	},
-	_init_status: false,
-	_worker: function (origin, cmd_name, args) {
-		if (origin == null) {
-			return;
-		}
-		Anime[cmd_name](origin, args);
-	},
-	_import: function (dependency) {
-		Anime._module_dependency = dependency;
-	},
-	// =============================================================
-	// =============================================================
+export class Anime implements ModuleInterface {
+	_init_status: boolean;
+	MAL: MAL;
+	constructor(MAL_instance: MAL) {
+        this.MAL = MAL_instance;
+		this._init_status = true;
+	}
+
+	_worker(origin: Discord.Message, cmd_name: string, args: string[]) {
+        if(origin == null) {
+            return;
+        }
+        (this as any)[cmd_name](origin, args);
+    }
 
 	// =============================================================
 	// Other functions
 	// =============================================================
-	initcap: function (string) {
-		if (typeof string !== "string") return "";
+	initcap(string: string): string {
 		return string.charAt(0).toUpperCase() + string.slice(1);
-	},
+	}
 
 	/**
 	 * Function that return a discord embed from a given book from nhentai api
@@ -46,7 +33,7 @@ var Anime = {
 	 * @param {boolean} rand_color (optional) set this to true to set embed to random color
 	 * @return {Discord.MessageEmbed}
 	 */
-	nhentai_read_embed: async function (book, page_num, rand_color = false) {
+	async nhentai_read_embed(book: any, page_num: number, rand_color = false) {
 		let embed = new Discord.MessageEmbed();
 		embed.setTitle(book.title.english);
 		embed.setURL(`https://www.nhentai.net/g/${book.id}`);
@@ -58,7 +45,7 @@ var Anime = {
 			);
 		}
 		return embed;
-	},
+	}
 
 	/**
 	 * Get nhentai info about the given nuke code
@@ -67,9 +54,9 @@ var Anime = {
 	 * @param {boolean} rand_color (optional) set this to true to set embed to random color
 	 * @return {Discord.MessageEmbed}
 	 */
-	nhentai_info_embed: function (
-		book,
-		footer = undefined,
+	nhentai_info_embed(
+		book: any,
+		footer: string | null = undefined,
 		rand_color = false
 	) {
 		let embed = new Discord.MessageEmbed();
@@ -80,7 +67,7 @@ var Anime = {
 		let nuke = `Nuke code: ${book.id}\n\n`;
 
 		let tags = `Tags:\n${book.tags
-			.map((e) => "`" + e.name + "`")
+			.map((e: any) => "`" + e.name + "`")
 			.join(", ")}`;
 		if (rand_color) {
 			embed.setColor(
@@ -93,7 +80,7 @@ var Anime = {
 		}
 
 		return embed;
-	},
+	}
 
 	// =============================================================
 	// =============================================================
@@ -102,15 +89,13 @@ var Anime = {
 	// Command functions
 	// =============================================================
 
-	anime: async function (origin, args = []) {
+	async anime(origin: Discord.Message, args: Array<string> = []) {
 		if (args.length == 0) {
-			Miscellaneous.help(origin, ["anime"]);
+			new Miscellaneous().help(origin, ["anime"]);
 			return;
 		}
 
-		let status = await this._module_dependency.MAL.query_anime(
-			args.join(" ")
-		);
+		let status = await this.MAL.query_anime(args.join(" "));
 		if (!status.status) {
 			origin.channel.send(
 				"It looks like I'm not weeb enough to know what is this..."
@@ -136,17 +121,18 @@ var Anime = {
 			typeof anime_details.start_season.year !== "undefined" &&
 			typeof anime_details.start_season.season !== "undefined"
 		) {
-			anime_details.start_season = `${Anime.initcap(
+			anime_details.start_season = `${this.initcap(
 				anime_details.start_season.season
 			)} ${anime_details.start_season.year}`;
 		} else {
 			anime_details.start_season = "?";
 		}
 
+		let anime_mean_score_label: string = `${anime_details.mean}`;
 		if (anime_details.mean == null) {
-			anime_details.mean = "?";
+			anime_mean_score_label = "?";
 		} else {
-			anime_details.mean =
+			anime_mean_score_label =
 				anime_details.mean +
 				` (scored by ${anime_details.num_list_users} users)`;
 		}
@@ -203,7 +189,7 @@ var Anime = {
 			},
 			{
 				name: "Score",
-				value: anime_details.mean,
+				value: anime_mean_score_label,
 				inline: true,
 			},
 			{
@@ -227,23 +213,26 @@ var Anime = {
 
 		dme.addFields(embed_fields);
 		origin.channel.send(dme);
-	},
-	nhentai: async function (origin, args = []) {
-		if (args.length == 0) {
-			Miscellaneous.help(origin, ["nhentai"]);
-			return;
-        }
-        
-        if(!origin.channel.nsfw) {
-            origin.reply("Im not so sure if you really want to do that here...\nGo to NSFW channel if you will?");
-            return;
-        }
+	}
 
-		let book = {};
+	async nhentai(origin: Discord.Message, args: Array<string> = []) {
+		if (args.length == 0) {
+			new Miscellaneous().help(origin, ["nhentai"]);
+			return;
+		}
+
+		if (!(<Discord.TextChannel|Discord.NewsChannel>origin.channel).nsfw) {
+			origin.reply(
+				"Im not so sure if you really want to do that here...\nGo to NSFW channel if you will?"
+			);
+			return;
+		}
+
+		let book:any = {};
 		switch (args[0]) {
 			case "info":
 				if (args.length == 1) {
-					Miscellaneous.help(origin, ["nhentai"]);
+					new Miscellaneous().help(origin, ["nhentai"]);
 					break;
 				}
 				book = {};
@@ -255,17 +244,17 @@ var Anime = {
 					// console.log(e);
 				}
 
-				let embed_send = Anime.nhentai_info_embed(book);
+				let embed_send = this.nhentai_info_embed(book);
 				origin.channel.send(embed_send);
 
 				break;
 			case "read":
 				if (args.length == 1) {
-					Miscellaneous.help(origin, ["nhentai"]);
+					new Miscellaneous().help(origin, ["nhentai"]);
 					break;
 				}
 
-				if (isNaN(args[1])) {
+				if (isNaN(Number(args[1]))) {
 					origin.channel.send("The nuke code is invalid");
 					break;
 				}
@@ -300,7 +289,7 @@ var Anime = {
 
 				let timeout = 60000;
 
-				let embed = await Anime.nhentai_read_embed(
+				let embed = await this.nhentai_read_embed(
 					book,
 					page_num,
 					true
@@ -330,7 +319,7 @@ var Anime = {
 						next.resetTimer();
 						r.users.remove(u.id);
 					}
-					embed = await Anime.nhentai_read_embed(
+					embed = await this.nhentai_read_embed(
 						book,
 						--page_num,
 						true
@@ -348,7 +337,7 @@ var Anime = {
 						r.users.remove(u.id);
 						return;
 					}
-					embed = await Anime.nhentai_read_embed(
+					embed = await this.nhentai_read_embed(
 						book,
 						++page_num,
 						true
@@ -384,7 +373,7 @@ var Anime = {
 				break;
 			case "search":
 				if (args.length == 1) {
-					Miscellaneous.help(origin, ["nhentai"]);
+					new Miscellaneous().help(origin, ["nhentai"]);
 					break;
 				}
 
@@ -401,7 +390,7 @@ var Anime = {
 
 				let s_page_num = 0;
 
-				let search_result_embed = await Anime.nhentai_info_embed(
+				let search_result_embed = await this.nhentai_info_embed(
 					result.books[s_page_num],
 					`Result ${s_page_num + 1} of ${result.books.length}`,
 					true
@@ -435,7 +424,7 @@ var Anime = {
 						r.users.remove(u.id);
 						return;
 					}
-					search_result_embed = await Anime.nhentai_info_embed(
+					search_result_embed = await this.nhentai_info_embed(
 						result.books[--s_page_num],
 						`Result ${s_page_num + 1} of ${result.books.length}`,
 						true
@@ -462,7 +451,7 @@ var Anime = {
 						r.users.remove(u.id);
 						return;
 					}
-					search_result_embed = await Anime.nhentai_info_embed(
+					search_result_embed = await this.nhentai_info_embed(
 						result.books[++s_page_num],
 						`Result ${s_page_num + 1} of ${result.books.length}`,
 						true
@@ -485,10 +474,5 @@ var Anime = {
 
 				break;
 		}
-	},
-
-	// =============================================================
-	// =============================================================
-};
-
-module.exports = Anime;
+	}
+}

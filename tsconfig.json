@@ -1,0 +1,12 @@
+{
+	"compilerOptions": {
+		"target": "ES2018",
+		"noImplicitAny": true,
+		"removeComments": true,
+		"preserveConstEnums": true,
+        "sourceMap": true,
+        "moduleResolution": "node"
+	},
+	"include": ["src/**/*", "class/**/*", "module/**/*", "interface/**/*"],
+	"exclude": ["node_modules", "tmp", "data"]
+}
