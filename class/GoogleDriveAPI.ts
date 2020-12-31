@@ -1,22 +1,32 @@
 /**
  * Class to handle all transactions between google drive and this bot
+ * @author Looz
+ * @version 1.1
  */
-const fs = require("fs");
+// const fs = require("fs");
+import * as fs from "fs";
 const drive_cred_path = "./drive_credentials.json";
-const { google } = require("googleapis");
-const { reseller } = require("googleapis/build/src/apis/reseller");
-module.exports = class GoogleDriveAPI {
+import { google } from "googleapis";
+import { PinkFredorFirebase } from "./PinkFredorFirebase";
+import {OAuth2Client} from "google-auth-library/build/src/auth/oauth2client";
+export class GoogleDriveAPI {
+	ready: Promise<any>;
+	fb_inst: PinkFredorFirebase;
+	private client_secret: string;
+	private credentials: any;
+	private oAuth2Client;
+
 	/**
 	 * Ctor for Google Drive API
 	 * @param {string} client_secret Client secret provided in google drive api credentials.json
 	 * @param {PinkFredorFirebase} firebase_instance Firebase instance (required to store token)
 	 */
-	constructor(client_secret, firebase_instance) {
+	constructor(client_secret: string, firebase_instance: PinkFredorFirebase) {
 		let resolve;
 		this.ready = new Promise((res) => (resolve = res));
 		this.client_secret = client_secret;
 		this.fb_inst = firebase_instance;
-		this.credentials = JSON.parse(fs.readFileSync(drive_cred_path));
+		this.credentials = JSON.parse(fs.readFileSync(drive_cred_path).toString());
 		this.credentials.web.client_secret = client_secret;
 
 		const client_id = this.credentials.web.client_id;
@@ -31,7 +41,7 @@ module.exports = class GoogleDriveAPI {
 		this.authorize().then(resolve);
 	}
 
-	onReady(callback) {
+	onReady(callback: (value: any) => any) {
 		this.ready.then(callback);
 	}
 
@@ -56,11 +66,11 @@ module.exports = class GoogleDriveAPI {
 	 *  headers: {}.
 	 * }
 	 */
-	async dir(folder_id = undefined) {
+	async dir(folder_id: string = "") {
 		let auth = this.oAuth2Client;
 		const drive = google.drive({ version: "v3", auth });
 		let res;
-		if (typeof folder_id !== "undefined") {
+		if (folder_id !== "") {
 			try {
 				res = await drive.files.list({
 					q: `'${folder_id}' in parents`,
@@ -80,7 +90,7 @@ module.exports = class GoogleDriveAPI {
 	 * @param {string} metadata_fields fields seperated by comma as expected from https://developers.google.com/drive/api/v3/reference/files#resource https://developers.google.com/drive/api/v3/fields-parametera
 	 * @return {Promise<Promise>} Promise returned by drive.files.get()
 	 */
-	async get_file_metadata(file_id, metadata_fields) {
+	async get_file_metadata(file_id: string, metadata_fields: string) {
 		let auth = this.oAuth2Client;
 		const drive = google.drive({ version: "v3", auth });
 		// drive.files.get(
@@ -108,7 +118,7 @@ module.exports = class GoogleDriveAPI {
 	 *      headers: {}
 	 * }
 	 */
-	async get_file_stream(file_id) {
+	async get_file_stream(file_id: string) {
 		let auth = this.oAuth2Client;
 		const drive = google.drive({ version: "v3", auth });
 		// drive.files.get(
@@ -134,13 +144,13 @@ module.exports = class GoogleDriveAPI {
 	 * @param {string} metadata_fields fields seperated by comma as expected from https://developers.google.com/drive/api/v3/reference/files#resource https://developers.google.com/drive/api/v3/fields-parameter
 	 * @return {Promise<Promise>} promise returned by drive.files.get()
 	 */
-	async search_file(query, metadata_fields = undefined) {
+	async search_file(query: string, metadata_fields: string = "") {
 		let auth = this.oAuth2Client;
 		const drive = google.drive({ version: "v3", auth });
 
-		let obj = { q: query };
-		if (typeof metadata_fields !== "undefined") {
-			obj.fields = metadata_fields;
+		let obj: { [k: string]: any } = { q: query };
+		if (metadata_fields !== "") {
+			obj["fields"] = metadata_fields;
 		}
 
 		return drive.files.list(obj);
@@ -157,11 +167,11 @@ module.exports = class GoogleDriveAPI {
 	 * @example
 	 */
 	async upload_file(
-		file,
-		mimeType,
-		body,
+		file: string,
+		mimeType: string,
+		body: fs.ReadStream,
 		isUpdate = false,
-		folder_id = undefined
+		folder_id: string = ""
 	) {
 		let auth = this.oAuth2Client;
 		const drive = google.drive({ version: "v3", auth });
@@ -177,18 +187,22 @@ module.exports = class GoogleDriveAPI {
 				media: media,
 			});
 		} else {
-			let resource = { name: file };
-			if (typeof folder_id !== "undefined") {
+			let resource: { [k: string]: any } = { name: file };
+			if (folder_id !== "") {
 				resource["parents"] = [folder_id];
 			}
-			return await drive.files.create({
+
+			let gfile: any = {
 				resource: resource,
 				media: media,
 				fields: "id",
-			});
-		}
-	}
+			};
 
+			return await drive.files.create(gfile);
+		}
+    }
+    
+    
 	// =============================================================================================
 	// Code below this points contain code for Google Drive authorization only, proceed with caution
 	// =============================================================================================
@@ -201,8 +215,8 @@ module.exports = class GoogleDriveAPI {
 		// this.getAuthUrl(this.oAuth2Client);
 		// this.getAccessToken(this.oAuth2Client, "4/0AY0e-g5kfZeWsxAEpgnINQhxaz6zNlPEKrNs1WM3CcL6SpdGwf0LWY0RhCjntmSsr5zvMw");
 
-		let token = await this.fb_inst.retrieve_collection("cred");
-		token = token.find((val) => val.id === "drive_cred").content;
+		let token_arr = await this.fb_inst.retrieve_collection("cred");
+		let token = token_arr.find((val) => val.id === "drive_cred").content;
 		this.oAuth2Client.setCredentials(token);
 		// this.play_music();
 	}
@@ -212,7 +226,7 @@ module.exports = class GoogleDriveAPI {
 	 * execute the given callback with the authorized OAuth2 client.
 	 * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
 	 */
-	getAuthUrl(oAuth2Client, callback) {
+	getAuthUrl(oAuth2Client:OAuth2Client) {
 		const authUrl = oAuth2Client.generateAuthUrl({
 			access_type: "offline",
 			scope: [
@@ -231,7 +245,7 @@ module.exports = class GoogleDriveAPI {
 	 * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
 	 * @param {string} auth_code auth_code i got from redirected uri
 	 */
-	getAccessToken(oAuth2Client, auth_code) {
+	getAccessToken(oAuth2Client:OAuth2Client, auth_code:string) {
 		oAuth2Client.getToken(auth_code, (err, token) => {
 			if (err) return console.error("Error retrieving access token", err);
 			oAuth2Client.setCredentials(token);
@@ -244,4 +258,4 @@ module.exports = class GoogleDriveAPI {
 			console.log(token);
 		});
 	}
-};
+}
