@@ -1,40 +1,25 @@
-/**
- * Handle all tools related command
- * @author Looz
- * @version 1.0
- */
+import { ModuleInterface } from "./ModuleInterface";
+import * as Discord from "discord.js";
+import { Miscellaneous } from "./Miscellaneous";
 const fetch = require("node-fetch");
 const cheerio = require("cheerio");
 const { URLSearchParams } = require("url");
-const Miscellaneous = require("./Miscellaneous");
+/**
+ * Handle all tools related command
+ * @author Looz
+ * @version 1.1
+ */
+export class Tool implements ModuleInterface{
+    _init_status: boolean = false;
+    _worker (origin: Discord.Message, cmd_name: string, args: string[]){
+        (this as any)[cmd_name](origin, args);
+    }
 
-var Tool = {
-	// =============================================================
-	// DEFAULT MODULE MEMBER
-	// _module_dependency: store the class instances to be used
-	// _init: To initalise this module
-	// _init_status: Is this module initialised?
-	// _worker: to be executed when a command comes in
-	// _import: to load the class instances needed by this module
-	// =============================================================
-	_module_dependency: {},
-	_init: async function () {
-		Tool._init_status = true;
-	},
-	_init_status: false,
-	_worker: function (origin, cmd_name, args) {
-		if (origin == null) {
-			return;
-		}
-		Tool[cmd_name](origin, args);
-	},
-	_import: function (dependency) {
-		Tool._module_dependency = dependency;
-	},
-	// =============================================================
-	// =============================================================
+    constructor() {
+        this._init_status = true;
+    }
 
-	// =============================================================
+    // =============================================================
 	// Command functions
 	// =============================================================
 
@@ -46,7 +31,7 @@ var Tool = {
 	 *  max: (optional) Number - Max number to roll (default 100)
 	 * ]
 	 */
-	roll: async function (origin, args = []) {
+	async roll (origin: Discord.Message, args:Array<string> = []) {
 		let min = 0;
 		let max = 100;
 		// extract number at the back if any
@@ -62,14 +47,14 @@ var Tool = {
 				Math.random() * max - min
 			)}`
 		);
-	},
+	}
 
 	/**
 	 * Pick a random person in discord server
 	 * @param {Discord.Message} origin origin of the command sender
 	 * @param {Array} args an array of options. Possible options: online, bot
 	 */
-	pick: async function (origin, args = []) {
+	async pick (origin:Discord.Message, args:Array<string> = []) {
 		let memberList = origin.guild.members.cache.array().filter((mem) => {
 			// if online arg is given
 			let bool = true;
@@ -92,7 +77,7 @@ var Tool = {
 			memberList[Math.floor(Math.random() * (memberList.length - 1))]
 				.user;
 		origin.channel.send(`${pickedUser.username}, you have been picked !`);
-	},
+	}
 
 	/**
 	 * Unscramble a word
@@ -102,9 +87,9 @@ var Tool = {
 	 *  word: string - word to unscramble
 	 * ]
 	 */
-	unscramble: async function (origin, args = []) {
+	async unscramble (origin:Discord.Message, args:Array<string> = []) {
 		if (args.length == 0) {
-			Miscellaneous.help(origin, ["unscramble"]);
+			new Miscellaneous().help(origin, ["unscramble"]);
 			return;
 		}
 
@@ -146,10 +131,9 @@ var Tool = {
 		} else {
 			origin.channel.send(`Sorry but i could not unscramble ${word}`);
 		}
-	},
+	}
 
 	// =============================================================
 	// =============================================================
-};
 
-module.exports = Tool;
+}

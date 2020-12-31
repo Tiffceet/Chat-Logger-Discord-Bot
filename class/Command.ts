@@ -1,16 +1,21 @@
 /**
  * Contains all functions needed to parse and process a command
  * @author Looz
- * @version 1.0
+ * @version 1.1
  */
-const { DiscordAPIError } = require("discord.js");
 const fs = require("fs");
-module.exports = class Command {
+import { CommandInfo } from "../interface/class/Command/CommandInfo";
+import { CommandDesc } from "../interface/class/Command/CommandDesc";
+import { ModuleDesc } from "../interface/class/Command/ModuleDesc";
+export class Command {
+	command_prefix: string;
+	command_desc: CommandDesc;
+	module_desc: ModuleDesc;
 	/**
 	 * Initialise an instance of Command
 	 * @param {string} command_prefix (optional) command prefix
 	 */
-	constructor(command_prefix = "") {
+	constructor(command_prefix: string = "") {
 		this.command_prefix = command_prefix;
 		this.command_desc = JSON.parse(
 			// fs.readFileSync("./../data/ComamndModule.json")
@@ -22,18 +27,9 @@ module.exports = class Command {
 	/**
 	 * Parse a command and return info about this command
 	 * @param {string} cmd Command to parse
-	 * @return {Object} undefined if given text is not a command
-	 * {
-	 *      is_command          : boolean, // This indicates if the passed in string is indeed a command
-	 *      command_name        : string,
-	 *      module_name         : string,
-	 *      module_path         : string,
-	 *      module_dependency   : Array,
-	 *      args_count          : number,
-	 *      args                : Array[args_count]
-	 * }
+	 * @return {CommandInfo} undefined if given text is not a command
 	 */
-	async parse(cmd) {
+	async parse(cmd: string): Promise<CommandInfo> {
 		if (cmd == "") {
 			// throw new Error("Command.js: Parse Error");
 			return { is_command: false };
@@ -45,9 +41,9 @@ module.exports = class Command {
 
 		cmd = cmd.slice(this.command_prefix.length);
 
-		cmd = cmd.match(/("[^"]+"|[\\S]+"[^"]+|[^ ]+)/gm);
-		let cmd_name = cmd[0];
-		let cmd_args = cmd.slice(1);
+		let tokenized_cmd = cmd.match(/("[^"]+"|[\\S]+"[^"]+|[^ ]+)/gm);
+		let cmd_name = tokenized_cmd[0];
+		let cmd_args = tokenized_cmd.slice(1);
 
 		if (typeof this.command_desc["command"][cmd_name] === "undefined") {
 			return { is_command: false };
@@ -60,13 +56,12 @@ module.exports = class Command {
 			module_path: this.module_desc["module"][
 				this.command_desc["command"][cmd_name].moduleName
 			]["modulePath"],
-			module_dependency: [
-				this.module_desc["module"][
-					this.command_desc["command"][cmd_name].moduleName
-				]["dependency"],
-			],
+			module_dependency: this.module_desc["module"][
+				this.command_desc["command"][cmd_name].moduleName
+			].dependency,
+
 			args_count: 0,
 			args: cmd_args,
 		};
 	}
-};
+}
