@@ -1,6 +1,0 @@
-fs.js
-discord.js
-node-fetch
-cheerio
-firebase-admin
-firebase

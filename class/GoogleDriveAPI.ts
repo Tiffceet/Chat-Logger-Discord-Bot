@@ -12,7 +12,6 @@ import {OAuth2Client} from "google-auth-library/build/src/auth/oauth2client";
 export class GoogleDriveAPI {
 	ready: Promise<any>;
 	fb_inst: PinkFredorFirebase;
-	private client_secret: string;
 	private credentials: any;
 	private oAuth2Client;
 
@@ -22,9 +21,9 @@ export class GoogleDriveAPI {
 	 * @param {PinkFredorFirebase} firebase_instance Firebase instance (required to store token)
 	 */
 	constructor(client_secret: string, firebase_instance: PinkFredorFirebase) {
-		let resolve;
+		let resolve:(value: any) => void;
 		this.ready = new Promise((res) => (resolve = res));
-		this.client_secret = client_secret;
+		
 		this.fb_inst = firebase_instance;
 		this.credentials = JSON.parse(fs.readFileSync(drive_cred_path).toString());
 		this.credentials.web.client_secret = client_secret;
@@ -38,7 +37,10 @@ export class GoogleDriveAPI {
 			redirect_uris[0]
 		);
 
-		this.authorize().then(resolve);
+        this.authorize().then(() => {
+            resolve("");
+        });
+        // this.getAuthUrl(this.oAuth2Client);
 	}
 
 	onReady(callback: (value: any) => any) {

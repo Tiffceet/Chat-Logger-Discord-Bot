@@ -15,7 +15,7 @@ export class Miscellaneous implements ModuleInterface {
 
 	PinkFredorFirebase_instance: PinkFredorFirebase;
 
-	constructor(PinkFredorFirebase_instance?: PinkFredorFirebase) {
+	constructor(PinkFredorFirebase_instance: PinkFredorFirebase|null = undefined) {
 		if (typeof PinkFredorFirebase_instance !== "undefined")
             this.PinkFredorFirebase_instance = PinkFredorFirebase_instance;
         this._init_status = true;

@@ -6,11 +6,13 @@ if (debug_mode) {
 
 import * as Classes from "../class";
 import * as Modules from "../module";
+const fs = require("fs");
 import * as Discord from "discord.js";
-import * as fs from "fs";
 import { CommandInfo } from "../interface/class/Command/CommandInfo";
 const fetch = require("node-fetch");
 const cheerio = require("cheerio");
+
+if (!fs.existsSync("../tmp")) fs.mkdirSync("../tmp");
 
 // ====================================================================================
 // Class initialization
@@ -20,6 +22,10 @@ const PinkFredorFirebase = new Classes.PinkFredorFirebase(
 	Buffer.from(process.env.FIREBASE_PRIVATE_KEY, "base64").toString("ascii")
 );
 const MAL = new Classes.MAL(process.env.MAL_CLIENT_SECRET, PinkFredorFirebase);
+const GoogleDriveAPI = new Classes.GoogleDriveAPI(
+	Buffer.from(process.env.DRIVE_CLIENT_SECRET, "base64").toString("ascii"),
+	PinkFredorFirebase
+);
 // ====================================================================================
 // ====================================================================================
 
@@ -32,6 +38,9 @@ const Emotes = new Modules.Emotes();
 const Reddit = new Modules.Reddit();
 const Tool = new Modules.Tool();
 const ScheduledJob = new Modules.ScheduledJob(PinkFredorFirebase, bot);
+const PrivateMusicCollection = new Modules.PrivateMusicCollection(
+	GoogleDriveAPI
+);
 // ====================================================================================
 // ====================================================================================
 
@@ -47,7 +56,7 @@ bot.login(process.env.TOKEN);
 async function preload() {}
 
 bot.on("ready", async () => {
-    console.log("bot is ready");
+	console.log("bot is ready");
 });
 
 bot.on("message", async (message: Discord.Message) => {
@@ -74,27 +83,38 @@ bot.on("message", async (message: Discord.Message) => {
 		args: [],
 	};
 
-    let cmd: Classes.Command = new Classes.Command(".dev");
-    
-    cmd_info = await cmd.parse(message.content);
+	let cmd: Classes.Command = new Classes.Command(".dev");
 
-    // console.log(cmd_info);
+	cmd_info = await cmd.parse(message.content);
 
-    switch(cmd_info["module_name"]) {
-        case "Miscellaneous":
-            Miscellaneous._worker(message, cmd_info.command_name, cmd_info.args);
-            break;
-        case "Anime":
-            Anime._worker(message, cmd_info.command_name, cmd_info.args);
-            break;
-        case "Emotes":
-            Emotes._worker(message, cmd_info.command_name, cmd_info.args);
-            break;
-        case "Reddit":
-            Reddit._worker(message, cmd_info.command_name, cmd_info.args);
-            break;
-        case "Tool":
-            Tool._worker(message, cmd_info.command_name, cmd_info.args);
-            break;
-    }
+	// console.log(cmd_info);
+
+	switch (cmd_info["module_name"]) {
+		case "Miscellaneous":
+			Miscellaneous._worker(
+				message,
+				cmd_info.command_name,
+				cmd_info.args
+			);
+			break;
+		case "Anime":
+			Anime._worker(message, cmd_info.command_name, cmd_info.args);
+			break;
+		case "Emotes":
+			Emotes._worker(message, cmd_info.command_name, cmd_info.args);
+			break;
+		case "Reddit":
+			Reddit._worker(message, cmd_info.command_name, cmd_info.args);
+			break;
+		case "Tool":
+			Tool._worker(message, cmd_info.command_name, cmd_info.args);
+			break;
+		case "PrivateMusicCollection":
+			PrivateMusicCollection._worker(
+				message,
+				cmd_info.command_name,
+				cmd_info.args
+			);
+			break;
+	}
 });
