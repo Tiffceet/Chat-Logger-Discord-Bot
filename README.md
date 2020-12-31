@@ -1,15 +1,21 @@
-# Chat-Logger-Discord-Bot
-This bot is written for Lymerist discord server
+# Pinkfredor Discord Bot
+General Purpose discord bot
 
 ## How to host this bot
-1. Install all dependencies
+1. Install typescript and ts-node
+```
+npm install typescript
+npm install ts-node
+```
+2. Install all dependencies
 ```
 npm install
 ```
-2. Set required API keys as environment variable
+3. Set required API keys as environment variable
 - TOKEN (discord bot token)
 - FIREBASE_PRIVATE_KEY (Google Firebase - Cloud firestore - where server prefixes are stored)
-3. Run it
+- MAL_CLIENT_SECRET (myanimelist API client secret)
+4. Run it
 ```
-node .
+ts-node src/index.ts
 ```
