@@ -1,16 +1,18 @@
 /**
- * Class to provide utility function for discord bot
+ * Class containing utility functions
+ * @author Looz
+ * @version 1.1
  */
-const Discord = require("discord.js");
-module.exports = class DiscordUtil {
-	/**
+import * as Discord from "discord.js";
+export class Util {
+    /**
 	 * Wait for user to response
 	 * @param {Discord.Message} origin message origin
 	 * @param {string} authorid who to wait for (expecting discord user id)
 	 * @param {string} timeout (optional) default is 1 minute
 	 * @return {Promise<string>} return user's response if any, throws error if user didnt response in time
 	 */
-	static async wait4Msg(origin, author_id, timeout = 60000) {
+	static async wait4Msg(origin:Discord.Message, author_id:string, timeout = 60000) {
 		let input = await origin.channel.awaitMessages(
 			(m) => m.author.id === author_id,
 			{
@@ -38,12 +40,12 @@ module.exports = class DiscordUtil {
 	 * function(new_page)
 	 */
 	static async paginated(
-		origin,
-		pages,
-		page_count,
+		origin:Discord.Message,
+		pages:Array<Discord.MessageEmbed>,
+		page_count:number,
 		start_page = 1,
 		footer = "Page {n} of {max}",
-		emojiList = ["⏮️", "⬅️", "➡️", "⏭️"],
+		emojiList:Array<string> = ["⏮️", "⬅️", "➡️", "⏭️"],
 		timeout = 600000
 	) {
 		if (page_count == 0) {
@@ -53,10 +55,10 @@ module.exports = class DiscordUtil {
 			start_page = 1;
 		}
 
-        const applyFooter = (item, cur, max) => {
+        const applyFooter = (item:Discord.MessageEmbed, cur:number, max:number) => {
 			if (footer) {
 				item.setFooter(
-					footer.replace("{n}", cur).replace("{max}", max)
+					footer.replace("{n}", cur.toString()).replace("{max}", max.toString())
 				);
 			}
 		};
@@ -147,8 +149,8 @@ module.exports = class DiscordUtil {
             applyFooter(pages[page_num - 1], page_count, page_count);
 			sent_msg.edit(pages[page_num - 1]);
 		});
-		return function (new_page) {
+		return function (new_page:Array<Discord.MessageEmbed>) {
 			pages = new_page;
 		};
 	}
-};
+}
