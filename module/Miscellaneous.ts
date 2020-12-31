@@ -6,11 +6,11 @@
 import * as fs from "fs";
 import * as Discord from "discord.js";
 import { ModuleInterface } from "./ModuleInterface";
-import { PinkFredorFirebase } from "../class_TS/PinkFredorFirebase";
+import { PinkFredorFirebase } from "../class/PinkFredorFirebase";
 export class Miscellaneous implements ModuleInterface {
 	_init_status: boolean = false;
 	_worker(origin: Discord.Message, cmd_name: string, args: string[]) {
-        this[cmd_name](origin, args);
+        (this as any)[cmd_name](origin, args);
 	}
 
 	PinkFredorFirebase_instance: PinkFredorFirebase;

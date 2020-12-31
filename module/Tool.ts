@@ -12,7 +12,7 @@ const { URLSearchParams } = require("url");
 export class Tool implements ModuleInterface{
     _init_status: boolean = false;
     _worker (origin: Discord.Message, cmd_name: string, args: string[]){
-        this[cmd_name](origin, args);
+        (this as any)[cmd_name](origin, args);
     }
 
     constructor() {

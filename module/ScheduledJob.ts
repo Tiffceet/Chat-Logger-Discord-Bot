@@ -1,7 +1,7 @@
 import { ModuleInterface } from "./ModuleInterface";
 import * as Discord from "discord.js";
 var CronJob = require('cron').CronJob;
-import { PinkFredorFirebase } from "../class_TS";
+import { PinkFredorFirebase } from "../class";
 const fetch = require("node-fetch");
 const cheerio = require("cheerio");
 var RssParser = require("rss-parser");

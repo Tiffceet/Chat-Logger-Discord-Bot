@@ -4,8 +4,8 @@ if (debug_mode) {
 	require("dotenv").config();
 }
 
-import * as Classes from "../class_TS";
-import * as Modules from "../module_TS";
+import * as Classes from "../class";
+import * as Modules from "../module";
 import * as Discord from "discord.js";
 import * as fs from "fs";
 import { CommandInfo } from "../interface/class/Command/CommandInfo";
@@ -31,6 +31,7 @@ const Miscellaneous = new Modules.Miscellaneous(PinkFredorFirebase);
 const Emotes = new Modules.Emotes();
 const Reddit = new Modules.Reddit();
 const Tool = new Modules.Tool();
+const ScheduledJob = new Modules.ScheduledJob(PinkFredorFirebase, bot);
 // ====================================================================================
 // ====================================================================================
 

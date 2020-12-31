@@ -1,7 +1,7 @@
 import * as Discord from "discord.js";
 import { ModuleInterface } from "./ModuleInterface";
 import {Miscellaneous} from "./Miscellaneous";
-import { MAL } from "../class_TS/MAL";
+import { MAL } from "../class/MAL";
 const { API } = require("nhentai-api");
 const nhentaiAPI = new API();
 export class Anime implements ModuleInterface {
@@ -16,7 +16,7 @@ export class Anime implements ModuleInterface {
         if(origin == null) {
             return;
         }
-        this[cmd_name](origin, args);
+        (this as any)[cmd_name](origin, args);
     }
 
 	// =============================================================
