@@ -1,4 +1,4 @@
-var debug_mode = false;
+var debug_mode = true;
 
 if (debug_mode) {
 	require("dotenv").config();
@@ -85,9 +85,6 @@ bot.on("message", async (message: Discord.Message) => {
 		args: [],
 	};
 
-<<<<<<< HEAD
-	let cmd: Classes.Command = new Classes.Command(".dev");
-=======
 	let gpfx = Miscellaneous.guild_prefixes.find(
 		(e: any) => e.id == message.guild.id
     );
@@ -102,15 +99,10 @@ bot.on("message", async (message: Discord.Message) => {
 	let cmd: Classes.Command = new Classes.Command(
 		debug_mode ? ".dev" : guild_prefix
 	);
->>>>>>> master
 
 	cmd_info = await cmd.parse(message.content);
 
 	// console.log(cmd_info);
-<<<<<<< HEAD
-
-=======
->>>>>>> master
 	switch (cmd_info["module_name"]) {
 		case "Miscellaneous":
 			Miscellaneous._worker(
@@ -130,16 +122,8 @@ bot.on("message", async (message: Discord.Message) => {
 			break;
 		case "Tool":
 			Tool._worker(message, cmd_info.command_name, cmd_info.args);
-			break;
-<<<<<<< HEAD
-		case "PrivateMusicCollection":
-			PrivateMusicCollection._worker(
-				message,
-				cmd_info.command_name,
-				cmd_info.args
-			);
-			break;
-=======
->>>>>>> master
+            break;
+        case "PrivateMusicCollection":
+            PrivateMusicCollection._worker(message, cmd_info.command_name, cmd_info.args);
 	}
 });

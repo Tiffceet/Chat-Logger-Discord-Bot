@@ -3,68 +3,73 @@
  * @author Looz
  * @version ∞.∞
  */
-import {drive_v3, google} from "googleapis";
+import { drive_v3, google } from "googleapis";
 import * as Discord from "discord.js";
 const ffmetadata = require("ffmetadata");
 import * as fs from "fs";
-import {Miscellaneous} from "./Miscellaneous";
-import {Util} from "../class/Util";
+import { Miscellaneous } from "./Miscellaneous";
+import { Util } from "../class/Util";
 import { GoogleDriveAPI } from "../class/GoogleDriveAPI";
 import { ModuleInterface } from "./ModuleInterface";
-import {AlbumFolderInfo, MusicLibraryIndex} from "../interface/module/PrivateMusicCollection/MusicLibraryIndex";
-import {SongQueue, SongQueueItem} from "../interface/module/PrivateMusicCollection/SongQueue";
+import {
+	AlbumFolderInfo,
+	MusicLibraryIndex,
+} from "../interface/module/PrivateMusicCollection/MusicLibraryIndex";
+import {
+	SongQueue,
+	SongQueueItem,
+} from "../interface/module/PrivateMusicCollection/SongQueue";
 export class PrivateMusicCollection implements ModuleInterface {
-
-    driveapi_instance: GoogleDriveAPI;
-    _init_status: boolean;
-    lib_index:MusicLibraryIndex;
-    song_queue: SongQueue = {};
-    info_json_template: {
-		name: "",
-		artist: "",
-		looz_desc: "",
-		release_year: "",
-		album_color: "",
-		track: {},
-	}
+	driveapi_instance: GoogleDriveAPI;
+	_init_status: boolean;
+	lib_index: MusicLibraryIndex;
+	song_queue: SongQueue = {};
+	info_json_template: {
+		name: "";
+		artist: "";
+		looz_desc: "";
+		release_year: "";
+		album_color: "";
+		track: {};
+	};
 
 	info_json_track_template: {
-		file_id: "",
-		title: "",
-		artist: "",
-		looz_desc: "",
+		file_id: "";
+		title: "";
+		artist: "";
+		looz_desc: "";
+	};
+
+	constructor(driveapi_instance: GoogleDriveAPI) {
+		this.driveapi_instance = driveapi_instance;
+		driveapi_instance.onReady(async (_) => {
+			let idx = await this.get_music_index();
+			this.lib_index = idx;
+			await this.get_album_index();
+			this._init_status = true;
+		});
 	}
 
-    constructor(driveapi_instance: GoogleDriveAPI) {
-        this.driveapi_instance = driveapi_instance;
-        driveapi_instance.onReady(async _ => {
-            let idx = await this.get_music_index();
-            this.lib_index = idx;
-            await this.get_album_index();
-            this._init_status = true;
-        });
-    }
-    
-    _worker (origin: Discord.Message, cmd_name: string, args: string[]){
-        if (!this._init_status) {
+	_worker(origin: Discord.Message, cmd_name: string, args: string[]) {
+		if (!this._init_status) {
 			origin.channel.send("Module is not loaded yet.");
 			return;
-        }
+		}
 
-        (this as any)[cmd_name](origin, args);
-    }
+		(this as any)[cmd_name](origin, args);
+	}
 
-    _reload() {
-        return new Promise((resolve) => {
-            this.driveapi_instance.onReady(async (_) => {
-                let idx = await this.get_music_index();
-                this.lib_index = idx;
-                await this.get_album_index();
-                this._init_status = true;
-                resolve("");
-            });
-        });
-    }
+	_reload() {
+		return new Promise((resolve) => {
+			this.driveapi_instance.onReady(async (_) => {
+				let idx = await this.get_music_index();
+				this.lib_index = idx;
+				await this.get_album_index();
+				this._init_status = true;
+				resolve("");
+			});
+		});
+	}
 
 	// =============================================================
 	// Other functions
@@ -76,7 +81,7 @@ export class PrivateMusicCollection implements ModuleInterface {
 	 * @param {string} destination
 	 * @return {Promise<boolean>} true if file_id is valid
 	 */
-	async download_file (file_id:string, destination:string) {
+	async download_file(file_id: string, destination: string) {
 		let data;
 		try {
 			data = await this.driveapi_instance.get_file_stream(file_id);
@@ -88,7 +93,7 @@ export class PrivateMusicCollection implements ModuleInterface {
 		let dest = fs.createWriteStream(destination);
 		data.pipe(dest);
 		await new Promise((resolve) => {
-			dest.on("finish", (_:any) => {
+			dest.on("finish", (_: any) => {
 				resolve("");
 			});
 		});
@@ -118,10 +123,10 @@ export class PrivateMusicCollection implements ModuleInterface {
 	 *  ]
 	 * }
 	 */
-	async get_music_index() : Promise<MusicLibraryIndex> {
-		let { data } = <any> await this.driveapi_instance.dir()
+	async get_music_index(): Promise<MusicLibraryIndex> {
+		let { data } = <any>await this.driveapi_instance.dir();
 		// Find the music folder
-		let music_folder_id = data.files.find((val:any) => {
+		let music_folder_id = data.files.find((val: any) => {
 			return (
 				val.mimeType == "application/vnd.google-apps.folder" &&
 				val.name == "Music"
@@ -130,21 +135,19 @@ export class PrivateMusicCollection implements ModuleInterface {
 
 		// Get all folders in Music Folder
 		// Each folder represent an album
-		data = await this.driveapi_instance.dir(
-			music_folder_id
-		);
+		data = await this.driveapi_instance.dir(music_folder_id);
 		let files = data.data.files;
 
-		let index:MusicLibraryIndex = {
-            album: []
-        };
+		let index: MusicLibraryIndex = {
+			album: [],
+		};
 
 		for (let i = 0; i < files.length; i++) {
-            let songinfo:AlbumFolderInfo = {
-                    folder_id: files[i].id,
-                    name: files[i].name,
-                    content: [],
-            }
+			let songinfo: AlbumFolderInfo = {
+				folder_id: files[i].id,
+				name: files[i].name,
+				content: [],
+			};
 
 			index["album"].push(songinfo);
 		}
@@ -161,16 +164,12 @@ export class PrivateMusicCollection implements ModuleInterface {
 	/**
 	 * Attempt to fetch all album's info.json
 	 */
-	async get_album_index () {
-		for (
-			let i = 0;
-			i < this.lib_index.album.length;
-			i++
-		) {
+	async get_album_index() {
+		for (let i = 0; i < this.lib_index.album.length; i++) {
 			let album = this.lib_index.album[i];
 			let directory = await this.driveapi_instance.dir(album.folder_id);
 			let info_file = (directory as any).data.files.find(
-				(e:any) => e.name == "info.json"
+				(e: any) => e.name == "info.json"
 			);
 			if (typeof info_file === "undefined") {
 				continue;
@@ -187,13 +186,13 @@ export class PrivateMusicCollection implements ModuleInterface {
 	 * @param {string} file_id
 	 * @return {Promise<object>}
 	 */
-	async parseSongFFMetaData(file_id:string): Promise<any> {
+	async parseSongFFMetaData(file_id: string): Promise<any> {
 		let filepath = `tmp/song${Date.now()}.mp3`;
 
 		await this.download_file(file_id, filepath);
 
 		return await new Promise((resolve) => {
-			ffmetadata.read(filepath, function (err:any, data:any) {
+			ffmetadata.read(filepath, function (err: any, data: any) {
 				resolve(data);
 			});
 		});
@@ -210,9 +209,9 @@ export class PrivateMusicCollection implements ModuleInterface {
 	 *      err: "Can not find info.json from folder_id"
 	 * }
 	 */
-	async prepare_album_embed (
-		folder_id:string,
-		cover_image_url:string|null = undefined
+	async prepare_album_embed(
+		folder_id: string,
+		cover_image_url: string | null = undefined
 	) {
 		let album_info = this.lib_index.album.find(
 			(val) => val.folder_id == folder_id
@@ -223,9 +222,9 @@ export class PrivateMusicCollection implements ModuleInterface {
 				status: false,
 				err: "Missing info_json",
 			};
-        }
-        
-        let info_json = album_info.info_json;
+		}
+
+		let info_json = album_info.info_json;
 
 		let album_desc = "";
 		let keys = Object.keys(info_json.track);
@@ -269,24 +268,23 @@ export class PrivateMusicCollection implements ModuleInterface {
 	 * @param {Discord.Message} origin
 	 * @param {SongQueueItem} queue_item
 	 */
-	async play_music (origin:Discord.Message, queue_item:SongQueueItem) {
-
-        let data_file_stream_req = await this.driveapi_instance.get_file_stream(queue_item.google_drive_file_id);
-        queue_item.data_stream = data_file_stream_req.data;
+	async play_music(origin: Discord.Message, queue_item: SongQueueItem) {
+		let data_file_stream_req = await this.driveapi_instance.get_file_stream(
+			queue_item.google_drive_file_id
+		);
+		let data_stream = data_file_stream_req.data;
 
 		origin.member.voice.channel
 			.join()
 			.then((connection) => {
-				connection.play(queue_item.data_stream).on("finish", () => {
-					let next_item = this.song_queue[
-						origin.guild.id
-					].shift();
+				origin.channel.send(this.get_now_playing_embed(queue_item));
+				connection.play(data_stream).on("finish", () => {
+					let next_item = this.song_queue[origin.guild.id].shift();
 					if (next_item) {
 						this.play_music(origin, next_item);
 					} else {
-						delete this.song_queue[
-							origin.guild.id
-						];
+						delete this.song_queue[origin.guild.id];
+						this.send_disconnect_message(origin);
 						origin.member.voice.channel.leave();
 					}
 				});
@@ -296,11 +294,49 @@ export class PrivateMusicCollection implements ModuleInterface {
 			.catch((err) => console.log(err));
 	}
 
+	get_now_playing_embed(item: SongQueueItem) {
+		let fields: Discord.EmbedFieldData[] = [
+			{
+				name: "Title",
+				value: item.song_title || "-",
+				inline: true,
+			},
+			{
+				name: "Artist",
+				value: item.song_artist || "-",
+				inline: true,
+			},
+			{
+				name: "Album",
+				value: item.album,
+			},
+			{
+				name: "Description",
+				value: item.song_desc || "-",
+			},
+		];
+		let embed = new Discord.MessageEmbed()
+			.setColor("#34eb95")
+			.setTitle("Now playing")
+			.addFields(fields);
+		return embed;
+	}
+
+	/**
+	 * Send disconnect message to the channel
+	 * @param origin
+	 */
+	send_disconnect_message(origin: Discord.Message) {
+		origin.channel.send(
+			"Bye ! Hope you had a great music session with me :3"
+		);
+	}
+
 	// =============================================================
 	// Command Function
 	// =============================================================
 
-	async pmc (origin:Discord.Message, args:Array<string> = []) {
+	async pmc(origin: Discord.Message, args: Array<string> = []) {
 		if (args.length == 0) {
 			new Miscellaneous().help(origin, ["pmc"]);
 			// Remove this is production
@@ -330,6 +366,9 @@ export class PrivateMusicCollection implements ModuleInterface {
 			case "skip":
 				this.pmc_skip(origin, args.slice(1));
 				break;
+			case "stop":
+				this.pmc_stop(origin, args.slice(1));
+				break;
 			default:
 				new Miscellaneous().help(origin, ["pmc"]);
 		}
@@ -346,7 +385,7 @@ export class PrivateMusicCollection implements ModuleInterface {
         */
 	}
 
-	async pmc_view (origin:Discord.Message, args:Array<string> = []) {
+	async pmc_view(origin: Discord.Message, args: Array<string> = []) {
 		if (args.length != 0) {
 			switch (args[0]) {
 				case "list":
@@ -357,14 +396,13 @@ export class PrivateMusicCollection implements ModuleInterface {
 
 		let pages = [];
 
-		let album_art = await this.driveapi_instance.search_file("name='cover.jpg'", "files(id,parents,thumbnailLink)");
+		let album_art = await this.driveapi_instance.search_file(
+			"name='cover.jpg'",
+			"files(id,parents,thumbnailLink)"
+		);
 
 		// Prepare the page
-		for (
-			let i = 0;
-			i < this.lib_index.album.length;
-			i++
-		) {
+		for (let i = 0; i < this.lib_index.album.length; i++) {
 			let ab = this.lib_index.album[i];
 			let ab_art_link_file = album_art.data.files.find(
 				(val) => val.parents[0] == ab.folder_id
@@ -384,12 +422,11 @@ export class PrivateMusicCollection implements ModuleInterface {
 					"Album info not ready for " + ab.name
 				);
 			}
-        }
-        
-        // TODO: Make this better, please
-        let start_page = 1;
-        if(args[0])
-            start_page = parseInt(args[0]);
+		}
+
+		// TODO: Make this better, please
+		let start_page = 1;
+		if (args[0]) start_page = parseInt(args[0]);
 
 		// Show the page
 		Util.paginated(
@@ -401,7 +438,7 @@ export class PrivateMusicCollection implements ModuleInterface {
 		);
 	}
 
-    async pmc_view_list (origin:Discord.Message, args:Array<string> = []) {
+	async pmc_view_list(origin: Discord.Message, args: Array<string> = []) {
 		let al_listing = "";
 
 		for (let i = 0; i < this.lib_index.album.length; i++) {
@@ -418,7 +455,7 @@ export class PrivateMusicCollection implements ModuleInterface {
 		);
 	}
 
-	async pmc_play (origin:Discord.Message, args: Array<string> = []) {
+	async pmc_play(origin: Discord.Message, args: Array<string> = []) {
 		let query = args.join(" ");
 
 		if (!origin.member.voice.channel) {
@@ -428,68 +465,101 @@ export class PrivateMusicCollection implements ModuleInterface {
 			return;
 		}
 
-		let music_title_library = [];
-		for (
-			let i = 0;
-			i < this.lib_index.album.length;
-			i++
-		) {
+		let found = false;
+		let track_info: any;
+		// let music_title_library = [];
+		for (let i = 0; i < this.lib_index.album.length; i++) {
+			if (found) {
+				break;
+			}
 			let album = this.lib_index.album[i];
 			try {
 				let track_keys = Object.keys(album.info_json.track);
 				for (let j = 0; j < track_keys.length; j++) {
-					music_title_library.push(
-						album.info_json.track[track_keys[j]]
-					);
+					// music_title_library.push(
+					// 	album.info_json.track[track_keys[j]]
+					// );
+					let track = album.info_json.track[track_keys[j]];
+					if (track.title === query) {
+						track_info = track;
+						track_info.album = album.name;
+						found = true;
+						break;
+					}
 				}
 			} catch (e) {}
 		}
 
-		let file_id_to_play = music_title_library.find((v) => {
-			return v.title === query;
-		});
+		// let track_info = music_title_library.find((v) => {
+		// 	return v.title === query;
+		// });
 
-		if (typeof file_id_to_play === "undefined") {
+		if (!found) {
 			origin.channel.send(
 				"Sorry but I dont think I know what was that..."
 			);
 			return;
 		}
 
-		file_id_to_play = file_id_to_play.file_id;
-
 		// let data_file_stream_req = await this.driveapi_instance.get_file_stream(file_id_to_play);
 		// let data = data_file_stream_req.data;
 
-		let queue_item = {    
-            song_title: "",
-            song_artist: "",
-            album_art_drive_file_id: "",
-            google_drive_file_id: file_id_to_play,
-            data_stream: "" };
-		if (
-			typeof this.song_queue[origin.guild.id] !==
-			"undefined"
-		) {
+		let queue_item = {
+			song_title: track_info.title,
+			song_artist: track_info.artist,
+			song_desc: track_info.looz_desc,
+			google_drive_file_id: track_info.file_id,
+			album: track_info.album,
+		};
+		if (typeof this.song_queue[origin.guild.id] !== "undefined") {
 			this.song_queue[origin.guild.id].push(queue_item);
 		} else {
 			this.song_queue[origin.guild.id] = [queue_item];
-			this.play_music(
-				origin,
-				this.song_queue[origin.guild.id].shift()
-			);
+			this.play_music(origin, this.song_queue[origin.guild.id].shift());
 		}
+
+		origin.channel.send(
+			new Discord.MessageEmbed()
+				.setDescription(
+					`Queued \`${track_info.title}\` by \`${track_info.artist}\` from \`${track_info.album}\``
+				)
+				.setColor("#a88932")
+		);
 	}
 
-	async pmc_skip (origin:Discord.Message, args:Array<string> = []) {
+	async pmc_stop(origin: Discord.Message, args: Array<string> = []) {
+		if (!origin.member.voice.channel) {
+			origin.channel.send(
+				"Sir, you have to be with the people to skip.\nYou wouldn't want a stranger stop your song isnt it."
+			);
+			return;
+        }
+        
+        let mem: [string, Discord.GuildMember];
+        let found = false;
+		for (mem of origin.member.voice.channel.members) {
+            if(mem[1].id == "697682159355428875") {
+                found = true;
+                break;
+            }
+        }
+        if(!found) {
+            return;
+        }
+
+		delete this.song_queue[origin.guild.id];
+		this.send_disconnect_message(origin);
+		origin.member.voice.channel.leave();
+	}
+
+	async pmc_skip(origin: Discord.Message, args: Array<string> = []) {
 		if (!origin.member.voice.channel) {
 			origin.channel.send(
 				"Sir, you have to be with the people to skip.\nYou wouldn't want a stranger skip your song isnt it."
 			);
+			return;
 		}
-		let playthis = this.song_queue[
-			origin.guild.id
-		].shift();
+		let playthis = this.song_queue[origin.guild.id].shift();
 		if (playthis) {
 			this.play_music(origin, playthis);
 		} else {
@@ -497,17 +567,14 @@ export class PrivateMusicCollection implements ModuleInterface {
 		}
 	}
 
-	async pmc_config (origin:Discord.Message, args:Array<string> = []) {
+	async pmc_config(origin: Discord.Message, args: Array<string> = []) {
 		if (origin.author.id != "246239361195048960") {
 			origin.channel.send("This is limited to Looz for now.");
 			return;
 		}
 		switch (args[0]) {
 			case "albuminfo":
-				this.pmc_config_albuminfo(
-					origin,
-					args.slice(1)
-				);
+				this.pmc_config_albuminfo(origin, args.slice(1));
 				break;
 		}
 	}
@@ -517,13 +584,16 @@ export class PrivateMusicCollection implements ModuleInterface {
 	 * @param {Discord.Message} origin
 	 * @param {Array} args
 	 */
-	async pmc_config_albuminfo (origin:Discord.Message, args:Array<string> = []) {
+	async pmc_config_albuminfo(
+		origin: Discord.Message,
+		args: Array<string> = []
+	) {
 		let idx = parseInt(args[0]) - 1;
 		let album_folder_id = this.lib_index.album[idx].folder_id;
 		// Attempt to download info.json
-		let album_dir:any = await this.driveapi_instance.dir(album_folder_id);
+		let album_dir: any = await this.driveapi_instance.dir(album_folder_id);
 		let info_file_details = album_dir.data.files.find(
-			(val:any) => val.name == "info.json"
+			(val: any) => val.name == "info.json"
 		);
 
 		let tmp_info_filepath = `tmp/info${Date.now()}.json`;
@@ -550,17 +620,16 @@ export class PrivateMusicCollection implements ModuleInterface {
 			origin.channel.send("File info.json created !");
 		} else {
 			info_json_file_id = info_file_details.id;
-			await this.download_file(
-				info_json_file_id,
-				tmp_info_filepath
-			);
+			await this.download_file(info_json_file_id, tmp_info_filepath);
 		}
 
-        let editing_info_json = JSON.parse(fs.readFileSync(tmp_info_filepath).toString());
-        
-        let pmc_inst = this;
+		let editing_info_json = JSON.parse(
+			fs.readFileSync(tmp_info_filepath).toString()
+		);
+
+		let pmc_inst = this;
 		const send_editing_info_json_to_channel = function () {
-            let dc_eb = new Discord.MessageEmbed();
+			let dc_eb = new Discord.MessageEmbed();
 			dc_eb.setTitle(pmc_inst.lib_index.album[idx].name);
 			dc_eb.addFields(
 				{
@@ -605,23 +674,23 @@ export class PrivateMusicCollection implements ModuleInterface {
 				}
 			);
 			origin.channel.send(dc_eb);
-        };
-        
-        const update_and_upload_info_json = async () => {
-            origin.channel.send("Updating info.json...");
-            fs.writeFileSync(
-                tmp_info_filepath,
-                JSON.stringify(editing_info_json)
-            );
-            await pmc_inst.driveapi_instance.upload_file(
-                info_json_file_id,
-                "application/json",
-                fs.createReadStream(tmp_info_filepath),
-                true,
-                album_folder_id
-            );
-            origin.channel.send("Album info updated !");
-        };
+		};
+
+		const update_and_upload_info_json = async () => {
+			origin.channel.send("Updating info.json...");
+			fs.writeFileSync(
+				tmp_info_filepath,
+				JSON.stringify(editing_info_json)
+			);
+			await pmc_inst.driveapi_instance.upload_file(
+				info_json_file_id,
+				"application/json",
+				fs.createReadStream(tmp_info_filepath),
+				true,
+				album_folder_id
+			);
+			origin.channel.send("Album info updated !");
+		};
 
 		let response = "";
 		while (true) {
@@ -659,10 +728,7 @@ export class PrivateMusicCollection implements ModuleInterface {
 						"Enter Action (ADD, EDIT, REMOVE, REARRANGE, IMPORT_METADATA)"
 					);
 
-					response = await Util.wait4Msg(
-						origin,
-						origin.author.id
-					);
+					response = await Util.wait4Msg(origin, origin.author.id);
 					let res = "";
 					switch (response.split(" ")[0]) {
 						case "ADD":
@@ -680,10 +746,7 @@ export class PrivateMusicCollection implements ModuleInterface {
 							};
 							origin.channel.send("title:");
 
-							res = await Util.wait4Msg(
-								origin,
-								origin.author.id
-							);
+							res = await Util.wait4Msg(origin, origin.author.id);
 							if (res != ".pmc IGNORE") {
 								editing_info_json["track"][new_t_no][
 									"title"
@@ -691,10 +754,7 @@ export class PrivateMusicCollection implements ModuleInterface {
 							}
 							origin.channel.send("artist:");
 
-							res = await Util.wait4Msg(
-								origin,
-								origin.author.id
-							);
+							res = await Util.wait4Msg(origin, origin.author.id);
 							if (res != ".pmc IGNORE") {
 								editing_info_json["track"][new_t_no][
 									"artist"
@@ -702,10 +762,7 @@ export class PrivateMusicCollection implements ModuleInterface {
 							}
 							origin.channel.send("looz_desc:");
 
-							res = await Util.wait4Msg(
-								origin,
-								origin.author.id
-							);
+							res = await Util.wait4Msg(origin, origin.author.id);
 							if (res != ".pmc IGNORE") {
 								editing_info_json["track"][new_t_no][
 									"looz_desc"
@@ -720,30 +777,21 @@ export class PrivateMusicCollection implements ModuleInterface {
 							origin.channel.send(
 								`\`.pmc IGNORE\`to ignore\nold_title: ${editing_info_json["track"][t_no].title}`
 							);
-							res = await Util.wait4Msg(
-								origin,
-								origin.author.id
-							);
+							res = await Util.wait4Msg(origin, origin.author.id);
 							if (res != ".pmc IGNORE") {
 								editing_info_json["track"][t_no].title = res;
 							}
 							origin.channel.send(
 								`old_artist: ${editing_info_json["track"][t_no].artist}`
 							);
-							res = await Util.wait4Msg(
-								origin,
-								origin.author.id
-							);
+							res = await Util.wait4Msg(origin, origin.author.id);
 							if (res != ".pmc IGNORE") {
 								editing_info_json["track"][t_no].artist = res;
 							}
 							origin.channel.send(
 								`old_looz_desc: ${editing_info_json["track"][t_no].looz_desc}`
 							);
-							res = await Util.wait4Msg(
-								origin,
-								origin.author.id
-							);
+							res = await Util.wait4Msg(origin, origin.author.id);
 							if (res != ".pmc IGNORE") {
 								editing_info_json["track"][
 									t_no
@@ -762,7 +810,7 @@ export class PrivateMusicCollection implements ModuleInterface {
 							break;
 						case "REARRANGE":
 							let kunci = Object.keys(editing_info_json["track"]);
-							let new_track: {[key: string]: any} = {};
+							let new_track: { [key: string]: any } = {};
 							for (let k = 0; k < kunci.length; k++) {
 								origin.channel.send(
 									`${
@@ -788,7 +836,7 @@ export class PrivateMusicCollection implements ModuleInterface {
 								"I will now download the tracks and attempt to read their metadata tags"
 							);
 							let track_list = album_dir.data.files.filter(
-								(e:any) => e.mimeType == "audio/mpeg"
+								(e: any) => e.mimeType == "audio/mpeg"
 							);
 
 							for (let j = 0; j < track_list.length; j++) {
@@ -810,8 +858,8 @@ export class PrivateMusicCollection implements ModuleInterface {
 									looz_desc: "",
 								};
 							}
-                            origin.channel.send("Finished parsing metadata !");
-                            update_and_upload_info_json();
+							origin.channel.send("Finished parsing metadata !");
+							update_and_upload_info_json();
 							break;
 						default:
 							origin.channel.send(
@@ -834,7 +882,7 @@ export class PrivateMusicCollection implements ModuleInterface {
 		}
 	}
 
-    async pmc_reload (origin:Discord.Message, args:Array<string> = []) {
+	async pmc_reload(origin: Discord.Message, args: Array<string> = []) {
 		origin.channel.send("PMC Reloading...");
 		await this._reload();
 		origin.channel.send("PMC Reloaded.");
