@@ -1,4 +1,4 @@
-var debug_mode = true;
+var debug_mode = false;
 
 if (debug_mode) {
 	require("dotenv").config();
@@ -12,8 +12,8 @@ import { CommandInfo } from "../interface/class/Command/CommandInfo";
 const fetch = require("node-fetch");
 const cheerio = require("cheerio");
 
-if(!fs.existsSync("tmp")) {
-    fs.mkdirSync("tmp");
+if (!fs.existsSync("tmp")) {
+	fs.mkdirSync("tmp");
 }
 
 // ====================================================================================
@@ -51,7 +51,7 @@ bot.login(process.env.TOKEN);
 async function preload() {}
 
 bot.on("ready", async () => {
-    console.log("bot is ready");
+	console.log("bot is ready");
 });
 
 bot.on("message", async (message: Discord.Message) => {
@@ -78,27 +78,43 @@ bot.on("message", async (message: Discord.Message) => {
 		args: [],
 	};
 
-    let cmd: Classes.Command = new Classes.Command(".dev");
-    
-    cmd_info = await cmd.parse(message.content);
+	let gpfx = Miscellaneous.guild_prefixes.find(
+		(e: any) => e.id == message.guild.id
+    );
 
-    // console.log(cmd_info);
-
-    switch(cmd_info["module_name"]) {
-        case "Miscellaneous":
-            Miscellaneous._worker(message, cmd_info.command_name, cmd_info.args);
-            break;
-        case "Anime":
-            Anime._worker(message, cmd_info.command_name, cmd_info.args);
-            break;
-        case "Emotes":
-            Emotes._worker(message, cmd_info.command_name, cmd_info.args);
-            break;
-        case "Reddit":
-            Reddit._worker(message, cmd_info.command_name, cmd_info.args);
-            break;
-        case "Tool":
-            Tool._worker(message, cmd_info.command_name, cmd_info.args);
-            break;
+    let guild_prefix = ".";
+    if(typeof gpfx !== "undefined")
+    {
+        guild_prefix = gpfx.content.prefix;
     }
+    
+
+	let cmd: Classes.Command = new Classes.Command(
+		debug_mode ? ".dev" : guild_prefix
+	);
+
+	cmd_info = await cmd.parse(message.content);
+
+	// console.log(cmd_info);
+	switch (cmd_info["module_name"]) {
+		case "Miscellaneous":
+			Miscellaneous._worker(
+				message,
+				cmd_info.command_name,
+				cmd_info.args
+			);
+			break;
+		case "Anime":
+			Anime._worker(message, cmd_info.command_name, cmd_info.args);
+			break;
+		case "Emotes":
+			Emotes._worker(message, cmd_info.command_name, cmd_info.args);
+			break;
+		case "Reddit":
+			Reddit._worker(message, cmd_info.command_name, cmd_info.args);
+			break;
+		case "Tool":
+			Tool._worker(message, cmd_info.command_name, cmd_info.args);
+			break;
+	}
 });
