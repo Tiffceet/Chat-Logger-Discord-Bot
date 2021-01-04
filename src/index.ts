@@ -1,4 +1,4 @@
-var debug_mode = true;
+var debug_mode = false;
 
 if (debug_mode) {
 	require("dotenv").config();
