@@ -12,13 +12,9 @@ import { CommandInfo } from "../interface/class/Command/CommandInfo";
 const fetch = require("node-fetch");
 const cheerio = require("cheerio");
 
-<<<<<<< HEAD
-if (!fs.existsSync("../tmp")) fs.mkdirSync("../tmp");
-=======
 if (!fs.existsSync("tmp")) {
 	fs.mkdirSync("tmp");
 }
->>>>>>> master
 
 // ====================================================================================
 // Class initialization
