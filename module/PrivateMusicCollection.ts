@@ -535,15 +535,8 @@ export class PrivateMusicCollection implements ModuleInterface {
 			return;
         }
         
-        let mem: [string, Discord.GuildMember];
-        let found = false;
-		for (mem of origin.member.voice.channel.members) {
-            if(mem[1].id == "697682159355428875") {
-                found = true;
-                break;
-            }
-        }
-        if(!found) {
+        let member = origin.member.voice.channel.members.find(mem => {return mem.id == "697682159355428875"});
+        if(typeof member === "undefined") {
             return;
         }
 
