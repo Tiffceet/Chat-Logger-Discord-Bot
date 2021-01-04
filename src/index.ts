@@ -1,4 +1,4 @@
-var debug_mode = true;
+var debug_mode = false;
 
 if (debug_mode) {
 	require("dotenv").config();
@@ -12,7 +12,13 @@ import { CommandInfo } from "../interface/class/Command/CommandInfo";
 const fetch = require("node-fetch");
 const cheerio = require("cheerio");
 
+<<<<<<< HEAD
 if (!fs.existsSync("../tmp")) fs.mkdirSync("../tmp");
+=======
+if (!fs.existsSync("tmp")) {
+	fs.mkdirSync("tmp");
+}
+>>>>>>> master
 
 // ====================================================================================
 // Class initialization
@@ -83,12 +89,32 @@ bot.on("message", async (message: Discord.Message) => {
 		args: [],
 	};
 
+<<<<<<< HEAD
 	let cmd: Classes.Command = new Classes.Command(".dev");
+=======
+	let gpfx = Miscellaneous.guild_prefixes.find(
+		(e: any) => e.id == message.guild.id
+    );
+
+    let guild_prefix = ".";
+    if(typeof gpfx !== "undefined")
+    {
+        guild_prefix = gpfx.content.prefix;
+    }
+    
+
+	let cmd: Classes.Command = new Classes.Command(
+		debug_mode ? ".dev" : guild_prefix
+	);
+>>>>>>> master
 
 	cmd_info = await cmd.parse(message.content);
 
 	// console.log(cmd_info);
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
 	switch (cmd_info["module_name"]) {
 		case "Miscellaneous":
 			Miscellaneous._worker(
@@ -109,6 +135,7 @@ bot.on("message", async (message: Discord.Message) => {
 		case "Tool":
 			Tool._worker(message, cmd_info.command_name, cmd_info.args);
 			break;
+<<<<<<< HEAD
 		case "PrivateMusicCollection":
 			PrivateMusicCollection._worker(
 				message,
@@ -116,5 +143,7 @@ bot.on("message", async (message: Discord.Message) => {
 				cmd_info.args
 			);
 			break;
+=======
+>>>>>>> master
 	}
 });

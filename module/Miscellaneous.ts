@@ -7,18 +7,21 @@ import * as fs from "fs";
 import * as Discord from "discord.js";
 import { ModuleInterface } from "./ModuleInterface";
 import { PinkFredorFirebase } from "../class/PinkFredorFirebase";
+import { FirebaseCollection } from "../interface/class/PinkFredorFirebase/FirebaseCollection";
 export class Miscellaneous implements ModuleInterface {
 	_init_status: boolean = false;
 	_worker(origin: Discord.Message, cmd_name: string, args: string[]) {
-        (this as any)[cmd_name](origin, args);
+		(this as any)[cmd_name](origin, args);
 	}
 
 	PinkFredorFirebase_instance: PinkFredorFirebase;
 
 	constructor(PinkFredorFirebase_instance: PinkFredorFirebase|null = undefined) {
 		if (typeof PinkFredorFirebase_instance !== "undefined")
-            this.PinkFredorFirebase_instance = PinkFredorFirebase_instance;
-        this._init_status = true;
+			this.PinkFredorFirebase_instance = PinkFredorFirebase_instance;
+		this.reload_guild_prefix().then(() => {
+            this._init_status = true;
+		});
 	}
 
 	ualive_last_called_by: string | null = undefined;
@@ -29,10 +32,10 @@ export class Miscellaneous implements ModuleInterface {
 		"I know you miss me, I'm here",
 		"Stop asking.",
 		"I said stop",
-		"I'm dead, happy now ?"
+		"I'm dead, happy now ?",
 	];
 	DEFAULT_PREFIX: ".";
-	guild_prefixes: any = {};
+	guild_prefixes:FirebaseCollection[];
 
 	// =============================================================
 
@@ -40,11 +43,11 @@ export class Miscellaneous implements ModuleInterface {
 	// Other Functions
 	// =============================================================
 	async reload_guild_prefix() {
-		let reloaded_prefixes = this.PinkFredorFirebase_instance.retrieve_collection(
+		let reloaded_prefixes = await this.PinkFredorFirebase_instance.retrieve_collection(
 			"guilds"
 		);
 
-		if (typeof reloaded_prefixes != "undefined") {
+		if (typeof reloaded_prefixes !== "undefined") {
 			this.guild_prefixes = reloaded_prefixes;
 		}
 	}
