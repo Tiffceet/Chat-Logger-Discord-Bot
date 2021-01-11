@@ -1,6 +1,9 @@
 # Pinkfredor Discord Bot
 General Purpose discord bot
 
+## Demo Server
+https://discord.gg/qPA9WxbBpM
+
 ## How to host this bot
 1. Install typescript and ts-node
 ```
