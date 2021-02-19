@@ -1,23 +1,24 @@
 import * as Discord from "discord.js";
 import { ModuleInterface } from "./ModuleInterface";
-import {Miscellaneous} from "./Miscellaneous";
+import { Miscellaneous } from "./Miscellaneous";
 import { MAL } from "../class/MAL";
+import { Util } from "../class/Util";
 const { API } = require("nhentai-api");
 const nhentaiAPI = new API();
 export class Anime implements ModuleInterface {
 	_init_status: boolean;
 	MAL: MAL;
 	constructor(MAL_instance: MAL) {
-        this.MAL = MAL_instance;
+		this.MAL = MAL_instance;
 		this._init_status = true;
 	}
 
 	_worker(origin: Discord.Message, cmd_name: string, args: string[]) {
-        if(origin == null) {
-            return;
-        }
-        (this as any)[cmd_name](origin, args);
-    }
+		if (origin == null) {
+			return;
+		}
+		(this as any)[cmd_name](origin, args);
+	}
 
 	// =============================================================
 	// Other functions
@@ -33,7 +34,7 @@ export class Anime implements ModuleInterface {
 	 * @param {boolean} rand_color (optional) set this to true to set embed to random color
 	 * @return {Discord.MessageEmbed}
 	 */
-	async nhentai_read_embed(book: any, page_num: number, rand_color = false) {
+	nhentai_read_embed(book: any, page_num: number, rand_color = false) {
 		let embed = new Discord.MessageEmbed();
 		embed.setTitle(book.title.english);
 		embed.setURL(`https://www.nhentai.net/g/${book.id}`);
@@ -194,11 +195,10 @@ export class Anime implements ModuleInterface {
 			},
 			{
 				name: "Genres",
-				value: `${
-					anime_details.genres.length != 0
-						? anime_details.genres.map((e) => e.name).join(", ")
-						: "-"
-				}`,
+				value: `${anime_details.genres.length != 0
+					? anime_details.genres.map((e) => e.name).join(", ")
+					: "-"
+					}`,
 				inline: true,
 			},
 			{
@@ -221,14 +221,14 @@ export class Anime implements ModuleInterface {
 			return;
 		}
 
-		if (!(<Discord.TextChannel|Discord.NewsChannel>origin.channel).nsfw) {
+		if (!(<Discord.TextChannel | Discord.NewsChannel>origin.channel).nsfw) {
 			origin.reply(
 				"Im not so sure if you really want to do that here...\nGo to NSFW channel if you will?"
 			);
 			return;
 		}
 
-		let book:any = {};
+		let book: any = {};
 		switch (args[0]) {
 			case "info":
 				if (args.length == 1) {
@@ -270,7 +270,6 @@ export class Anime implements ModuleInterface {
 				}
 
 				let max_page = book.pages.length;
-
 				let page_num = 1;
 
 				try {
@@ -289,87 +288,13 @@ export class Anime implements ModuleInterface {
 
 				let timeout = 60000;
 
-				let embed = await this.nhentai_read_embed(
-					book,
-					page_num,
-					true
-				);
+				let book_embeds: Array<Discord.MessageEmbed> = [];
 
-				let msg = await origin.channel.send(embed);
-				await msg.react("◀");
-				await msg.react("▶");
+				for (let k = 0; k < max_page; k++) {
+					book_embeds.push(this.nhentai_read_embed(book, k + 1, true));
+				}
 
-				const prev = msg.createReactionCollector(
-					(reaction, user) => reaction.emoji.name === "◀",
-					{
-						time: timeout,
-						dispose: true,
-					}
-				);
-				const next = msg.createReactionCollector(
-					(reaction, user) => reaction.emoji.name === "▶",
-					{
-						time: timeout,
-						dispose: true,
-					}
-				);
-				prev.on("collect", async (r, u) => {
-					if (page_num <= 1) {
-						prev.resetTimer();
-						next.resetTimer();
-						r.users.remove(u.id);
-					}
-					embed = await this.nhentai_read_embed(
-						book,
-						--page_num,
-						true
-					);
-					msg.edit(embed);
-					prev.resetTimer();
-					next.resetTimer();
-					r.users.remove(u.id);
-				});
-
-				next.on("collect", async (r, u) => {
-					if (page_num >= max_page) {
-						next.resetTimer();
-						prev.resetTimer();
-						r.users.remove(u.id);
-						return;
-					}
-					embed = await this.nhentai_read_embed(
-						book,
-						++page_num,
-						true
-					);
-					msg.edit(embed);
-					next.resetTimer();
-					prev.resetTimer();
-					r.users.remove(u.id);
-				});
-				/*
-				prev.on("remove", async (r) => {
-					if (page_num <= 1) return;
-					embed = await Anime.nhentai_read_embed(
-						book,
-						--page_num,
-						true
-					);
-					msg.edit(embed);
-					prev.resetTimer();
-				});
-
-				next.on("remove", async (r) => {
-					if (page_num >= max_page) return;
-					embed = await Anime.nhentai_read_embed(
-						book,
-						++page_num,
-						true
-					);
-					msg.edit(embed);
-					next.resetTimer();
-				});
-				*/
+				Util.paginated(origin, book_embeds, max_page, 1, `Page {n} of {max} | @${origin.author.tag}`, ["⏮️", "⬅️", "➡️", "⏭️"], 300000);
 				break;
 			case "search":
 				if (args.length == 1) {
@@ -390,87 +315,12 @@ export class Anime implements ModuleInterface {
 
 				let s_page_num = 0;
 
-				let search_result_embed = await this.nhentai_info_embed(
-					result.books[s_page_num],
-					`Result ${s_page_num + 1} of ${result.books.length}`,
-					true
-				);
+				let search_result_embeds: Array<Discord.MessageEmbed> = [];
+				for (let k = 0; k < result.books.length; k++) {
+					search_result_embeds.push(this.nhentai_info_embed(result.books[k], "", true));
+				}
 
-				let s_msg = await origin.channel.send(search_result_embed);
-
-				let s_timeout = 60000;
-
-				await s_msg.react("◀");
-				await s_msg.react("▶");
-
-				const s_prev = s_msg.createReactionCollector(
-					(reaction, user) => reaction.emoji.name === "◀",
-					{
-						time: s_timeout,
-						dispose: true,
-					}
-				);
-				const s_next = s_msg.createReactionCollector(
-					(reaction, user) => reaction.emoji.name === "▶",
-					{
-						time: s_timeout,
-						dispose: true,
-					}
-				);
-				s_prev.on("collect", async (r, u) => {
-					if (s_page_num <= 0) {
-						s_prev.resetTimer();
-						s_next.resetTimer();
-						r.users.remove(u.id);
-						return;
-					}
-					search_result_embed = await this.nhentai_info_embed(
-						result.books[--s_page_num],
-						`Result ${s_page_num + 1} of ${result.books.length}`,
-						true
-					);
-					s_msg.edit(search_result_embed);
-					s_prev.resetTimer();
-					s_next.resetTimer();
-					r.users.remove(u.id);
-				});
-				// s_prev.on("remove", async (r, u) => {
-				// 	if (s_page_num <= 0) return;
-				// 	search_result_embed = await Anime.nhentai_info_embed(
-				// 		result.books[--s_page_num],
-				// 		`Result ${s_page_num + 1} of ${result.books.length}`,
-				// 		true
-				// 	);
-				// 	s_msg.edit(search_result_embed);
-				// 	s_prev.resetTimer();
-				// });
-				s_next.on("collect", async (r, u) => {
-					if (s_page_num >= result.books.length - 1) {
-						s_next.resetTimer();
-						s_prev.resetTimer();
-						r.users.remove(u.id);
-						return;
-					}
-					search_result_embed = await this.nhentai_info_embed(
-						result.books[++s_page_num],
-						`Result ${s_page_num + 1} of ${result.books.length}`,
-						true
-					);
-					s_msg.edit(search_result_embed);
-					s_next.resetTimer();
-					s_prev.resetTimer();
-					r.users.remove(u.id);
-				});
-				// s_next.on("remove", async (r, u) => {
-				// 	if (s_page_num >= result.books.length - 1) return;
-				// 	search_result_embed = await Anime.nhentai_info_embed(
-				// 		result.books[++s_page_num],
-				// 		`Result ${s_page_num + 1} of ${result.books.length}`,
-				// 		true
-				// 	);
-				// 	s_msg.edit(search_result_embed);
-				// 	s_next.resetTimer();
-				// });
+				Util.paginated(origin, search_result_embeds, result.books.length, 1, `Result {n} of {max} | @${origin.author.tag}`, ["⏮️", "⬅️", "➡️", "⏭️"], 300000);
 
 				break;
 		}
