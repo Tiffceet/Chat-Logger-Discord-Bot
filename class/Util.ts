@@ -31,7 +31,7 @@ export class Util {
 	 * @param {Discord.Message} origin
 	 * @param {Array} pages page of content to send
 	 * @param {number} page_count amount of pages
-	 * @param {number} start_page (optional) which page to display on call. Default to first page
+	 * @param {number} start_page (optional) which page to display on call. Default to 1. If the page given do not exist, goto page 1
 	 * @param {string} footer (optional) Default to "Page {n} of {max}", only display if page is a Discord.MessageEmbed, set to null to prevent this function overwritting existing footer
 	 * @param {Array} emojiList (optional) default to ["⏮️", "⬅️", "➡️", "⏭️"]
 	 * @param {number} timeout (optional) default to 10 minute

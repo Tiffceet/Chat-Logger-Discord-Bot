@@ -43,6 +43,9 @@ export class Miscellaneous implements ModuleInterface {
 	// Other Functions
 	// =============================================================
 	async reload_guild_prefix() {
+        if(typeof this.PinkFredorFirebase_instance === "undefined") {
+            return;
+        }
 		let reloaded_prefixes = await this.PinkFredorFirebase_instance.retrieve_collection(
 			"guilds"
 		);
