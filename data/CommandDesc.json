@@ -33,6 +33,7 @@
 		"confuse": { "moduleName": "Emotes" },
         "anime": { "moduleName": "Anime" },
         "nhentai": { "moduleName": "Anime" },
-        "pmc": {"moduleName": "PrivateMusicCollection"}
+        "pmc": {"moduleName": "PrivateMusicCollection"},
+		"snipe": {"moduleName": "DMCommands"}
 	}
 }

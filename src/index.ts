@@ -1,4 +1,4 @@
-var debug_mode = true;
+var debug_mode = false;
 
 if (debug_mode) {
 	require("dotenv").config();
@@ -138,4 +138,8 @@ bot.on("message", async (message: Discord.Message) => {
 		case "DMCommands":
 			DMCommands._worker(message, cmd_info.command_name, cmd_info.args);
 	}
+});
+
+bot.on("messageDelete", async (msg: Discord.Message) => {
+	DMCommands.log_deleted_msg(msg);
 });
