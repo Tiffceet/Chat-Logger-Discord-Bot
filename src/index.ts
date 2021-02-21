@@ -1,4 +1,4 @@
-var debug_mode = false;
+var debug_mode = true;
 
 if (debug_mode) {
 	require("dotenv").config();
@@ -9,6 +9,7 @@ import * as Modules from "../module";
 const fs = require("fs");
 import * as Discord from "discord.js";
 import { CommandInfo } from "../interface/class/Command/CommandInfo";
+import { FirebaseCollection } from "../interface/class/PinkFredorFirebase/FirebaseCollection";
 const fetch = require("node-fetch");
 const cheerio = require("cheerio");
 
@@ -40,6 +41,7 @@ const Emotes = new Modules.Emotes();
 const Reddit = new Modules.Reddit();
 const Tool = new Modules.Tool();
 const ScheduledJob = new Modules.ScheduledJob(PinkFredorFirebase, bot);
+const DMCommands = new Modules.DMCommands();
 const PrivateMusicCollection = new Modules.PrivateMusicCollection(
 	GoogleDriveAPI
 );
@@ -54,15 +56,21 @@ bot.login(process.env.TOKEN);
 
 // ====================================================================================
 // ====================================================================================
-
-async function preload() {}
+9
+async function preload() { }
 
 bot.on("ready", async () => {
 	console.log("bot is ready");
 });
 
 bot.on("message", async (message: Discord.Message) => {
-	if (debug_mode && message.guild.id != "779331940843126814") {
+	let msg_isDM = false;
+	if (message.guild === null) {
+		// This is an DM
+		msg_isDM = true;
+	}
+
+	if (!msg_isDM && debug_mode && message.guild.id != "779331940843126814") {
 		return;
 	}
 
@@ -85,16 +93,18 @@ bot.on("message", async (message: Discord.Message) => {
 		args: [],
 	};
 
-	let gpfx = Miscellaneous.guild_prefixes.find(
-		(e: any) => e.id == message.guild.id
-    );
+	let gpfx: FirebaseCollection;
+	if (!msg_isDM) {
+		gpfx = Miscellaneous.guild_prefixes.find(
+			(e: any) => e.id == message.guild.id
+		);
+	}
 
-    let guild_prefix = ".";
-    if(typeof gpfx !== "undefined")
-    {
-        guild_prefix = gpfx.content.prefix;
-    }
-    
+	let guild_prefix = ".";
+	if (typeof gpfx !== "undefined") {
+		guild_prefix = gpfx.content.prefix;
+	}
+
 
 	let cmd: Classes.Command = new Classes.Command(
 		debug_mode ? ".dev" : guild_prefix
@@ -122,8 +132,10 @@ bot.on("message", async (message: Discord.Message) => {
 			break;
 		case "Tool":
 			Tool._worker(message, cmd_info.command_name, cmd_info.args);
-            break;
-        case "PrivateMusicCollection":
-            PrivateMusicCollection._worker(message, cmd_info.command_name, cmd_info.args);
+			break;
+		case "PrivateMusicCollection":
+			PrivateMusicCollection._worker(message, cmd_info.command_name, cmd_info.args);
+		case "DMCommands":
+			DMCommands._worker(message, cmd_info.command_name, cmd_info.args);
 	}
 });

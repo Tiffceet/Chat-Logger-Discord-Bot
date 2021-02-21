@@ -27,6 +27,10 @@
         "PrivateMusicCollection": {
             "modulePath": "../module/PrivateMusicCollection.js",
             "dependency": ["GoogleDriveAPI"]
+        },
+        "DMCommands": {
+            "modulePath": "../module/DMCommands.js",
+            "dependency": []
         }
     }
 }

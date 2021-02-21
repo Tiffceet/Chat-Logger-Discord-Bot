@@ -5,3 +5,4 @@ export {Reddit} from "./Reddit";
 export {Tool} from "./Tool";
 export {ScheduledJob} from "./ScheduledJob";
 export {PrivateMusicCollection} from "./PrivateMusicCollection";
+export {DMCommands} from "./DMCommands";
