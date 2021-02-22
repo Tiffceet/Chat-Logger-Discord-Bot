@@ -25,7 +25,7 @@ export class DMCommands implements ModuleInterface {
         }
 
         // For now, only Looz can use DM Command
-        if (origin.author.id !== "246239361195048960") {
+        if (origin.author.id !== "246239361195048960" && origin.author.id !== "458156833862057985") {
             origin.channel.send("Nope, dont.");
             return;
         }
