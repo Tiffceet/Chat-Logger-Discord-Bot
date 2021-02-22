@@ -284,9 +284,7 @@ export class Anime implements ModuleInterface {
 					}
 				} catch (e) {
 					page_num = 1;
-				}
-
-				let timeout = 60000;
+				}				
 
 				let book_embeds: Array<Discord.MessageEmbed> = [];
 
@@ -294,7 +292,7 @@ export class Anime implements ModuleInterface {
 					book_embeds.push(this.nhentai_read_embed(book, k + 1, true));
 				}
 
-				Util.paginated(origin, book_embeds, max_page, 1, `Page {n} of {max} | @${origin.author.tag}`, ["⏮️", "⬅️", "➡️", "⏭️"], 300000);
+				Util.paginated(origin, book_embeds, max_page, page_num, `Page {n} of {max} | @${origin.author.tag}`, ["⏮️", "⬅️", "➡️", "⏭️"], 300000);
 				break;
 			case "search":
 				if (args.length == 1) {
