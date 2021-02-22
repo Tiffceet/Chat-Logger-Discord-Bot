@@ -93,7 +93,7 @@ export class DMCommands implements ModuleInterface {
             let msg_item = this.deleted_msg_log[cid][i];
 
             let dt = new Date(msg_item.createdTimestamp);
-            let date_str = `${dt.getFullYear().toString()}-${dt.getMonth().toString()}-${dt.getDate().toString()} ${("0" + dt.getHours().toString()).slice(-2)}:${("0" + dt.getMinutes().toString()).slice(-2)}`;
+            let date_str = `${dt.getFullYear().toString()}-${(dt.getMonth()+1).toString()}-${dt.getDate().toString()} ${("0" + dt.getHours().toString()).slice(-2)}:${("0" + dt.getMinutes().toString()).slice(-2)}`;
 
             origin.channel.send(`${date_str}: <@${msg_item.author.id}> ${msg_item.content}\n`);
         }
