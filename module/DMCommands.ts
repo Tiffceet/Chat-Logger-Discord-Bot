@@ -91,14 +91,19 @@ export class DMCommands implements ModuleInterface {
 
         for (let i = 0; i < this.deleted_msg_log[cid].length; i++) {
             let msg_item = this.deleted_msg_log[cid][i];
-
             let dt = new Date(msg_item.createdTimestamp);
-            let date_str = `${dt.getFullYear().toString()}-${(dt.getMonth()+1).toString()}-${dt.getDate().toString()} ${("0" + dt.getHours().toString()).slice(-2)}:${("0" + dt.getMinutes().toString()).slice(-2)}`;
+            let date_str = `${dt.getFullYear().toString()}-${("0" + (dt.getMonth()+1).toString()).slice(-2)}-${dt.getDate().toString()} ${("0" + dt.getHours().toString()).slice(-2)}:${("0" + dt.getMinutes().toString()).slice(-2)}`;
 
-            origin.channel.send(`${date_str}: <@${msg_item.author.id}> ${msg_item.content}\n`);
+            if (msg_item.attachments.size > 0) {
+                try {
+                    origin.channel.send(`${date_str}: <@${msg_item.author.tag}> ${msg_item.content}(${msg_item.attachments.entries().next().value[1].proxyURL})\n`);
+                } catch (e: any) {
+                    origin.channel.send(`${date_str}: <@${msg_item.author.tag}> ${msg_item.content}\n`);
+                }
+            } else {
+                origin.channel.send(`${date_str}: <@${msg_item.author.tag}> ${msg_item.content}\n`);
+            }
         }
-
-        // origin.channel.send(new Discord.MessageEmbed().setTitle(`${guild_name}`).addFields({ name: "Channel", value: `<#${cid}>` }).setDescription(ret_msg));
     }
 
     // ============================================
