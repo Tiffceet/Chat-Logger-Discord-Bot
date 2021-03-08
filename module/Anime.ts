@@ -318,7 +318,7 @@ export class Anime implements ModuleInterface {
 					search_result_embeds.push(this.nhentai_info_embed(result.books[k], "", true));
 				}
 
-				Util.paginated(origin, search_result_embeds, result.books.length, 1, `Result {n} of {max} | @${origin.author.tag}`, ["⏮️", "⬅️", "➡️", "⏭️"], 300000);
+				Util.paginated(origin, search_result_embeds, result.books.length, 1, `Result {n} of {max}`, ["⏮️", "⬅️", "➡️", "⏭️"], 300000);
 
 				break;
 		}
