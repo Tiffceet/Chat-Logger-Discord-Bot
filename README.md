@@ -18,6 +18,7 @@ npm install
 - TOKEN (discord bot token)
 - FIREBASE_PRIVATE_KEY (Google Firebase - Cloud firestore - where server prefixes are stored)
 - MAL_CLIENT_SECRET (myanimelist API client secret)
+- DRIVE_CLIENT_SECRET (Google Drive)
 4. Run it
 ```
 ts-node src/index.ts
