@@ -102,9 +102,6 @@ export class Miscellaneous implements ModuleInterface {
 				.setTitle("Commands")
 				.addFields(help_desc["help_page"])
 				.setTimestamp()
-				.setFooter(
-					"https://github.com/Tiffceet/Chat-Logger-Discord-Bot"
-				)
 		);
 	}
 	/**
