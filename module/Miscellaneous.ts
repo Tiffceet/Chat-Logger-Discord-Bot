@@ -144,6 +144,10 @@ export class Miscellaneous implements ModuleInterface {
 	 * ]
 	 */
 	async prefix(origin: Discord.Message, args: Array<string> = []) {
+		if(!origin.member.hasPermission(Discord.Permissions.FLAGS.MANAGE_GUILD)) {
+			origin.channel.send("You bad, **bad** boy.\n*Missing \"Manage Server\" Permission*");
+			return;
+		}
 		let guilds_prefix = await this.PinkFredorFirebase_instance.retrieve_collection(
 			"guilds"
 		);
@@ -164,7 +168,7 @@ export class Miscellaneous implements ModuleInterface {
 		let new_prefix = args[0];
 
 		if (typeof g_prefix !== "undefined") {
-			this.PinkFredorFirebase_instance.update_document(
+			await this.PinkFredorFirebase_instance.update_document(
 				"guilds",
 				origin.guild.id,
 				{
@@ -173,7 +177,7 @@ export class Miscellaneous implements ModuleInterface {
 				}
 			);
 		} else {
-			this.PinkFredorFirebase_instance.add_document(
+			await this.PinkFredorFirebase_instance.add_document(
 				"guilds",
 				origin.guild.id,
 				{
