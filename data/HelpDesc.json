@@ -2,7 +2,7 @@
 	"help_page": [
 		{
 			"name": ":desktop: Misc.",
-			"value": "`help` `ualive?` `prefix`"
+			"value": "`help` `ualive` `prefix`"
 		},
 		{
 			"name": ":pick: Function",
