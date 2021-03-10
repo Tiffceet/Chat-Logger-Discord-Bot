@@ -70,7 +70,7 @@ bot.on("message", async (message: Discord.Message) => {
 		msg_isDM = true;
 	}
 
-	if (!msg_isDM && debug_mode && message.guild.id != "779331940843126814") {
+	if (!msg_isDM && debug_mode && message.guild.id != "680297709420412942") {
 		return;
 	}
 
