@@ -20,7 +20,7 @@
     "firebase-admin": "^9.4.1",
     "fs.js": "0.0.1",
     "googleapis": "^66.0.0",
-    "nhentai-api": "^3.0.2",
+    "nhentai-api-tiffceet-patch": "^3.0.3",
     "node-fetch": "^2.6.1",
     "rss-parser": "^3.9.0"
   },

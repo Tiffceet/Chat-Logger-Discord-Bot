@@ -3,7 +3,7 @@ import { ModuleInterface } from "./ModuleInterface";
 import { Miscellaneous } from "./Miscellaneous";
 import { MAL } from "../class/MAL";
 import { Util } from "../class/Util";
-const { API } = require("nhentai-api");
+const { API } = require("nhentai-api-tiffceet-patch");
 const nhentaiAPI = new API();
 export class Anime implements ModuleInterface {
 	_init_status: boolean;
@@ -39,6 +39,7 @@ export class Anime implements ModuleInterface {
 		embed.setTitle(book.title.english);
 		embed.setURL(`https://www.nhentai.net/g/${book.id}`);
 		embed.setImage(nhentaiAPI.getImageURL(book.pages[page_num - 1]));
+		let pogger = nhentaiAPI.getImageURL(book.pages[page_num - 1])
 		embed.setFooter(`Page ${page_num} of ${book.pages.length}`);
 		if (rand_color) {
 			embed.setColor(
