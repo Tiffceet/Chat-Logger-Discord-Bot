@@ -129,7 +129,7 @@ export class Tool implements ModuleInterface{
 				"Possible word(s): " + unscrambled_words.join(", ")
 			);
 		} else {
-			origin.channel.send(`Sorry but i could not unscramble ${word}`);
+			origin.channel.send(`Sorry but i could not unscramble \`${word}\``);
 		}
 	}
 
