@@ -4,7 +4,7 @@ General Purpose discord bot
 ## Demo Server
 https://discord.gg/qPA9WxbBpM
 
-## How to host this bot
+## How to host this bot  (For developers)
 1. Install typescript and ts-node
 ```
 npm install typescript
