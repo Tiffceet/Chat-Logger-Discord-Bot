@@ -2,7 +2,7 @@
 	"help_page": [
 		{
 			"name": ":desktop: Misc.",
-			"value": "`help` `ualive` `prefix`"
+			"value": "`help` `ualive` `prefix` `inspireme`"
 		},
 		{
 			"name": ":pick: Function",
@@ -70,6 +70,7 @@
 		"food": { "desc": "Fetch image from r/Food", "usage": "`.food`" },
         "anime": { "desc": "Get details about an anime from MAL !", "usage": "`.anime Eromanga Sensei`" },
         "nhentai": { "desc": "You bad bad boy", "usage": "`.nhentai read 177013 [page_num]`\n`.nhentai info 177013`\n`.nhentai search Paimon`" },
-        "pmc": {"desc": "Looz Private Music Library\n\nI am still working on this, alot of things dont work", "usage": "`.pmc view 6`\n`.pmc play 嘘つきの世界`\n`.pmc stop`\n`.pmc skip`"}
+        "pmc": {"desc": "Looz Private Music Library\n\nI am still working on this, alot of things dont work", "usage": "`.pmc view 6`\n`.pmc play 嘘つきの世界`\n`.pmc stop`\n`.pmc skip`"},
+		"inspireme": {"desc": "I am an artificial intelligence dedicated to generating unlimited amounts of unique inspirational quotes for endless enrichment of pointless human existence.\n\nhttps://inspirobot.me/", "usage": "`.inspireme`"}
 	}
 }
