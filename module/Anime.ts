@@ -120,6 +120,7 @@ export class Anime implements ModuleInterface {
 		}
 
 		if (
+			typeof anime_details.start_season !== "undefined" &&
 			typeof anime_details.start_season.year !== "undefined" &&
 			typeof anime_details.start_season.season !== "undefined"
 		) {
