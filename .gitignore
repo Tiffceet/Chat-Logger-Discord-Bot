@@ -1,13 +1,8 @@
 node_modules/
-package-lock.json
 .*/
 .env
 tmp
 *.js
-<<<<<<< HEAD
-*.map
-=======
 **/*.js
 *.map
 tmp
->>>>>>> master
