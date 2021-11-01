@@ -12,6 +12,7 @@
         "quotes": [2, "single"],
         "@typescript-eslint/no-var-requires": 0,
         "@typescript-eslint/no-explicit-any": ["off"],
-        "indent": ["error", "tab"]
+        "indent": "off",
+        "@typescript-eslint/indent": ["error", "tab"]
     }
 }
