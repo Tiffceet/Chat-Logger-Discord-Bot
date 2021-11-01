@@ -9,6 +9,8 @@
     ],
     "rules": {
         "semi": ["error", "never"],
-        "quotes": [2, "single"]
+        "quotes": [2, "single"],
+        "@typescript-eslint/no-var-requires": 0,
+        "indent": ["error", "tab"]
     }
 }
