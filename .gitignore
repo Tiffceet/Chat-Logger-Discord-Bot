@@ -6,3 +6,4 @@ tmp
 **/*.js
 *.map
 tmp
+dist
