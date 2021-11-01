@@ -21,7 +21,7 @@ const help:Command = {
 			.addFields(help_desc['help_page'])
 			.setTimestamp()
 
-		if(interaction.options.get('command') !== undefined) {
+		if(interaction.options.get('command')) {
 			const arg = (interaction.options.get('command') as any).value as any
 			if (help_desc['command'][arg]) {
 				const desc_embed = 

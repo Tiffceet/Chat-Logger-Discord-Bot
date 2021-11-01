@@ -11,6 +11,7 @@
         "semi": ["error", "never"],
         "quotes": [2, "single"],
         "@typescript-eslint/no-var-requires": 0,
+        "@typescript-eslint/no-explicit-any": ["off"],
         "indent": ["error", "tab"]
     }
 }
