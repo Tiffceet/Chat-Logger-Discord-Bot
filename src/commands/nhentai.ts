@@ -6,7 +6,28 @@ const nhentaiAPI = new API()
 const nhentai:Command = {
 	data: new SlashCommandBuilder()
 		.setName('nhentai')
-		.setDescription('Get help'),
+		.setDescription('Uh oh...')
+		.addSubcommand(subcmd=>subcmd
+			.setName('search')
+			.setDescription('Search on nhentai')
+			.addStringOption(opt=>opt
+				.setName('keyword')
+				.setDescription('Keyword')
+				.setRequired(true)))
+		.addSubcommand(subcmd=>subcmd
+			.setName('info')
+			.setDescription('Get information on specific nuke code')
+			.addStringOption(opt=>opt
+				.setName('nuke_code')
+				.setDescription('6 digit, you know it')
+				.setRequired(true)))
+		.addSubcommand(subcmd=>subcmd
+			.setName('read')
+			.setDescription('Read it in public...')
+			.addStringOption(opt=>opt
+				.setName('nuke_code')
+				.setDescription('6 digit, you know it')
+				.setRequired(true))),
 	execute: async (interaction) => {
 		return nhentai.pogchamp
 	},
@@ -70,3 +91,5 @@ const nhentai:Command = {
 		return embed
 	}
 }
+
+export default nhentai
