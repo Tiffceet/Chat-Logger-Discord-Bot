@@ -43,9 +43,15 @@ const nhentai:Command = {
 				interaction.reply({embeds: [nhentai.nhentai_info_embed(book)]})	
 				break
 			}
-			case 'search':
-				paginate(interaction, ['page 1', 'page 2', 'pg 3', 'pg4', 'pg5'])
+			case 'search': {
+				const em1 = new MessageEmbed().setTitle('title').setDescription('p1')
+				const em2 = new MessageEmbed().setTitle('title').setDescription('p2')
+				const em3 = new MessageEmbed().setTitle('title').setDescription('p3')
+				const em4 = new MessageEmbed().setTitle('title').setDescription('p4')
+				const em5 = new MessageEmbed().setTitle('title').setDescription('p5')
+				paginate(interaction, [em1, 'pog', em3, em4, em5])
 				break
+			}
 			case 'read':
 				break
 		}

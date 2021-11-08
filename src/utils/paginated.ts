@@ -1,3 +1,4 @@
+import { MessageEmbed } from 'discord.js'
 
 /**
  * 
@@ -25,33 +26,48 @@ const paginate = async (
 		return
 	}
 
+	// Get page payload depends on the content
+	const get_page_payload = (idx: number) => {
+		if(pages[idx] instanceof MessageEmbed) {
+			return {
+				embeds: [pages[idx]],
+				content: null
+			}
+		} else {
+			return {
+				embeds: [],
+				content: pages[idx]
+			}
+		}
+	}
+
 	// Sending the content
-	const msg = await interaction.reply({content: pages[start_page-1], fetchReply: true})
+	const msg = await interaction.reply({...get_page_payload(start_page-1), fetchReply: true})
 
 	// Paging Logics
 	let current_page = start_page
 	const go_first_page = () => {
 		current_page = 1
-		msg.edit(pages[current_page-1])
+		msg.edit(get_page_payload(current_page-1))
 	}
 
 	const go_prev_page = () => {
 		if(current_page < 2) {
 			return
 		}
-		msg.edit(pages[--current_page-1])
+		msg.edit(get_page_payload(--current_page-1))
 	}
     
 	const go_next_page = () => {
 		if((current_page+1) > pages.length) {
 			return
 		}
-		msg.edit(pages[current_page++])
+		msg.edit(get_page_payload(current_page++))
 	}
 
 	const go_last_page = () => {
 		current_page = pages.length
-		msg.edit(pages[current_page-1])
+		msg.edit(get_page_payload(current_page-1))
 	}
 
 	// Emoji collectors
