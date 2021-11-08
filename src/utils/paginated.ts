@@ -30,15 +30,31 @@ const paginate = async (
 
 	// Paging Logics
 	let current_page = start_page
-	const next_page = () => {
+	const go_first_page = () => {
+		current_page = 1
+		msg.edit(pages[current_page-1])
+	}
+
+	const go_prev_page = () => {
+		if(current_page < 2) {
+			return
+		}
+		msg.edit(pages[--current_page-1])
+	}
+    
+	const go_next_page = () => {
 		if((current_page+1) > pages.length) {
 			return
 		}
 		msg.edit(pages[current_page++])
 	}
 
+	const go_last_page = () => {
+		current_page = pages.length
+		msg.edit(pages[current_page-1])
+	}
+
 	// Emoji collectors
-	
 	const first_collector = msg.createReactionCollector(
 		{
 			filter: (reaction:any, user:any) => {
@@ -46,8 +62,10 @@ const paginate = async (
 			},
 			time: timeout
 		})
-	first_collector.on('collect', (r: any) => {
-		console.log('first is collected')
+	first_collector.on('collect', (r: any, u: any) => {
+		// console.log('first is collected')
+		r.users.remove(u.id)
+		go_first_page()
 		reset_collectors_timer()
 	})
     
@@ -58,8 +76,10 @@ const paginate = async (
 			},
 			time: timeout
 		})
-	prev_collector.on('collect', (r: any) => {
-		console.log('prev is collected')
+	prev_collector.on('collect', (r: any, u: any) => {
+		// console.log('prev is collected')
+		r.users.remove(u.id)
+		go_prev_page()
 		reset_collectors_timer()
 	})
 	const next_collector = msg.createReactionCollector(
@@ -69,9 +89,10 @@ const paginate = async (
 			},
 			time: timeout
 		})
-	next_collector.on('collect', (r: any) => {
-		console.log('next is collected')
-		next_page()
+	next_collector.on('collect', (r: any, u: any) => {
+		// console.log('next is collected')
+		r.users.remove(u.id)
+		go_next_page()
 		reset_collectors_timer()
 	})
 	const end_collector = msg.createReactionCollector(
@@ -81,8 +102,10 @@ const paginate = async (
 			},
 			time: timeout
 		})
-	end_collector.on('collect', (r: any) => {
-		console.log('end is collected')
+	end_collector.on('collect', (r: any,  u: any) => {
+		// console.log('end is collected')
+		r.users.remove(u.id)
+		go_last_page()
 		reset_collectors_timer()
 	})
 

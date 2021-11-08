@@ -44,7 +44,7 @@ const nhentai:Command = {
 				break
 			}
 			case 'search':
-				paginate(interaction, ['page 1', 'page 2'])
+				paginate(interaction, ['page 1', 'page 2', 'pg 3', 'pg4', 'pg5'])
 				break
 			case 'read':
 				break
