@@ -1,6 +1,7 @@
 import Command from '../interface/Command'
 import {SlashCommandBuilder} from '@discordjs/builders'
 import { ColorResolvable, MessageEmbed } from 'discord.js'
+import paginate from '../utils/paginated'
 const { API } = require('nhentai-api')
 const nhentaiAPI = new API()
 const nhentai:Command = {
@@ -43,6 +44,7 @@ const nhentai:Command = {
 				break
 			}
 			case 'search':
+				paginate(interaction, ['page 1', 'page 2'])
 				break
 			case 'read':
 				break
