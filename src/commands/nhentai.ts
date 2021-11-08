@@ -33,6 +33,7 @@ const nhentai:Command = {
 				.setName('page_num')
 				.setDescription('Page Number'))),
 	execute: async (interaction) => {
+		await interaction.deferReply()
 		const sub_cmd:string = interaction.options.getSubcommand()
 		switch(sub_cmd) {
 			case 'info': {
@@ -40,10 +41,10 @@ const nhentai:Command = {
 				try {
 					book = await nhentaiAPI.getBook(interaction.options.get('nuke_code')?.value)
 				} catch (e) {
-					interaction.reply('Invalid nuke code')
+					interaction.editReply('Invalid nuke code')
 					break
 				}
-				interaction.reply({embeds: [nhentai.nhentai_info_embed(book)]})	
+				interaction.editReply({embeds: [nhentai.nhentai_info_embed(book)]})	
 				break
 			}
 			case 'search': {
@@ -81,7 +82,7 @@ const nhentai:Command = {
 					book_embeds.push(nhentai.nhentai_read_embed(book, k + 1, true))
 				}
 
-				paginate(interaction, book_embeds, page_num, 'Page {n} of {max}', ['⏮️', '⬅️', '➡️', '⏭️'], 300000)
+				paginate(interaction, book_embeds, page_num, 'Page {n} of {max}', ['⏮️', '⬅️', '➡️', '⏭️'], 300000, true)
 				break
 			}
 		}

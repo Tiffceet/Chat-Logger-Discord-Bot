@@ -9,6 +9,7 @@ import { MessageEmbed } from 'discord.js'
  * @param embed_pagination_footer (Optional) Modify embed_pagination_footer; Only shown when pages to be sent are embeds; Default: "Page {n} of {max}"
  * @param emojiList (Optional) Emoji to use for buttons ['⏮️','⬅️','➡️','⏭️']
  * @param timeout (Optional) set how long should the bot listens for emoji changes in milliseconds; Default: 10 minute
+ * @param defer_reply (Optional) set to true and the function will assume the reply is deferred (https://discordjs.guide/interactions/replying-to-slash-commands.html#deferred-responses)
  * @returns 
  */
 const paginate = async (
@@ -17,7 +18,8 @@ const paginate = async (
 	start_page = 1,
 	embed_pagination_footer = 'Page {n} of {max}',
 	emojiList= ['⏮️','⬅️','➡️','⏭️'], 
-	timeout = 600000) => {
+	timeout = 600000,
+	defer_reply = false) => {
 
 	// Start Page checks
 	if(start_page > pages.length || start_page < 1) {
@@ -42,7 +44,12 @@ const paginate = async (
 	}
 
 	// Sending the content
-	const msg = await interaction.reply({...get_page_payload(start_page-1), fetchReply: true})
+	let msg:any
+	if(defer_reply) {
+		msg = await interaction.editReply({...get_page_payload(start_page-1), fetchReply: true})
+	} else {
+		msg = await interaction.reply({...get_page_payload(start_page-1), fetchReply: true})
+	}
 
 	// Paging Logics
 	let current_page = start_page
