@@ -29,7 +29,25 @@ const nhentai:Command = {
 				.setDescription('6 digit, you know it')
 				.setRequired(true))),
 	execute: async (interaction) => {
-		return nhentai.pogchamp
+		const sub_cmd:string = interaction.options.getSubcommand()
+		switch(sub_cmd) {
+			case 'info': {
+				let book = {}
+				try {
+					book = await nhentaiAPI.getBook(interaction.options.get('nuke_code')?.value)
+				} catch (e) {
+					interaction.reply('Invalid nuke code')
+					break
+				}
+				interaction.reply({embeds: [nhentai.nhentai_info_embed(book)]})	
+				break
+			}
+			case 'search':
+				break
+			case 'read':
+				break
+		}
+		return true
 	},
 	initcap: (string: string): string => {
 		return string.charAt(0).toUpperCase() + string.slice(1)
