@@ -17,24 +17,86 @@ const paginate = async (
 	embed_pagination_footer = 'Page {n} of {max}',
 	emojiList= ['⏮️','⬅️','➡️','⏭️'], 
 	timeout = 600000) => {
-	const msg = await interaction.reply({content: 'Something here', fetchReply: true})
+
+	// Start Page checks
+	if(start_page > pages.length || start_page < 1) {
+		console.error(`Start Page must be in range ! (start_page: ${start_page}; pages.len: ${pages.length})`)
+		interaction.reply('The bot is having a fever, please ask Looz to send koolaid')
+		return
+	}
+
+	// Sending the content
+	const msg = await interaction.reply({content: pages[start_page-1], fetchReply: true})
+
+	// Paging Logics
+	let current_page = start_page
+	const next_page = () => {
+		if((current_page+1) > pages.length) {
+			return
+		}
+		msg.edit(pages[current_page++])
+	}
+
+	// Emoji collectors
+	
+	const first_collector = msg.createReactionCollector(
+		{
+			filter: (reaction:any, user:any) => {
+				return reaction.emoji.name === emojiList[0] && !user.bot
+			},
+			time: timeout
+		})
+	first_collector.on('collect', (r: any) => {
+		console.log('first is collected')
+		reset_collectors_timer()
+	})
+    
+	const prev_collector = msg.createReactionCollector(
+		{
+			filter: (reaction:any, user:any) => {
+				return reaction.emoji.name === emojiList[1] && !user.bot
+			},
+			time: timeout
+		})
+	prev_collector.on('collect', (r: any) => {
+		console.log('prev is collected')
+		reset_collectors_timer()
+	})
+	const next_collector = msg.createReactionCollector(
+		{
+			filter: (reaction:any, user:any) => {
+				return reaction.emoji.name === emojiList[2] && !user.bot
+			},
+			time: timeout
+		})
+	next_collector.on('collect', (r: any) => {
+		console.log('next is collected')
+		next_page()
+		reset_collectors_timer()
+	})
+	const end_collector = msg.createReactionCollector(
+		{
+			filter: (reaction:any, user:any) => {
+				return reaction.emoji.name === emojiList[3] && !user.bot
+			},
+			time: timeout
+		})
+	end_collector.on('collect', (r: any) => {
+		console.log('end is collected')
+		reset_collectors_timer()
+	})
+
+	const reset_collectors_timer = () => {
+		first_collector.resetTimer()
+		prev_collector.resetTimer()
+		next_collector.resetTimer()
+		end_collector.resetTimer()
+	}
+
 	await msg.react(emojiList[0])
 	await msg.react(emojiList[1])
 	await msg.react(emojiList[2])
 	await msg.react(emojiList[3])
-
-	const filter = (reaction:any, user:any) => {
-		return reaction.emoji.name === emojiList[0]
-	}
-        
-	const first_collector = msg.createReactionCollector(
-		{
-			filter,
-			time: timeout
-		})
-	first_collector.on('collect', (r: any) => {
-		console.log('Something is collected')
-	})
 }
 
 export default paginate
