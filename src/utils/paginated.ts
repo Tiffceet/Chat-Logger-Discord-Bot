@@ -22,6 +22,19 @@ const paginate = async (
 	await msg.react(emojiList[1])
 	await msg.react(emojiList[2])
 	await msg.react(emojiList[3])
+
+	const filter = (reaction:any, user:any) => {
+		return reaction.emoji.name === emojiList[0]
+	}
+        
+	const first_collector = msg.createReactionCollector(
+		{
+			filter,
+			time: timeout
+		})
+	first_collector.on('collect', (r: any) => {
+		console.log('Something is collected')
+	})
 }
 
 export default paginate
