@@ -28,7 +28,10 @@ const nhentai:Command = {
 			.addStringOption(opt=>opt
 				.setName('nuke_code')
 				.setDescription('6 digit, you know it')
-				.setRequired(true))),
+				.setRequired(true))
+			.addNumberOption(opt=>opt
+				.setName('page_num')
+				.setDescription('Page Number'))),
 	execute: async (interaction) => {
 		const sub_cmd:string = interaction.options.getSubcommand()
 		switch(sub_cmd) {
@@ -44,16 +47,43 @@ const nhentai:Command = {
 				break
 			}
 			case 'search': {
-				const em1 = new MessageEmbed().setTitle('title').setDescription('p1')
-				const em2 = new MessageEmbed().setTitle('title').setDescription('p2')
-				const em3 = new MessageEmbed().setTitle('title').setDescription('p3')
-				const em4 = new MessageEmbed().setTitle('title').setDescription('p4')
-				const em5 = new MessageEmbed().setTitle('title').setDescription('p5')
-				paginate(interaction, [em1, 'pog', em3, em4, em5])
+				
 				break
 			}
-			case 'read':
+			case 'read': {
+				let book:any = {}
+				try {
+					book = await nhentaiAPI.getBook(interaction.options.get('nuke_code')?.value)
+					// console.log(book);
+				} catch (e) {
+					interaction.reply('The nuke code is invalid')
+					break
+					// console.log(e);
+				}
+
+				const max_page = book.pages.length
+				let page_num:any = 1
+
+				try {
+					page_num = interaction.options.get('page_num')?.value
+					if (page_num > max_page) {
+						page_num = max_page
+					} else if (page_num <= 0) {
+						page_num = 1
+					}
+				} catch (e) {
+					page_num = 1
+				}				
+
+				const book_embeds: Array<MessageEmbed> = []
+
+				for (let k = 0; k < max_page; k++) {
+					book_embeds.push(nhentai.nhentai_read_embed(book, k + 1, true))
+				}
+
+				paginate(interaction, book_embeds, page_num, 'Page {n} of {max}', ['⏮️', '⬅️', '➡️', '⏭️'], 300000)
 				break
+			}
 		}
 		return true
 	},

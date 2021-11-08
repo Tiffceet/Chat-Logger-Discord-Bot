@@ -8,7 +8,8 @@
         "build": "tsc",
         "dev": "nodemon ./src/index.ts",
         "debug": "nodemon --inspect ./src/index.ts",
-        "lint": "eslint ./src --ext .ts"
+        "lint": "eslint ./src --ext .ts",
+        "deploy": "ts-node ./src/deploy-command.ts"
     },
     "repository": {
         "type": "git",
