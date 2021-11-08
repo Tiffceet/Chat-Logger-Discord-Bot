@@ -31,6 +31,7 @@ const paginate = async (
 	// Get page payload depends on the content
 	const get_page_payload = (idx: number) => {
 		if(pages[idx] instanceof MessageEmbed) {
+			pages[idx].setFooter(embed_pagination_footer.replace('{n}', idx+1+'').replace('{max}', pages.length+''))
 			return {
 				embeds: [pages[idx]],
 				content: null

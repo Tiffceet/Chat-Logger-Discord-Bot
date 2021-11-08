@@ -1,7 +1,7 @@
 import Command from '../interface/Command'
 import {SlashCommandBuilder} from '@discordjs/builders'
 import { ColorResolvable, MessageEmbed } from 'discord.js'
-import paginate from '../utils/paginated'
+import paginate from '../utils/paginate'
 const { API } = require('nhentai-api')
 const nhentaiAPI = new API()
 const nhentai:Command = {
