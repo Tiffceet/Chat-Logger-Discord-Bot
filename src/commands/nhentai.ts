@@ -33,7 +33,8 @@ const nhentai:Command = {
 				.setName('page_num')
 				.setDescription('Page Number'))),
 	execute: async (interaction: any) => {
-		if(!interaction.channel.nsfw) {
+		// Allow command execution from DM
+		if(!interaction.channel.nsfw && interaction.channel.type !== 'DM') {
 			interaction.reply('AHEM! Please do this at nsfw channel thanks')
 			return
 		}

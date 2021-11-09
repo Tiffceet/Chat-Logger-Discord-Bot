@@ -7,7 +7,10 @@ if(process.env.DEBUG) {
 const token = process.env.TOKEN
 
 // Create a new client instance
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_VOICE_STATES], })
+const client = new Client({ 
+	intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_VOICE_STATES],
+	partials: ['CHANNEL'] 
+})
 
 // When the client is ready, run this code (only once)
 client.once('ready', () => {
