@@ -3,9 +3,9 @@ import {SlashCommandBuilder} from '@discordjs/builders'
 const ping:Command = {
 	data: new SlashCommandBuilder()
 		.setName('ping')
-		.setDescription('Replies with Pong!'),
+		.setDescription('Check if the bot is alive'),
 	async execute(interaction) {
-		await interaction.reply('Pong!')
+		await interaction.reply('Ping your head a, ping')
 	},
 }
 

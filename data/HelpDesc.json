@@ -2,7 +2,7 @@
     "help_page": [
         {
             "name": ":desktop: Misc.",
-            "value": "`help` `ualive` `inspireme`"
+            "value": "`help` `ping` `inspireme`"
         },
         {
             "name": ":pick: Function",
@@ -23,9 +23,9 @@
     ],
     "command": {
         "help": { "desc": "Display help page", "usage": "`/help`" },
-        "ualive?": {
+        "ping": {
             "desc": "Check if the bot is working",
-            "usage": "`/ualive`"
+            "usage": "`/ping`"
         },
         "roll": {
             "desc": "Roll a number from 0 to 100\n\nYou could also roll a different range of number if you provide a number.",
