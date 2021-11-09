@@ -48,7 +48,23 @@ const nhentai:Command = {
 				break
 			}
 			case 'search': {
-				
+				const query = encodeURIComponent((interaction.options.get('keyword')?.value) as string)
+
+				const result = await nhentaiAPI.search(query)
+
+				if (result.books.length == 0) {
+					interaction.editReply(
+						'I could not understand your ~~fetish~~...'
+					)
+					break
+				}
+
+				const search_result_embeds: any = []
+				for (let k = 0; k < result.books.length; k++) {
+					search_result_embeds.push(nhentai.nhentai_info_embed(result.books[k], '', true))
+				}
+
+				paginate(interaction, search_result_embeds, 1, 'Result {n} of {max}', ['⏮️', '⬅️', '➡️', '⏭️'], 300000, true)
 				break
 			}
 			case 'read': {
