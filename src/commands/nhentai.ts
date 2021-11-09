@@ -32,7 +32,11 @@ const nhentai:Command = {
 			.addNumberOption(opt=>opt
 				.setName('page_num')
 				.setDescription('Page Number'))),
-	execute: async (interaction) => {
+	execute: async (interaction: any) => {
+		if(!interaction.channel.nsfw) {
+			interaction.reply('AHEM! Please do this at nsfw channel thanks')
+			return
+		}
 		await interaction.deferReply()
 		const sub_cmd:string = interaction.options.getSubcommand()
 		switch(sub_cmd) {

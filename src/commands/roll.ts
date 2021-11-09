@@ -21,7 +21,7 @@ const roll:Command = {
 			min = interaction.options.get('min')?.value
 		}
 		interaction.reply(
-			`<@${interaction.member.id}> rolled a ${Math.floor(
+			`<@${interaction.user.id}> rolled a ${Math.floor(
 				Math.random() * max - min
 			)}`
 		)
