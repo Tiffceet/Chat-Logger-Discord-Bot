@@ -28,6 +28,16 @@ const paginate = async (
 		return
 	}
 
+	// Check if interaction started from DM
+	if(interaction.channel.type === 'DM') {
+		if(defer_reply) {
+			interaction.editReply('Sorry, this pagination dont work in DM...\nLooz will figure something out soon')
+		} else {
+			interaction.reply('Sorry, this pagination dont work in DM...\nLooz will figure something out soon')
+		}
+		return
+	}
+
 	// Get page payload depends on the content
 	const get_page_payload = (idx: number) => {
 		if(pages[idx] instanceof MessageEmbed) {
