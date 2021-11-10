@@ -28,16 +28,6 @@ const paginate = async (
 		return
 	}
 
-	// Check if interaction started from DM
-	if(interaction.channel.type === 'DM') {
-		if(defer_reply) {
-			interaction.editReply('Sorry, this pagination dont work in DM...\nLooz will figure something out soon')
-		} else {
-			interaction.reply('Sorry, this pagination dont work in DM...\nLooz will figure something out soon')
-		}
-		return
-	}
-
 	// Get page payload depends on the content
 	const get_page_payload = (idx: number) => {
 		if(pages[idx] instanceof MessageEmbed) {
@@ -64,28 +54,43 @@ const paginate = async (
 
 	// Paging Logics
 	let current_page = start_page
-	const go_first_page = () => {
-		current_page = 1
-		msg.edit(get_page_payload(current_page-1))
-	}
-
-	const go_prev_page = () => {
-		if(current_page < 2) {
-			return
+	/**
+	 * Function to Dispatch Paging Action
+	 * @param action Action to take
+	 * @param r Reaction object
+	 * @param u user object
+	 */
+	const dispatchPaging = (action: 'go_first' | 'go_prev' | 'go_next' | 'go_last' , r:any, u:any) => {
+		if(interaction.channel.type !== 'DM') {
+			r.users.remove(u.id)
 		}
-		msg.edit(get_page_payload(--current_page-1))
-	}
-    
-	const go_next_page = () => {
-		if((current_page+1) > pages.length) {
-			return
+		switch(action) {
+			case 'go_first': {
+				current_page = 1
+				msg.edit(get_page_payload(current_page-1))
+				break
+			}
+			case 'go_prev': {
+				if(current_page < 2) {
+					return
+				}
+				msg.edit(get_page_payload(--current_page-1))
+				break
+			}
+			case 'go_next': {
+				if((current_page+1) > pages.length) {
+					return
+				}
+				msg.edit(get_page_payload(current_page++))
+				break
+			}
+			case 'go_last': {
+				current_page = pages.length
+				msg.edit(get_page_payload(current_page-1))
+				break
+			}
 		}
-		msg.edit(get_page_payload(current_page++))
-	}
-
-	const go_last_page = () => {
-		current_page = pages.length
-		msg.edit(get_page_payload(current_page-1))
+		reset_collectors_timer()
 	}
 
 	// Emoji collectors
@@ -97,10 +102,7 @@ const paginate = async (
 			time: timeout
 		})
 	first_collector.on('collect', (r: any, u: any) => {
-		// console.log('first is collected')
-		r.users.remove(u.id)
-		go_first_page()
-		reset_collectors_timer()
+		dispatchPaging('go_first', r, u)
 	})
     
 	const prev_collector = msg.createReactionCollector(
@@ -111,10 +113,7 @@ const paginate = async (
 			time: timeout
 		})
 	prev_collector.on('collect', (r: any, u: any) => {
-		// console.log('prev is collected')
-		r.users.remove(u.id)
-		go_prev_page()
-		reset_collectors_timer()
+		dispatchPaging('go_prev', r, u)
 	})
 	const next_collector = msg.createReactionCollector(
 		{
@@ -124,10 +123,7 @@ const paginate = async (
 			time: timeout
 		})
 	next_collector.on('collect', (r: any, u: any) => {
-		// console.log('next is collected')
-		r.users.remove(u.id)
-		go_next_page()
-		reset_collectors_timer()
+		dispatchPaging('go_next', r, u)
 	})
 	const end_collector = msg.createReactionCollector(
 		{
@@ -137,10 +133,7 @@ const paginate = async (
 			time: timeout
 		})
 	end_collector.on('collect', (r: any,  u: any) => {
-		// console.log('end is collected')
-		r.users.remove(u.id)
-		go_last_page()
-		reset_collectors_timer()
+		dispatchPaging('go_last', r, u)
 	})
 
 	const reset_collectors_timer = () => {
