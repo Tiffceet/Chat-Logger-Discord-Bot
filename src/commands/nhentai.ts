@@ -46,13 +46,17 @@ const nhentai:Command = {
 				try {
 					book = await nhentaiAPI.getBook(interaction.options.get('nuke_code')?.value)
 				} catch (e) {
-					interaction.editReply('Invalid nuke code')
+					interaction.editReply('You cant give me a code that doesnt exist and expect me to give you something :(')
 					break
 				}
 				interaction.editReply({embeds: [nhentai.nhentai_info_embed(book)]})	
 				break
 			}
 			case 'search': {
+				if(interaction.channel.type === 'DM') {
+					interaction.editReply('Sorry I had to disable this for a moment until I figure out a fix')
+					return
+				}
 				const query = encodeURIComponent((interaction.options.get('keyword')?.value) as string)
 
 				const result = await nhentaiAPI.search(query)
@@ -73,6 +77,10 @@ const nhentai:Command = {
 				break
 			}
 			case 'read': {
+				if(interaction.channel.type === 'DM') {
+					interaction.editReply('Sorry I had to disable this for a moment until I figure out a fix')
+					return
+				}
 				let book:any = {}
 				try {
 					book = await nhentaiAPI.getBook(interaction.options.get('nuke_code')?.value)
@@ -107,7 +115,6 @@ const nhentai:Command = {
 				break
 			}
 		}
-		return true
 	},
 	initcap: (string: string): string => {
 		return string.charAt(0).toUpperCase() + string.slice(1)

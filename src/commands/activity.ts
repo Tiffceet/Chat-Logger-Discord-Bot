@@ -22,6 +22,10 @@ const activity:Command = {
 				['poker_night', 'poker_night'],
 			])),
 	execute: async (interaction: any) => {
+		if(interaction.channel.type === 'DM') {
+			interaction.reply('Do you even have friends lol, doing it in DM...\nIt only works in server')
+			return
+		}
 		await interaction.deferReply()
 		const activity_type = interaction.options.get('activity_type')?.value as string
 		if(typeof activity.application_id[activity_type] === 'undefined') {
