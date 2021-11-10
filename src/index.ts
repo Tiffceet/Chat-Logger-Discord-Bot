@@ -7,8 +7,14 @@ if(process.env.DEBUG) {
 const token = process.env.TOKEN
 
 // Create a new client instance
+// Discord Gateaway Intents: https://discord.com/developers/docs/topics/gateway#gateway-intents
 const client = new Client({ 
-	intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_VOICE_STATES],
+	intents: [
+		Intents.FLAGS.GUILDS, 
+		Intents.FLAGS.GUILD_MESSAGE_REACTIONS, 
+		Intents.FLAGS.GUILD_VOICE_STATES, 
+		Intents.FLAGS.DIRECT_MESSAGE_REACTIONS
+	],
 	partials: ['CHANNEL'] 
 })
 
