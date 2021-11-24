@@ -78,7 +78,7 @@ const nhentai:Command = {
 					book = await nhentaiAPI.getBook(interaction.options.get('nuke_code')?.value)
 					// console.log(book);
 				} catch (e) {
-					interaction.reply('The nuke code is invalid')
+					interaction.editReply('The nuke code is invalid')
 					break
 					// console.log(e);
 				}
