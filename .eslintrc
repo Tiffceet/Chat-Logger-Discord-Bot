@@ -13,6 +13,7 @@
         "@typescript-eslint/no-var-requires": 0,
         "@typescript-eslint/no-explicit-any": ["off"],
         "indent": "off",
-        "@typescript-eslint/indent": ["error", "tab"]
+        "@typescript-eslint/indent": ["error", "tab"],
+        "no-fallthrough": 0
     }
 }

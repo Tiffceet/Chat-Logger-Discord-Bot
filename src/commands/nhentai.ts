@@ -1,10 +1,8 @@
 import Command from '../interface/Command'
-import { SlashCommandBuilder } from '@discordjs/builders'
-import { ColorResolvable, MessageEmbed } from 'discord.js'
-import fetch from 'node-fetch'
+// import { SlashCommandBuilder } from '@discordjs/builders'
+import { ColorResolvable, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
+import fetch, { Response } from 'node-fetch'
 import paginate from '../utils/paginate'
-const { API } = require('nhentai-api')
-const nhentaiAPI = new API()
 const nhentai: Command = {
 	data: new SlashCommandBuilder()
 		.setName('nhentai')
@@ -19,6 +17,26 @@ const nhentai: Command = {
 						.setDescription('Keyword')
 						.setRequired(true)
 				)
+				.addStringOption((opt) =>
+					opt
+						.setName('sortby')
+						.setDescription('Sort By')
+						.setRequired(false)
+						.addChoices(
+							{ name: 'today', value: 'popular-today' },
+							{ name: 'week', value: 'popular-week' },
+							{ name: 'all time', value: 'popular' },
+						)
+				)
+				.addStringOption((opt) =>
+					opt
+						.setName('page')
+						.setDescription('page on nhentai search result')
+						.setRequired(false)
+				)
+		)
+		.addSubcommand((subcmd) =>
+			subcmd.setName('random').setDescription('Get random doujin')
 		)
 		.addSubcommand((subcmd) =>
 			subcmd
@@ -53,6 +71,7 @@ const nhentai: Command = {
 		}
 		await interaction.deferReply()
 		const sub_cmd: string = interaction.options.getSubcommand()
+		let random_flag = false
 		switch (sub_cmd) {
 			case 'info': {
 				// try {
@@ -87,10 +106,17 @@ const nhentai: Command = {
 					interaction.options.get('keyword')?.value as string
 				)
 
+				let search_url = `https://janda.mod.land/nhentai/search?key=${query}`
+				if(interaction.options.get('sortby')) {
+					search_url += '&sortby=' + interaction.options.get('sortby').value
+				}
+
+				if(interaction.options.get('page')) {
+					search_url += '&page=' + interaction.options.get('page').value
+				}
+
 				// const result = await nhentaiAPI.search(query)
-				const resultResponse = await fetch(
-					`https://janda.mod.land/nhentai/search?key=${query}`
-				)
+				const resultResponse = await fetch(search_url)
 				const result = await resultResponse.json()
 
 				if (result.data.length == 0) {
@@ -122,6 +148,9 @@ const nhentai: Command = {
 				)
 				break
 			}
+			case 'random': {
+				random_flag = true
+			}
 			case 'read': {
 				// let book: any = {}
 				// try {
@@ -134,11 +163,18 @@ const nhentai: Command = {
 				// 	break
 				// 	// console.log(e);
 				// }
-				const bookRequest = await fetch(
-					`https://janda.mod.land/nhentai/get?book=${
-						interaction.options.get('nuke_code')?.value
-					}`
-				)
+				let bookRequest: Response | undefined = undefined
+				if (random_flag) {
+					bookRequest = await fetch(
+						'https://janda.mod.land/nhentai/random'
+					)
+				} else {
+					bookRequest = await fetch(
+						`https://janda.mod.land/nhentai/get?book=${
+							interaction.options.get('nuke_code')?.value
+						}`
+					)
+				}
 				const book = await bookRequest.json()
 				if (typeof book.data === 'undefined') {
 					interaction.editReply(
@@ -161,7 +197,7 @@ const nhentai: Command = {
 					page_num = 1
 				}
 
-				const book_embeds: Array<MessageEmbed> = []
+				const book_embeds: Array<EmbedBuilder> = []
 
 				for (let k = 0; k < max_page; k++) {
 					book_embeds.push(
@@ -191,20 +227,18 @@ const nhentai: Command = {
      * @param {API.Book} book book object returned by the nhentai api
      * @param {number} page_num page to display
      * @param {boolean} rand_color (optional) set this to true to set embed to random color
-     * @return {Discord.MessageEmbed}
+     * @return {Discord.EmbedBuilder}
      */
 	nhentai_read_embed: (book: any, page_num: number, rand_color = false) => {
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 		embed.setTitle(book.data.title)
 		embed.setURL(`https://www.nhentai.net/g/${book.data.id}`)
 		embed.setImage(book.data.image[page_num - 1])
-		embed.setFooter(`Page ${page_num} of ${book.data.total}`)
+		embed.setFooter({ text: `Page ${page_num} of ${book.data.total}` })
 		if (rand_color) {
 			embed.setColor(
 				('#' +
-                    Math.floor(Math.random() * 16777215).toString(
-                    	16
-                    )) as ColorResolvable
+                    Math.floor(Math.random() * 16777215).toString(16)) as ColorResolvable
 			)
 		}
 		return embed
@@ -215,14 +249,14 @@ const nhentai: Command = {
      * @param {API.Book} book Book objecr from nhentai API
      * @param {any} footer (optional) footer of the embed
      * @param {boolean} rand_color (optional) set this to true to set embed to random color
-     * @return {Discord.MessageEmbed}
+     * @return {Discord.EmbedBuilder}
      */
 	nhentai_info_embed: (
 		book: any,
 		footer: string | null = null,
 		rand_color = false
 	) => {
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 		if (typeof book.data.title === 'object') {
 			embed.setTitle(book.data.title.english)
 		} else {
@@ -244,14 +278,12 @@ const nhentai: Command = {
 		if (rand_color) {
 			embed.setColor(
 				('#' +
-                    Math.floor(Math.random() * 16777215).toString(
-                    	16
-                    )) as ColorResolvable
+                    Math.floor(Math.random() * 16777215).toString(16)) as ColorResolvable
 			)
 		}
 		embed.setDescription(nuke + tags)
 		if (footer) {
-			embed.setFooter(footer)
+			embed.setFooter({text: footer})
 		}
 
 		return embed

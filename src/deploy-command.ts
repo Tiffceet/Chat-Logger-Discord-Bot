@@ -21,6 +21,7 @@ const deploy = async () => {
 		console.log('Started refreshing application (/) commands.')
 		// console.log(commands)
 		if (process.env.DEBUG) {
+			console.log('Deploying to DEBUG server...')
 			await rest.put(Routes.applicationGuildCommands(clientId, guildId), {
 				body: cmd_body,
 			})

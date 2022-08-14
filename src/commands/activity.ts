@@ -1,5 +1,5 @@
 import Command from '../interface/Command'
-import { SlashCommandBuilder } from '@discordjs/builders'
+import { SlashCommandBuilder } from 'discord.js'
 import fetch from 'node-fetch'
 const activity: Command = {
 	data: new SlashCommandBuilder()
@@ -10,22 +10,22 @@ const activity: Command = {
 				.setName('activity_type')
 				.setRequired(true)
 				.setDescription('Activity to start')
-				.addChoices([
-					['youtube', 'youtube'],
-					['youtubedev', 'youtubedev'],
-					['poker', 'poker'],
-					['betrayal', 'betrayal'],
-					['fishing', 'fishing'],
-					['chess', 'chess'],
-					['chessdev', 'chessdev'],
-					['lettertile', 'lettertile'],
-					['wordsnack', 'wordsnack'],
-					['doodlecrew', 'doodlecrew'],
-					['awkword', 'awkword'],
-					['spellcast', 'spellcast'],
-					['checkers', 'checkers'],
-					['puttparty', 'puttparty'],
-				])
+				.addChoices(
+					{ name: 'youtube', value: 'youtube' },
+					{ name: 'youtubedev', value: 'youtubedev' },
+					{ name: 'poker', value: 'poker' },
+					{ name: 'betrayal', value: 'betrayal' },
+					{ name: 'fishing', value: 'fishing' },
+					{ name: 'chess', value: 'chess' },
+					{ name: 'chessdev', value: 'chessdev' },
+					{ name: 'lettertile', value: 'lettertile' },
+					{ name: 'wordsnack', value: 'wordsnack' },
+					{ name: 'doodlecrew', value: 'doodlecrew' },
+					{ name: 'awkword', value: 'awkword' },
+					{ name: 'spellcast', value: 'spellcast' },
+					{ name: 'checkers', value: 'checkers' },
+					{ name: 'puttparty', value: 'puttparty' },
+				)
 		),
 	execute: async (interaction: any) => {
 		if (interaction.channel.type === 'DM') {
@@ -91,7 +91,7 @@ const activity: Command = {
 		youtubedev: 'Youtube Together Dev',
 		poker: 'Poker Night',
 		betrayal: 'Betrayal',
-		fishing: 'Fishington', 
+		fishing: 'Fishington',
 		chess: 'Chess in Park',
 		chessdev: 'Chess in Park Dev',
 		lettertile: 'Letter Tile',

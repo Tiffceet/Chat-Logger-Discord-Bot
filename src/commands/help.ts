@@ -1,7 +1,6 @@
 import Command from '../interface/Command'
-import {SlashCommandBuilder} from '@discordjs/builders'
 import * as fs from 'fs'
-import { MessageEmbed } from 'discord.js'
+import { EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 const help:Command = {
 	data: new SlashCommandBuilder()
 		.setName('help')
@@ -15,7 +14,7 @@ const help:Command = {
 		const help_desc = JSON.parse(
 			fs.readFileSync('data/HelpDesc.json').toString()
 		)
-		const default_help_embed = new MessageEmbed()
+		const default_help_embed = new EmbedBuilder()
 			.setColor('#e9e9e9')
 			.setTitle('Commands')
 			.addFields(help_desc['help_page'])
@@ -25,7 +24,7 @@ const help:Command = {
 			const arg = (interaction.options.get('command') as any).value as any
 			if (help_desc['command'][arg]) {
 				const desc_embed = 
-					new MessageEmbed().setTitle(arg).addFields(
+					new EmbedBuilder().setTitle(arg).addFields(
 						{
 							name: 'Description',
 							value: `${help_desc['command'][arg].desc}`,
