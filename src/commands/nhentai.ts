@@ -23,9 +23,9 @@ const nhentai: Command = {
 						.setDescription('Sort By')
 						.setRequired(false)
 						.addChoices(
-							{ name: 'today', value: 'popular-today' },
-							{ name: 'week', value: 'popular-week' },
-							{ name: 'all time', value: 'popular' },
+							{ name: 'Today', value: 'popular-today' },
+							{ name: 'Week', value: 'popular-week' },
+							{ name: 'All Time', value: 'popular' },
 						)
 				)
 				.addStringOption((opt) =>
@@ -137,11 +137,19 @@ const nhentai: Command = {
 					)
 				}
 
+				let search_footer = 'Result {n} of {max}'
+				if(interaction.options.get('sortby')) {
+					search_footer += ' | Sort By: ' + interaction.options.get('sortby').value
+				}
+				if(interaction.options.get('page')) {
+					search_footer += ' | Page: ' + interaction.options.get('page').value
+				}
+
 				paginate(
 					interaction,
 					search_result_embeds,
 					1,
-					'Result {n} of {max}',
+					search_footer,
 					['⏮️', '⬅️', '➡️', '⏭️'],
 					300000,
 					true
