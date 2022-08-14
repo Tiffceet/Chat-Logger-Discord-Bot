@@ -10,7 +10,7 @@ const nhentai: Command = {
 		.addSubcommand((subcmd) =>
 			subcmd
 				.setName('search')
-				.setDescription('Search on nhentai')
+				.setDescription('As if you are searching on nhentai')
 				.addStringOption((opt) =>
 					opt
 						.setName('keyword')
@@ -20,7 +20,7 @@ const nhentai: Command = {
 				.addStringOption((opt) =>
 					opt
 						.setName('sortby')
-						.setDescription('Sort By')
+						.setDescription('Sort search result by...')
 						.setRequired(false)
 						.addChoices(
 							{ name: 'Today', value: 'popular-today' },
@@ -31,7 +31,7 @@ const nhentai: Command = {
 				.addStringOption((opt) =>
 					opt
 						.setName('page')
-						.setDescription('page on nhentai search result')
+						.setDescription('Page of search result')
 						.setRequired(false)
 				)
 		)

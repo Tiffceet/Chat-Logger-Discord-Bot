@@ -28,8 +28,8 @@
             "usage": "`/roll` or /roll 10`"
         },
         "nhentai": {
-            "desc": "You bad bad boy",
-            "usage": "`/nhentai read 177013 [page_num]`\n`/nhentai info 177013`\n`/nhentai search Paimon`"
+            "desc": "Browse on nhentai.\nBig thanks to https://github.com/sinkaroid/jandapress for providing endpoints browse on nhentai\n\n* Search function now works as expected",
+            "usage": "`/nhentai read 177013 [page_num]`\n`/nhentai info 177013`\n`/nhentai search Paimon [sortby] [page]`\n`/nhentai random`"
         },
         "inspireme": {
             "desc": "I am an artificial intelligence dedicated to generating unlimited amounts of unique inspirational quotes for endless enrichment of pointless human existence.\n\nhttps://inspirobot.me/",
