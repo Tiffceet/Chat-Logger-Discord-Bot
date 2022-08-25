@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Partials } from 'discord.js'
+import { Client, GatewayIntentBits, InteractionType, Partials } from 'discord.js'
 import * as commands from './commands'
 if (process.env.DEBUG) {
 	console.log('Application started in DEBUG mode')
@@ -24,7 +24,7 @@ client.once('ready', () => {
 })
 
 client.on('interactionCreate', async (interaction) => {
-	if (!interaction.isCommand()) {
+	if (!(interaction.type === InteractionType.ApplicationCommand)) {
 		return
 	}
 	const command = (commands as any)[interaction.commandName]

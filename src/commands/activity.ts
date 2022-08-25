@@ -1,5 +1,10 @@
 import Command from '../interface/Command'
-import { SlashCommandBuilder } from 'discord.js'
+import {
+	ChannelType,
+	CommandInteraction,
+	GuildMember,
+	SlashCommandBuilder,
+} from 'discord.js'
 import fetch from 'node-fetch'
 const activity: Command = {
 	data: new SlashCommandBuilder()
@@ -24,11 +29,15 @@ const activity: Command = {
 					{ name: 'awkword', value: 'awkword' },
 					{ name: 'spellcast', value: 'spellcast' },
 					{ name: 'checkers', value: 'checkers' },
-					{ name: 'puttparty', value: 'puttparty' },
+					{ name: 'puttparty', value: 'puttparty' }
 				)
 		),
-	execute: async (interaction: any) => {
-		if (interaction.channel.type === 'DM') {
+	execute: async (interaction: CommandInteraction) => {
+		if (interaction.channel === null) {
+			interaction.reply('Interation not coming from a channel')
+			return
+		}
+		if (interaction.channel.type === ChannelType.DM) {
 			interaction.reply(
 				'Do you even have friends lol, doing it in DM...\nIt only works in server'
 			)
@@ -41,12 +50,17 @@ const activity: Command = {
 			interaction.editReply('Invalid activity')
 			return
 		}
-		if (!interaction.member.voice.channel) {
+		if (interaction.member === null) {
+			interaction.editReply('This interaction is not fired by a user')
+			return
+		}
+		const guild_member = interaction.member as GuildMember
+		if (!guild_member.voice.channel) {
 			interaction.editReply('Please join a voice channel first')
 			return
 		}
 		const fetch_obj = await fetch(
-			`https://discord.com/api/v8/channels/${interaction.member.voice.channel.id}/invites`,
+			`https://discord.com/api/v8/channels/${guild_member.voice.channel.id}/invites`,
 			{
 				method: 'POST',
 				body: JSON.stringify({

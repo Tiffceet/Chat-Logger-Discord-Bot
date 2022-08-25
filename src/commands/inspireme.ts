@@ -1,11 +1,11 @@
 import Command from '../interface/Command'
-import { ColorResolvable, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
+import { ColorResolvable, CommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 import fetch from 'node-fetch'
 const inspireme:Command = {
 	data: new SlashCommandBuilder()
 		.setName('inspireme')
 		.setDescription('Seek Inspiration from AI generated quotes'),
-	execute: async (interaction) => {
+	execute: async (interaction: CommandInteraction) => {
 		await interaction.deferReply()
 		const url = 'https://inspirobot.me/api?generate=true'
 		const HTMLResponse = await fetch(url)

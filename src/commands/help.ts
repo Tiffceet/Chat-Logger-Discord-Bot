@@ -1,6 +1,6 @@
 import Command from '../interface/Command'
 import * as fs from 'fs'
-import { EmbedBuilder, SlashCommandBuilder } from 'discord.js'
+import { CommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 const help:Command = {
 	data: new SlashCommandBuilder()
 		.setName('help')
@@ -10,7 +10,7 @@ const help:Command = {
 				.setName('command')
 				.setDescription('Get description of specific command')
 		),
-	execute: async(interaction) => {
+	execute: async(interaction: CommandInteraction) => {
 		const help_desc = JSON.parse(
 			fs.readFileSync('data/HelpDesc.json').toString()
 		)

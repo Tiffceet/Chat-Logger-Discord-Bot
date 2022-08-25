@@ -1,6 +1,17 @@
 import Command from '../interface/Command'
 // import { SlashCommandBuilder } from '@discordjs/builders'
-import { ColorResolvable, EmbedBuilder, SlashCommandBuilder } from 'discord.js'
+import {
+	CacheType,
+	ChannelType,
+	ChatInputCommandInteraction,
+	ColorResolvable,
+	CommandInteraction,
+	EmbedBuilder,
+	Interaction,
+	InteractionResponse,
+	SlashCommandBuilder,
+	TextChannel,
+} from 'discord.js'
 import fetch, { Response } from 'node-fetch'
 import paginate from '../utils/paginate'
 const nhentai: Command = {
@@ -25,7 +36,7 @@ const nhentai: Command = {
 						.addChoices(
 							{ name: 'Today', value: 'popular-today' },
 							{ name: 'Week', value: 'popular-week' },
-							{ name: 'All Time', value: 'popular' },
+							{ name: 'All Time', value: 'popular' }
 						)
 				)
 				.addStringOption((opt) =>
@@ -63,14 +74,24 @@ const nhentai: Command = {
 					opt.setName('page_num').setDescription('Page Number')
 				)
 		),
-	execute: async (interaction: any) => {
+	execute: async (interaction: CommandInteraction) => {
+		if (interaction.channel === null) {
+			interaction.reply('Interaction dont come from a channel')
+			return
+		}
 		// Allow command execution from DM
-		if (!interaction.channel.nsfw && interaction.channel.type !== 'DM') {
+		if (
+			!(interaction.channel as TextChannel).nsfw &&
+            interaction.channel.type !== ChannelType.DM
+		) {
 			interaction.reply('AHEM! Please do this at nsfw channel thanks')
 			return
 		}
 		await interaction.deferReply()
-		const sub_cmd: string = interaction.options.getSubcommand()
+		if (!interaction.isChatInputCommand()) {
+			interaction.reply('Not a chat input command')
+		}
+		const sub_cmd: string = (interaction as ChatInputCommandInteraction).options.getSubcommand()
 		let random_flag = false
 		switch (sub_cmd) {
 			case 'info': {
@@ -107,12 +128,14 @@ const nhentai: Command = {
 				)
 
 				let search_url = `https://janda.mod.land/nhentai/search?key=${query}`
-				if(interaction.options.get('sortby')) {
-					search_url += '&sortby=' + interaction.options.get('sortby').value
+				if (interaction.options.get('sortby')) {
+					search_url +=
+                        '&sortby=' + interaction.options.get('sortby')?.value
 				}
 
-				if(interaction.options.get('page')) {
-					search_url += '&page=' + interaction.options.get('page').value
+				if (interaction.options.get('page')) {
+					search_url +=
+                        '&page=' + interaction.options.get('page')?.value
 				}
 
 				// const result = await nhentaiAPI.search(query)
@@ -138,11 +161,14 @@ const nhentai: Command = {
 				}
 
 				let search_footer = 'Result {n} of {max}'
-				if(interaction.options.get('sortby')) {
-					search_footer += ' | Sort By: ' + interaction.options.get('sortby').value
+				if (interaction.options.get('sortby')) {
+					search_footer +=
+                        ' | Sort By: ' +
+                        interaction.options.get('sortby')?.value
 				}
-				if(interaction.options.get('page')) {
-					search_footer += ' | Page: ' + interaction.options.get('page').value
+				if (interaction.options.get('page')) {
+					search_footer +=
+                        ' | Page: ' + interaction.options.get('page')?.value
 				}
 
 				paginate(
@@ -291,7 +317,7 @@ const nhentai: Command = {
 		}
 		embed.setDescription(nuke + tags)
 		if (footer) {
-			embed.setFooter({text: footer})
+			embed.setFooter({ text: footer })
 		}
 
 		return embed
