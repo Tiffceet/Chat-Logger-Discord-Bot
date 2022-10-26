@@ -28,7 +28,7 @@
             "usage": "`/roll` or /roll 10`"
         },
         "nhentai": {
-            "desc": "Browse on nhentai.\nBig thanks to https://github.com/sinkaroid/jandapress for providing endpoints browse on nhentai\n\n* Search function now works as expected",
+            "desc": "Browse on nhentai.\nBig thanks to https://github.com/sinkaroid/jandapress for providing webscraping from nhentai\n\n* Search function now works as expected\n** Now using `jandapress-1.0.13-dev`",
             "usage": "`/nhentai read 177013 [page_num]`\n`/nhentai info 177013`\n`/nhentai search Paimon [sortby] [page]`\n`/nhentai random`"
         },
         "inspireme": {

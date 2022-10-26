@@ -106,7 +106,7 @@ const nhentai: Command = {
 				// 	break
 				// }
 				const bookRequest = await fetch(
-					`https://janda.mod.land/nhentai/get?book=${
+					`http://looz.servehttp.com:3000/nhentai/get?book=${
 						interaction.options.get('nuke_code')?.value
 					}`
 				)
@@ -127,7 +127,7 @@ const nhentai: Command = {
 					interaction.options.get('keyword')?.value as string
 				)
 
-				let search_url = `https://janda.mod.land/nhentai/search?key=${query}`
+				let search_url = `http://looz.servehttp.com:3000/nhentai/search?key=${query}`
 				if (interaction.options.get('sortby')) {
 					search_url +=
                         '&sortby=' + interaction.options.get('sortby')?.value
@@ -200,11 +200,11 @@ const nhentai: Command = {
 				let bookRequest: Response | undefined = undefined
 				if (random_flag) {
 					bookRequest = await fetch(
-						'https://janda.mod.land/nhentai/random'
+						'http://looz.servehttp.com:3000/nhentai/random'
 					)
 				} else {
 					bookRequest = await fetch(
-						`https://janda.mod.land/nhentai/get?book=${
+						`http://looz.servehttp.com:3000/nhentai/get?book=${
 							interaction.options.get('nuke_code')?.value
 						}`
 					)
