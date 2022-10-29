@@ -111,6 +111,14 @@ const nhentai: Command = {
 					}`
 				)
 				const book = await bookRequest.json()
+
+				if(!book.success) {
+					interaction.editReply(
+						'Nhentai scrapper is dead temporarily. Try again later'
+					)
+					break
+				}
+
 				if (typeof book.data === 'undefined') {
 					interaction.editReply(
 						'You cant give me a code that doesnt exist and expect me to give you something :('
@@ -141,6 +149,13 @@ const nhentai: Command = {
 				// const result = await nhentaiAPI.search(query)
 				const resultResponse = await fetch(search_url)
 				const result = await resultResponse.json()
+
+				if(!result.success) {
+					interaction.editReply(
+						'Nhentai scrapper is dead temporarily. Try again later'
+					)
+					break
+				}
 
 				if (result.data.length == 0) {
 					interaction.editReply(
@@ -210,6 +225,14 @@ const nhentai: Command = {
 					)
 				}
 				const book = await bookRequest.json()
+
+				if(!book.success) {
+					interaction.editReply(
+						'Nhentai scrapper is dead temporarily. Try again later'
+					)
+					break
+				}
+                
 				if (typeof book.data === 'undefined') {
 					interaction.editReply(
 						'You cant give me a code that doesnt exist and expect me to give you something :('
