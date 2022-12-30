@@ -112,7 +112,7 @@ const nhentai: Command = {
 				)
 				const book = await bookRequest.json()
 
-				if(!book.success) {
+				if(typeof book.success !== 'undefined' && !book.success) {
 					interaction.editReply(
 						'Nhentai scrapper is dead temporarily. Try again later'
 					)
@@ -150,7 +150,7 @@ const nhentai: Command = {
 				const resultResponse = await fetch(search_url)
 				const result = await resultResponse.json()
 
-				if(!result.success) {
+				if(typeof result.success !== 'undefined' && !result.success) {
 					interaction.editReply(
 						'Nhentai scrapper is dead temporarily. Try again later'
 					)
@@ -226,7 +226,7 @@ const nhentai: Command = {
 				}
 				const book = await bookRequest.json()
 
-				if(!book.success) {
+				if(typeof book.success !== 'undefined' && !book.success) {
 					interaction.editReply(
 						'Nhentai scrapper is dead temporarily. Try again later'
 					)
