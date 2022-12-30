@@ -2,8 +2,8 @@ node_modules/
 .*/
 .env
 tmp
-*.js
-**/*.js
+data/*.js
+data/**/*.js
 *.map
 tmp
 dist
