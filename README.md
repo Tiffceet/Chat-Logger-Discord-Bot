@@ -30,7 +30,7 @@ npm ci
 
 NOTE 1: If DEBUG is set, the commands will only be deployed to specified DEBUG_GUILD_ID
 
-NOTE 2: Deploy is not possible if you did not install devDependencies
+NOTE 2: Always install devDeps during slash command deployment
 ```
 npm run deploy
 ```
